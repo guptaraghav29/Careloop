@@ -1,0 +1,22 @@
+{
+  "workflow": "e2e_fix",
+  "issue_url": "https://github.com/guptaraghav29/PDD-Hackathon/issues/2",
+  "issue_number": 2,
+  "current_cycle": 2,
+  "last_completed_step": 0,
+  "step_outputs": {
+    "1": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "2": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "3": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "4": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "5": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "6": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "7": "FAILED: No agent providers are available (check CLI installation and API keys)"
+  },
+  "dev_unit_states": {},
+  "total_cost": 0.0,
+  "model_used": "unknown",
+  "changed_files": [],
+  "last_saved_at": "2026-01-31T11:48:14.795767",
+  "github_comment_id": 3829197544
+}

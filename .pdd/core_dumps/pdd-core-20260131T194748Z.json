@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "pdd_version": "0.0.135",
+  "timestamp_utc": "20260131T194748Z",
+  "argv": [
+    "connect"
+  ],
+  "cwd": "/Users/raghavgupta/Desktop/PDD-Hackathon",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.2.0",
+    "version": "Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:55 PST 2025; root:xnu-12377.61.12~1/RELEASE_ARM64_T8103",
+    "python": "3.12.12 (main, Jan 27 2026, 23:41:44) [Clang 21.1.4 ]"
+  },
+  "global_options": {
+    "force": false,
+    "strength": null,
+    "temperature": null,
+    "time": 0.25,
+    "verbose": false,
+    "quiet": false,
+    "local": false,
+    "context": null,
+    "output_cost": null,
+    "review_examples": false
+  },
+  "invoked_subcommands": [],
+  "total_cost": 0.0,
+  "steps": [],
+  "errors": [],
+  "environment": {
+    "PATH": "/Users/raghavgupta/.local/bin:/Users/raghavgupta/.antigravity/antigravity/bin:/Users/raghavgupta/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/raghavgupta/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pmk/env/global/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/raghavgupta/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/raghavgupta/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/Users/raghavgupta/.local/bin:/Users/raghavgupta/.antigravity/antigravity/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin://Users/raghavgupta/Maven/apache-maven-3.6.3/bin://Users/raghavgupta/hadoop-2.10.1/bin://Users/raghavgupta/spark-3.1.1-bin-hadoop2.7/bin://Users/raghavgupta/beast-0.9.1/bin",
+    "PDD_PATH": "/Users/raghavgupta/.local/share/uv/tools/pdd-cli/lib/python3.12/site-packages/pdd",
+    "PDD_ENV": "prod"
+  },
+  "file_contents": {},
+  "terminal_output": "=== STDOUT ===\nChecking for updates...\nPort 9876 is in use, looking for an available port...\nUsing port 9877 instead.\nRegistering session with PDD Cloud...\nWarning: Failed to register with cloud: Failed to register session: {\"error\":\"Account approval pending\"}\n\nRunning in local-only mode.\nCORS configured for origins: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', \n'http://127.0.0.1:5173', 'http://localhost:9877', 'http://127.0.0.1:9877', 'https://pdd.dev', \n'https://www.pdd.dev']\nServing frontend from: \n/Users/raghavgupta/.local/share/uv/tools/pdd-cli/lib/python3.12/site-packages/pdd/frontend/dist\nStarting PDD server on http://127.0.0.1:9877\nProject Root: /Users/raghavgupta/Desktop/PDD-Hackathon\nAPI Documentation: http://127.0.0.1:9877/docs\nLocal Frontend: http://127.0.0.1:9877\nPress Ctrl+C to stop the server\nOpening browser...\nPDD Server starting...\nProject Root: /Users/raghavgupta/Desktop/PDD-Hackathon\nRequest: GET /logo.svg from 127.0.0.1\nResponse: 200 took 295.35ms\nResponse: 404 took 123.11ms\nRequest: GET /logo.svg from 127.0.0.1\nResponse: 200 took 3.95ms\nResponse: 404 took 17.27ms\nResponse: 404 took 12.70ms\nShutting down PDD Server...\nShutdown complete.\nGoodbye!\n\n--- Command Execution Summary ---\n-------------------------------------\n"
+}

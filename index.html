@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kaiser-style Health Portal</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="logo">
+          <span class="logo-mark">KP</span>
+          <div>
+            <div class="logo-title">Kaiser Permanente</div>
+            <div class="logo-subtitle">Member Health Portal</div>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="#">Home</a>
+          <a href="#">Care</a>
+          <a href="#">Coverage</a>
+          <a href="#">Wellness</a>
+          <a href="#">Support</a>
+        </nav>
+        <div class="profile">
+          <div class="profile-text">
+            <div class="profile-name">Hi, Raghav</div>
+            <div class="profile-meta">Member ID • 8421</div>
+          </div>
+          <div class="avatar">RG</div>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="hero">
+          <div class="hero-copy">
+            <span class="pill">Care ready today</span>
+            <h1>Manage appointments, care teams, and prescriptions in one place.</h1>
+            <p>
+              Get virtual care within minutes, check labs, and stay on top of your care plan with
+              personalized reminders.
+            </p>
+            <div class="hero-actions">
+              <button class="btn primary">Start a video visit</button>
+              <button class="btn ghost">Message your doctor</button>
+            </div>
+            <div class="hero-metrics">
+              <div>
+                <strong>4.9</strong>
+                <span>Member rating</span>
+              </div>
+              <div>
+                <strong>7 min</strong>
+                <span>Avg. wait time</span>
+              </div>
+              <div>
+                <strong>24/7</strong>
+                <span>Nurse advice</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-card">
+            <div class="card-header">
+              <h3>Today’s Checklist</h3>
+              <span class="chip">Jan 31</span>
+            </div>
+            <ul class="checklist">
+              <li>
+                <input type="checkbox" checked />
+                <div>
+                  <strong>Annual wellness visit</strong>
+                  <span>Virtual • 1:30 PM PT</span>
+                </div>
+              </li>
+              <li>
+                <input type="checkbox" />
+                <div>
+                  <strong>Refill Lisinopril</strong>
+                  <span>Pharmacy pickup • 3 days</span>
+                </div>
+              </li>
+              <li>
+                <input type="checkbox" />
+                <div>
+                  <strong>Lab results review</strong>
+                  <span>New results ready</span>
+                </div>
+              </li>
+            </ul>
+            <button class="btn secondary">View full plan</button>
+          </div>
+        </section>
+
+        <section class="grid">
+          <article class="panel">
+            <header>
+              <h3>Upcoming appointments</h3>
+              <button class="link">Schedule</button>
+            </header>
+            <div class="appointment">
+              <div>
+                <strong>Primary care follow-up</strong>
+                <span>Mon, Feb 3 • 9:15 AM • Oakland</span>
+              </div>
+              <button class="btn tiny">Reschedule</button>
+            </div>
+            <div class="appointment">
+              <div>
+                <strong>Physical therapy</strong>
+                <span>Thu, Feb 6 • 2:00 PM • Video</span>
+              </div>
+              <button class="btn tiny">Details</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header>
+              <h3>Care team</h3>
+              <button class="link">Directory</button>
+            </header>
+            <div class="care-team">
+              <div>
+                <strong>Dr. Maya Chen</strong>
+                <span>Primary Care • Walnut Creek</span>
+              </div>
+              <button class="btn tiny">Message</button>
+            </div>
+            <div class="care-team">
+              <div>
+                <strong>Angela Ruiz, RN</strong>
+                <span>Care Manager • Virtual</span>
+              </div>
+              <button class="btn tiny">Call</button>
+            </div>
+          </article>
+
+          <article class="panel highlight">
+            <header>
+              <h3>Latest lab results</h3>
+              <button class="link">View all</button>
+            </header>
+            <div class="lab">
+              <div>
+                <strong>A1C</strong>
+                <span>5.6% • Normal</span>
+              </div>
+              <span class="status ok">Stable</span>
+            </div>
+            <div class="lab">
+              <div>
+                <strong>Cholesterol</strong>
+                <span>180 mg/dL • Normal</span>
+              </div>
+              <span class="status ok">Stable</span>
+            </div>
+            <div class="lab">
+              <div>
+                <strong>Vitamin D</strong>
+                <span>28 ng/mL • Low</span>
+              </div>
+              <span class="status warn">Review</span>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header>
+              <h3>Pharmacy</h3>
+              <button class="link">Refill</button>
+            </header>
+            <div class="pharmacy">
+              <div>
+                <strong>Lisinopril 10mg</strong>
+                <span>30-day supply • 2 refills left</span>
+              </div>
+              <button class="btn tiny">Order refill</button>
+            </div>
+            <div class="pharmacy">
+              <div>
+                <strong>Atorvastatin 20mg</strong>
+                <span>Mail order • Arrives Feb 2</span>
+              </div>
+              <button class="btn tiny">Track</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header>
+              <h3>Billing & coverage</h3>
+              <button class="link">Pay now</button>
+            </header>
+            <div class="billing">
+              <div>
+                <strong>January statement</strong>
+                <span>Balance $35.00 • Due Feb 10</span>
+              </div>
+              <button class="btn tiny">View bill</button>
+            </div>
+            <div class="billing">
+              <div>
+                <strong>Plan benefits</strong>
+                <span>2026 Silver HMO</span>
+              </div>
+              <button class="btn tiny">See coverage</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header>
+              <h3>Messages</h3>
+              <button class="link">Inbox</button>
+            </header>
+            <div class="message">
+              <div>
+                <strong>New note from Dr. Chen</strong>
+                <span>"Your labs look good. Keep up the routine."</span>
+              </div>
+              <span class="dot"></span>
+            </div>
+            <div class="message">
+              <div>
+                <strong>Care plan update</strong>
+                <span>New activity goal added.</span>
+              </div>
+              <span class="dot"></span>
+            </div>
+          </article>
+        </section>
+
+        <section class="wellness">
+          <div>
+            <h2>Personalized wellness path</h2>
+            <p>Weekly goals tailored to your care plan, lifestyle, and upcoming visits.</p>
+            <div class="wellness-actions">
+              <button class="btn primary">View wellness plan</button>
+              <button class="btn ghost">Update goals</button>
+            </div>
+          </div>
+          <div class="wellness-cards">
+            <div class="well-card">
+              <strong>Sleep focus</strong>
+              <span>7-8 hours • 4 nights this week</span>
+              <div class="progress">
+                <span style="width: 60%"></span>
+              </div>
+            </div>
+            <div class="well-card">
+              <strong>Movement</strong>
+              <span>5k steps • 3 days left</span>
+              <div class="progress">
+                <span style="width: 45%"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
