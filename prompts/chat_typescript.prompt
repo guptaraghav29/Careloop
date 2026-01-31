@@ -1,0 +1,19 @@
+Act as a Senior Staff Engineer and UX Architect. Write a robust, modular TypeScript "chat" module designed for a high-end healthcare application. 
+
+## Requirements
+- **State Management:** Implement a robust state machine (using a reducer pattern) to handle: `idle`, `typing`, `streaming_text`, `streaming_audio`, and `error`.
+- **ElevenLabs Integration:** Include a helper for handling WebSocket binary audio chunks and synchronizing them with text transcripts to prevent "latency drift."
+- **Context Awareness:** The module must support a "Tool Call" state where the UI can render custom components (e.g., a "Searching the Web..." indicator for rtrvr.ai tasks).
+- **Type Safety:** Use strict interfaces for `ChatMessage`, `Participant`, and `AudioMetadata`.
+- **Accessibility:** Ensure the data structure supports ARIA-live regions for screen readers.
+
+## Inputs
+- `conversationID`: UUID for database persistence.
+- `voiceID`: Optional ElevenLabs voice identifier for audio generation.
+- `streamSettings`: Configuration for latency vs. quality (e.g., Eleven Flash v2.5 settings).
+- `onToolCall`: A callback function to trigger external agents like rtrvr.ai.
+
+## Outputs
+- `ChatProvider`: A React/SwiftUI-inspired Context provider to wrap the UI.
+- `useChat`: A custom hook exposing `messages`, `sendMessage`, `isAudioPlaying`, and `activeTools`.
+- `AudioBufferQueue`: A utility class to handle gapless playback of ElevenLabs audio chunks.

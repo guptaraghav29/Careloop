@@ -1,0 +1,12 @@
+{
+  "step_outputs": {
+    "1": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "2": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "3": "FAILED: No agent providers are available (check CLI installation and API keys)",
+    "4": "FAILED: No agent providers are available (check CLI installation and API keys)"
+  },
+  "issue_updated_at": "",
+  "total_cost": 0.0,
+  "model_used": "",
+  "github_comment_id": 3829390104
+}

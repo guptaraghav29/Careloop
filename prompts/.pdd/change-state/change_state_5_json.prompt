@@ -1,0 +1,25 @@
+Generate a JSON object representing the execution summary of an automated agentic workflow. This object serves as a status report for a multi-step process that failed due to environment configuration issues.
+
+### 1. Role and Scope
+This module acts as a standardized output schema for reporting the results of an automated task execution, specifically designed to capture step-by-step failures, resource usage, and external integration references (like GitHub).
+
+### 2. Requirements
+1. **Step Tracking**: Provide a `step_outputs` object where keys are step numbers (1-4) and values are strings describing the failure state.
+2. **Error Messaging**: For each step, the message must specifically state: "FAILED: No agent providers are available (check CLI installation and API keys)".
+3. **Metadata**: Include an `issue_updated_at` field (empty string) and a `model_used` field (empty string).
+4. **Financial Tracking**: Include a `total_cost` field initialized to 0.0.
+5. **External Integration**: Include a `github_comment_id` field containing the integer value 3829390104.
+
+### 3. Dependencies
+<execution_schema>
+    <include>context/execution_schema_example.json</include>
+</execution_schema>
+
+### 4. Instructions
+- Construct a valid JSON object.
+- Ensure all four steps in `step_outputs` reflect the same provider availability error.
+- Ensure `total_cost` is a float.
+- Ensure `github_comment_id` is a numeric type, not a string.
+
+### 5. Deliverables
+- A single JSON file containing the execution summary object.

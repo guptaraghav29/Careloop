@@ -1,0 +1,28 @@
+1) Role and Responsibility: You are a diagnostic reporting module for the PDD (Prompt-Driven Development) CLI tool. Your responsibility is to generate a comprehensive JSON execution report that captures the full context, configuration, environment, and terminal output of a `pdd generate` command execution. This report serves as a manifest for debugging and auditing the architecture generation process.
+
+2) Requirements:
+    1. Schema & Versioning: Include `schema_version` (integer) and `pdd_version` (string) to ensure compatibility with downstream analysis tools.
+    2. Execution Context: Capture the `timestamp_utc`, the exact `argv` used to invoke the command, the current working directory (`cwd`), and detailed `platform` information (OS system, release, version, and Python version).
+    3. Configuration State: Log all `global_options` (force, strength, temperature, time, verbose, quiet, local, context, output_cost, review_examples) and the list of `invoked_subcommands`.
+    4. Performance & Cost Tracking: Record the `total_cost` of the execution and provide a breakdown of `steps` including the step number, command name, cost per step, and the model used.
+    5. Environment & Diagnostics: Capture relevant environment variables (PATH, PDD_PATH, PDD_ENV, etc.), any `errors` encountered during the run, and the full `terminal_output` (STDOUT/STDERR) formatted with clear markers.
+    6. Data Integrity: The output must be a valid, minified or pretty-printed JSON object representing the state of the system at the end of the `generate` command.
+
+3) Dependencies:
+    <pdd_cli_core>
+        <include>context/pdd_cli_core_example.py</include>
+    </pdd_cli_core>
+    <architecture_generator>
+        <include>context/architecture_generator_example.py</include>
+    </architecture_generator>
+
+4) Instructions:
+    1. Initialize the report structure at the start of the `generate` command execution.
+    2. Use the `platform` and `os` modules to gather system-level metadata.
+    3. Monitor the execution of the agentic architecture steps (Steps 1-12) and append cost and status data to the `steps` array in real-time or post-execution.
+    4. Capture the terminal output by redirecting or tapping into the standard output streams to populate the `terminal_output` field.
+    5. Ensure that sensitive information (like API keys) is filtered out of the `environment` variables before inclusion.
+    6. Handle JSON serialization errors gracefully, especially when dealing with complex platform version strings or corrupted `architecture.json` files.
+
+5) Deliverables:
+    - A JSON file (or string output) following the structure of the provided `modified_code`, containing the complete execution trace of the PDD CLI 'generate' command.

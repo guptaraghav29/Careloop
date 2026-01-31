@@ -1,0 +1,21 @@
+# Role and Scope
+This module serves as the primary documentation and entry point for the PDD-Hackathon repository. Its responsibility is to provide a clear, concise title and description for the project, establishing the context for the Hackathon development environment.
+
+# Requirements
+1. Functionality: The file must contain a top-level heading and a brief descriptive subtitle.
+2. Format: The content must be formatted using Markdown syntax.
+3. Clarity: The project name "PDD-Hackathon" must be prominent.
+4. Consistency: Ensure the text accurately reflects the purpose of the repository as a Hackathon project.
+
+# Dependencies
+<project_context>
+    <include>context/readme_structure_example.md</include>
+</project_context>
+
+# Instructions
+1. Create a Markdown file that starts with a level-1 header (#) containing the text "PDD-Hackathon".
+2. Immediately follow the header with a single line of text describing the project as "PDD Hackathon Project".
+3. Ensure there are no extra code blocks or unnecessary boilerplate; the output should be clean Markdown.
+
+# Deliverables
+- A `README.md` file containing the project title and description.

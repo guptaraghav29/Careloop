@@ -1,0 +1,838 @@
+[
+  {
+    "reason": "Zod schemas provide runtime validation and TypeScript type inference for all data entities",
+    "description": "Defines Zod schemas for Account, CareTask, InsuranceVerification, and Mission entities. Exports inferred TypeScript types. Includes validation helpers for status enums and XP calculations.",
+    "dependencies": [],
+    "priority": 1,
+    "filename": "schemas_TypeScript.prompt",
+    "filepath": "lib/schemas.ts",
+    "tags": [
+      "shared",
+      "validation",
+      "types"
+    ],
+    "context_urls": [
+      {
+        "url": "https://zod.dev/?id=basic-usage",
+        "purpose": "Zod schema definition patterns"
+      },
+      {
+        "url": "https://www.typescriptlang.org/docs/handbook/2/types-from-types.html",
+        "purpose": "TypeScript type inference"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "AccountSchema",
+            "signature": "z.object({...})",
+            "returns": "Zod schema for Account"
+          },
+          {
+            "name": "CareTaskSchema",
+            "signature": "z.object({...})",
+            "returns": "Zod schema for CareTask"
+          },
+          {
+            "name": "InsuranceVerificationSchema",
+            "signature": "z.object({...})",
+            "returns": "Zod schema for InsuranceVerification"
+          },
+          {
+            "name": "MissionSchema",
+            "signature": "z.object({...})",
+            "returns": "Zod schema for Mission"
+          },
+          {
+            "name": "Account",
+            "signature": "type Account = z.infer<typeof AccountSchema>",
+            "returns": "Account type"
+          },
+          {
+            "name": "CareTask",
+            "signature": "type CareTask = z.infer<typeof CareTaskSchema>",
+            "returns": "CareTask type"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Tailwind configuration establishes the Coastal Aesthetic design system used throughout the app",
+    "description": "Extends Tailwind with custom color palette (sands, teals, soft greys), typography scale, spacing, and component variants for the healthcare dashboard aesthetic.",
+    "dependencies": [],
+    "priority": 2,
+    "filename": "tailwind_config_JavaScript.prompt",
+    "filepath": "tailwind.config.js",
+    "tags": [
+      "config",
+      "styling",
+      "design-system"
+    ],
+    "context_urls": [
+      {
+        "url": "https://tailwindcss.com/docs/customizing-colors",
+        "purpose": "Custom color palette configuration"
+      },
+      {
+        "url": "https://tailwindcss.com/docs/theme",
+        "purpose": "Theme extension patterns"
+      }
+    ],
+    "interface": {
+      "type": "config",
+      "config": {
+        "keys": [
+          {
+            "name": "theme.colors.coastal",
+            "type": "object",
+            "required": true,
+            "source": "file"
+          },
+          {
+            "name": "theme.colors.sand",
+            "type": "object",
+            "required": true,
+            "source": "file"
+          },
+          {
+            "name": "theme.colors.teal",
+            "type": "object",
+            "required": true,
+            "source": "file"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Firebase configuration initializes the Firebase app and exports shared instances for auth and Firestore",
+    "description": "Singleton Firebase initialization with environment variable configuration. Exports initialized app, auth, and db instances. Handles SSR compatibility for Next.js.",
+    "dependencies": [],
+    "priority": 3,
+    "filename": "firebase_config_TypeScript.prompt",
+    "filepath": "lib/firebase/config.ts",
+    "tags": [
+      "backend",
+      "firebase",
+      "config"
+    ],
+    "context_urls": [
+      {
+        "url": "https://firebase.google.com/docs/web/setup",
+        "purpose": "Firebase Web SDK setup"
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/web/start",
+        "purpose": "Firebase Auth initialization"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "app",
+            "signature": "export const app: FirebaseApp",
+            "returns": "Firebase app instance"
+          },
+          {
+            "name": "auth",
+            "signature": "export const auth: Auth",
+            "returns": "Firebase Auth instance"
+          },
+          {
+            "name": "db",
+            "signature": "export const db: Firestore",
+            "returns": "Firestore instance"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Firebase Auth service provides authentication hooks and utilities for HIPAA-compliant login",
+    "description": "Wraps Firebase Auth with custom hooks (useAuth, useUser). Implements sign-in/sign-out flows. Handles auth state persistence and error handling with toast notifications.",
+    "dependencies": [
+      "firebase_config_TypeScript.prompt",
+      "schemas_TypeScript.prompt"
+    ],
+    "priority": 4,
+    "filename": "firebase_auth_TypeScript.prompt",
+    "filepath": "lib/firebase/auth.ts",
+    "tags": [
+      "backend",
+      "firebase",
+      "auth"
+    ],
+    "context_urls": [
+      {
+        "url": "https://firebase.google.com/docs/auth/web/manage-users",
+        "purpose": "User management patterns"
+      },
+      {
+        "url": "https://github.com/CSFrequency/react-firebase-hooks/tree/master/auth",
+        "purpose": "React Firebase hooks patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "useAuth",
+            "signature": "() => AuthState",
+            "returns": "Auth state with user, loading, error"
+          },
+          {
+            "name": "signInWithEmail",
+            "signature": "(email: string, password: string) => Promise<UserCredential>",
+            "returns": "User credential"
+          },
+          {
+            "name": "signOut",
+            "signature": "() => Promise<void>",
+            "returns": "void"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Firestore service provides CRUD operations for all data entities with real-time subscriptions",
+    "description": "Generic Firestore operations for Account, CareTask, InsuranceVerification, and Mission collections. Includes real-time listeners, batch operations, and query builders with Zod validation.",
+    "dependencies": [
+      "firebase_config_TypeScript.prompt",
+      "schemas_TypeScript.prompt"
+    ],
+    "priority": 5,
+    "filename": "firestore_service_TypeScript.prompt",
+    "filepath": "lib/firebase/firestore.ts",
+    "tags": [
+      "backend",
+      "firebase",
+      "database"
+    ],
+    "context_urls": [
+      {
+        "url": "https://firebase.google.com/docs/firestore/manage-data/add-data",
+        "purpose": "Firestore CRUD operations"
+      },
+      {
+        "url": "https://firebase.google.com/docs/firestore/query-data/listen",
+        "purpose": "Real-time listeners"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "getAccount",
+            "signature": "(userId: string) => Promise<Account | null>",
+            "returns": "Account or null"
+          },
+          {
+            "name": "updateAccount",
+            "signature": "(userId: string, data: Partial<Account>) => Promise<void>",
+            "returns": "void"
+          },
+          {
+            "name": "subscribeToTasks",
+            "signature": "(userId: string, callback: (tasks: CareTask[]) => void) => Unsubscribe",
+            "returns": "Unsubscribe function"
+          },
+          {
+            "name": "createMission",
+            "signature": "(mission: Mission) => Promise<string>",
+            "returns": "Document ID"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "User store manages authenticated user state and account data with Zustand",
+    "description": "Zustand store for current user session. Syncs with Firebase Auth state. Caches account data locally. Handles hydration for SSR compatibility.",
+    "dependencies": [
+      "schemas_TypeScript.prompt",
+      "firebase_auth_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "user_store_TypeScript.prompt",
+    "filepath": "stores/user-store.ts",
+    "tags": [
+      "state",
+      "zustand",
+      "auth"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.pmnd.rs/zustand/getting-started/introduction",
+        "purpose": "Zustand store patterns"
+      },
+      {
+        "url": "https://docs.pmnd.rs/zustand/integrations/persisting-store-data",
+        "purpose": "Persist middleware for SSR"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "useUserStore",
+            "signature": "() => UserState",
+            "returns": "User store state and actions"
+          },
+          {
+            "name": "setUser",
+            "signature": "(user: Account | null) => void",
+            "returns": "void"
+          },
+          {
+            "name": "clearUser",
+            "signature": "() => void",
+            "returns": "void"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Gamification store manages Health XP, levels, streaks, and mission progress",
+    "description": "Zustand store for gamification state. Tracks XP accumulation, level progression, streak maintenance, and grace period logic. Syncs with Firestore for persistence.",
+    "dependencies": [
+      "schemas_TypeScript.prompt",
+      "firestore_service_TypeScript.prompt"
+    ],
+    "priority": 7,
+    "filename": "gamification_store_TypeScript.prompt",
+    "filepath": "stores/gamification-store.ts",
+    "tags": [
+      "state",
+      "zustand",
+      "gamification"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.pmnd.rs/zustand/guides/typescript",
+        "purpose": "TypeScript patterns for Zustand"
+      },
+      {
+        "url": "https://docs.pmnd.rs/zustand/guides/updating-state",
+        "purpose": "State update patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "useGamificationStore",
+            "signature": "() => GamificationState",
+            "returns": "Gamification state and actions"
+          },
+          {
+            "name": "addXP",
+            "signature": "(amount: number, source: string) => void",
+            "returns": "void"
+          },
+          {
+            "name": "completeMission",
+            "signature": "(missionId: string) => void",
+            "returns": "void"
+          },
+          {
+            "name": "useStreakFreeze",
+            "signature": "() => boolean",
+            "returns": "Success status"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "UI primitives provide reusable base components following the Coastal design system",
+    "description": "Base UI components: Button, Card, Badge, Input, Toast, Modal. Built with Radix UI primitives and styled with Tailwind. Exports consistent props interfaces.",
+    "dependencies": [
+      "tailwind_config_JavaScript.prompt"
+    ],
+    "priority": 8,
+    "filename": "ui_primitives_TypeScriptReact.prompt",
+    "filepath": "components/ui/primitives.tsx",
+    "tags": [
+      "frontend",
+      "ui",
+      "components"
+    ],
+    "context_urls": [
+      {
+        "url": "https://www.radix-ui.com/primitives/docs/overview/introduction",
+        "purpose": "Radix UI primitives"
+      },
+      {
+        "url": "https://ui.shadcn.com/docs/components/button",
+        "purpose": "Shadcn button patterns"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "variant",
+            "type": "'primary' | 'secondary' | 'ghost'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Layout components provide the main dashboard structure with sidebar and header",
+    "description": "Dashboard layout with responsive sidebar navigation, header with user menu, and main content area. Includes mobile drawer for navigation.",
+    "dependencies": [
+      "ui_primitives_TypeScriptReact.prompt",
+      "user_store_TypeScript.prompt"
+    ],
+    "priority": 9,
+    "filename": "layout_components_TypeScriptReact.prompt",
+    "filepath": "components/layout/DashboardLayout.tsx",
+    "tags": [
+      "frontend",
+      "layout",
+      "components"
+    ],
+    "context_urls": [
+      {
+        "url": "https://tailwindcss.com/docs/responsive-design",
+        "purpose": "Responsive layout patterns"
+      },
+      {
+        "url": "https://ui.shadcn.com/docs/components/sidebar",
+        "purpose": "Sidebar component patterns"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "showSidebar",
+            "type": "boolean",
+            "required": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Insurance agent service integrates with rtrvr.ai for automated coverage verification",
+    "description": "Client for rtrvr.ai API to trigger insurance verification workflows. Handles CPT code lookups, status polling, and webhook callbacks. Returns structured verification results.",
+    "dependencies": [
+      "schemas_TypeScript.prompt",
+      "firestore_service_TypeScript.prompt"
+    ],
+    "priority": 10,
+    "filename": "insurance_agent_TypeScript.prompt",
+    "filepath": "lib/services/insurance-agent.ts",
+    "tags": [
+      "backend",
+      "integration",
+      "rtrvr"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.rtrvr.ai/api-reference",
+        "purpose": "rtrvr.ai API documentation"
+      },
+      {
+        "url": "https://docs.rtrvr.ai/guides/browser-automation",
+        "purpose": "Browser automation patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "verifyInsurance",
+            "signature": "(patientId: string, cptCode: string) => Promise<InsuranceVerification>",
+            "returns": "Verification result"
+          },
+          {
+            "name": "checkVerificationStatus",
+            "signature": "(verificationId: string) => Promise<VerificationStatus>",
+            "returns": "Current status"
+          },
+          {
+            "name": "getVerificationHistory",
+            "signature": "(patientId: string) => Promise<InsuranceVerification[]>",
+            "returns": "History array"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Audio briefing service integrates ElevenLabs for voice synthesis",
+    "description": "ElevenLabs Web SDK integration for generating and playing audio briefings. Handles text-to-speech requests, audio streaming, and playback via Web Audio API.",
+    "dependencies": [
+      "schemas_TypeScript.prompt",
+      "user_store_TypeScript.prompt"
+    ],
+    "priority": 11,
+    "filename": "audio_briefing_TypeScript.prompt",
+    "filepath": "lib/services/audio-briefing.ts",
+    "tags": [
+      "backend",
+      "integration",
+      "audio"
+    ],
+    "context_urls": [
+      {
+        "url": "https://elevenlabs.io/docs/api-reference/text-to-speech",
+        "purpose": "ElevenLabs TTS API"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API",
+        "purpose": "Web Audio API for playback"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "generateBriefing",
+            "signature": "(text: string, voiceId?: string) => Promise<ArrayBuffer>",
+            "returns": "Audio buffer"
+          },
+          {
+            "name": "playBriefing",
+            "signature": "(audioBuffer: ArrayBuffer) => Promise<void>",
+            "returns": "void"
+          },
+          {
+            "name": "generateDailySummary",
+            "signature": "(userId: string) => Promise<string>",
+            "returns": "Summary text"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "CareBot chat component provides the AI assistant interface for natural language requests",
+    "description": "Persistent sidebar chat interface for CareBot. Handles message input, conversation display, typing indicators, and intent routing for scheduling and pharmacy requests.",
+    "dependencies": [
+      "ui_primitives_TypeScriptReact.prompt",
+      "schemas_TypeScript.prompt",
+      "user_store_TypeScript.prompt"
+    ],
+    "priority": 12,
+    "filename": "carebot_chat_TypeScriptReact.prompt",
+    "filepath": "src/components/ChatInterface.tsx",
+    "tags": [
+      "frontend",
+      "chat",
+      "ai"
+    ],
+    "context_urls": [
+      {
+        "url": "https://ui.shadcn.com/docs/components/chat",
+        "purpose": "Chat UI patterns"
+      },
+      {
+        "url": "https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot",
+        "purpose": "AI chatbot patterns"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "isOpen",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "onClose",
+            "type": "() => void",
+            "required": true
+          },
+          {
+            "name": "userId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "emits": [
+          "messageSubmit",
+          "intentDetected"
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Timeline view component visualizes upcoming care tasks with interactive SVG",
+    "description": "SVG-based timeline showing labs, medications, and appointments. Supports zoom, pan, and click interactions. Color-coded by task type with status indicators.",
+    "dependencies": [
+      "ui_primitives_TypeScriptReact.prompt",
+      "schemas_TypeScript.prompt",
+      "firestore_service_TypeScript.prompt"
+    ],
+    "priority": 13,
+    "filename": "timeline_view_TypeScriptReact.prompt",
+    "filepath": "components/features/TimelineView.tsx",
+    "tags": [
+      "frontend",
+      "visualization",
+      "svg"
+    ],
+    "context_urls": [
+      {
+        "url": "https://github.com/netzwerg/react-svg-timeline",
+        "purpose": "SVG timeline library"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial",
+        "purpose": "SVG fundamentals"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "tasks",
+            "type": "CareTask[]",
+            "required": true
+          },
+          {
+            "name": "onTaskClick",
+            "type": "(task: CareTask) => void",
+            "required": false
+          },
+          {
+            "name": "dateRange",
+            "type": "{ start: Date; end: Date }",
+            "required": false
+          }
+        ],
+        "emits": [
+          "taskClick",
+          "rangeChange"
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Mission center component displays health quests and progress tracking",
+    "description": "Grid of available and completed missions. Shows XP rewards, progress bars, and completion status. Handles mission claiming and streak displays.",
+    "dependencies": [
+      "ui_primitives_TypeScriptReact.prompt",
+      "schemas_TypeScript.prompt",
+      "gamification_store_TypeScript.prompt"
+    ],
+    "priority": 14,
+    "filename": "mission_center_TypeScriptReact.prompt",
+    "filepath": "components/features/MissionCenter.tsx",
+    "tags": [
+      "frontend",
+      "gamification",
+      "missions"
+    ],
+    "context_urls": [
+      {
+        "url": "https://tailwindcss.com/docs/grid-template-columns",
+        "purpose": "Grid layout for mission cards"
+      },
+      {
+        "url": "https://ui.shadcn.com/docs/components/progress",
+        "purpose": "Progress bar component"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "missions",
+            "type": "Mission[]",
+            "required": true
+          },
+          {
+            "name": "onMissionClaim",
+            "type": "(missionId: string) => void",
+            "required": true
+          },
+          {
+            "name": "userLevel",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "emits": [
+          "missionClaim",
+          "missionView"
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Insurance checker component provides UI for triggering and displaying verification status",
+    "description": "Card component showing insurance verification status with color-coded indicators (green/amber/red). Triggers rtrvr.ai verification workflow and displays real-time updates.",
+    "dependencies": [
+      "ui_primitives_TypeScriptReact.prompt",
+      "schemas_TypeScript.prompt",
+      "insurance_agent_TypeScript.prompt"
+    ],
+    "priority": 15,
+    "filename": "insurance_checker_TypeScriptReact.prompt",
+    "filepath": "components/features/InsuranceChecker.tsx",
+    "tags": [
+      "frontend",
+      "insurance",
+      "verification"
+    ],
+    "context_urls": [
+      {
+        "url": "https://ui.shadcn.com/docs/components/badge",
+        "purpose": "Status badge styling"
+      },
+      {
+        "url": "https://ui.shadcn.com/docs/components/card",
+        "purpose": "Card component patterns"
+      }
+    ],
+    "interface": {
+      "type": "component",
+      "component": {
+        "props": [
+          {
+            "name": "patientId",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "cptCode",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onVerificationComplete",
+            "type": "(result: InsuranceVerification) => void",
+            "required": false
+          }
+        ],
+        "emits": [
+          "verificationStart",
+          "verificationComplete"
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Root layout provides the app shell with providers and global styles",
+    "description": "Next.js App Router root layout. Wraps app with Zustand providers, Toast provider, and global CSS. Sets metadata and fonts.",
+    "dependencies": [
+      "tailwind_config_JavaScript.prompt",
+      "user_store_TypeScript.prompt",
+      "gamification_store_TypeScript.prompt"
+    ],
+    "priority": 16,
+    "filename": "root_layout_TypeScriptReact.prompt",
+    "filepath": "src/app/layout.tsx",
+    "tags": [
+      "frontend",
+      "layout",
+      "nextjs"
+    ],
+    "context_urls": [
+      {
+        "url": "https://nextjs.org/docs/app/building-your-application/routing/layouts-and-templates",
+        "purpose": "Next.js layouts"
+      },
+      {
+        "url": "https://nextjs.org/docs/app/building-your-application/optimizing/metadata",
+        "purpose": "Metadata configuration"
+      }
+    ],
+    "interface": {
+      "type": "page",
+      "page": {
+        "route": "/",
+        "params": [],
+        "dataSources": []
+      }
+    }
+  },
+  {
+    "reason": "Dashboard page is the main authenticated view integrating all feature components",
+    "description": "Main dashboard page combining TimelineView, MissionCenter, InsuranceChecker, and CareBotChat. Fetches user data and tasks. Handles audio briefing playback on login.",
+    "dependencies": [
+      "root_layout_TypeScriptReact.prompt",
+      "layout_components_TypeScriptReact.prompt",
+      "timeline_view_TypeScriptReact.prompt",
+      "mission_center_TypeScriptReact.prompt",
+      "insurance_checker_TypeScriptReact.prompt",
+      "carebot_chat_TypeScriptReact.prompt",
+      "audio_briefing_TypeScript.prompt",
+      "firestore_service_TypeScript.prompt"
+    ],
+    "priority": 17,
+    "filename": "dashboard_page_TypeScriptReact.prompt",
+    "filepath": "src/app/page.tsx",
+    "tags": [
+      "frontend",
+      "page",
+      "dashboard"
+    ],
+    "context_urls": [
+      {
+        "url": "https://nextjs.org/docs/app/building-your-application/data-fetching",
+        "purpose": "Data fetching patterns"
+      },
+      {
+        "url": "https://tailwindcss.com/docs/grid-template-columns",
+        "purpose": "Dashboard grid layout"
+      }
+    ],
+    "interface": {
+      "type": "page",
+      "page": {
+        "route": "/dashboard",
+        "params": [],
+        "dataSources": [
+          {
+            "kind": "api",
+            "source": "Firestore",
+            "method": "subscription",
+            "description": "Real-time user account and tasks"
+          },
+          {
+            "kind": "api",
+            "source": "Firestore",
+            "method": "query",
+            "description": "Missions for current user"
+          }
+        ]
+      }
+    }
+  }
+]
