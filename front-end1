@@ -1,0 +1,457 @@
+import React, { useState, useEffect } from 'react';
+import { Calendar, Pill, Shield, Award, TrendingUp, Clock, CheckCircle, AlertCircle, Phone, MessageSquare, Bell, ChevronRight, Sparkles, Heart, Activity, Zap, Star } from 'lucide-react';
+
+const CareLoop = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [showNotification, setShowNotification] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+
+  useEffect(() => {
+    setAnimateIn(true);
+    setTimeout(() => setShowNotification(true), 1500);
+  }, []);
+
+  // Mock user data
+  const userData = {
+    name: "Sarah Chen",
+    healthXP: 2840,
+    level: 7,
+    nextLevelXP: 3000,
+    streak: 12,
+    appointments: [
+      { id: 1, type: "Endocrinologist", date: "Mar 15, 2026", time: "9:00 AM", doctor: "Dr. Jennifer Martinez", status: "verified", prep: "Fasting required - 8 hours" },
+      { id: 2, type: "Annual Eye Exam", date: "Mar 22, 2026", time: "2:30 PM", doctor: "Dr. Robert Kim", status: "verified" },
+      { id: 3, type: "Lab Work - HbA1c", date: "Mar 8, 2026", time: "7:00 AM", doctor: "Quest Diagnostics", status: "pending" }
+    ],
+    medications: [
+      { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94 },
+      { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98 },
+      { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96 }
+    ],
+    missions: [
+      { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: Shield },
+      { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: Activity },
+      { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: Zap }
+    ],
+    insights: [
+      { type: "success", message: "Insurance verified for all upcoming appointments", icon: CheckCircle },
+      { type: "action", message: "Prescription refill ready for pickup at CVS", icon: Pill },
+      { type: "reminder", message: "Fasting required before tomorrow's lab work", icon: AlertCircle }
+    ]
+  };
+
+  const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (progress / 100) * circumference;
+
+    return (
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="rgba(134, 191, 157, 0.2)"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="url(#gradient)"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+        />
+        <defs>
+          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#86BF9D" />
+            <stop offset="100%" stopColor="#5A9B73" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  };
+
+  const DashboardView = () => (
+    <div className="space-y-6">
+      {/* Hero Section with Health Stats */}
+      <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
+        
+        <div className="relative flex items-start justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome back, {userData.name.split(' ')[0]}! 👋</h2>
+            <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
+                <div className="text-xs text-gray-500 font-medium">Level</div>
+              </div>
+            </div>
+            <div className="mt-3 text-center">
+              <div className="text-sm font-semibold text-gray-700">{userData.healthXP} / {userData.nextLevelXP} XP</div>
+              <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Streak Counter */}
+        <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
+          <Zap className="w-6 h-6 text-amber-500 fill-amber-500" />
+          <div>
+            <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
+            <div className="text-xs text-gray-600 font-medium">Current streak</div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Insights */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-emerald-500" />
+          AI Insights
+        </h3>
+        {userData.insights.map((insight, idx) => (
+          <div 
+            key={idx}
+            className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
+              insight.type === 'success' ? 'bg-emerald-50 border-emerald-200' :
+              insight.type === 'action' ? 'bg-blue-50 border-blue-200' :
+              'bg-amber-50 border-amber-200'
+            }`}
+            style={{ animationDelay: `${idx * 0.1}s` }}
+          >
+            <insight.icon className={`w-5 h-5 flex-shrink-0 ${
+              insight.type === 'success' ? 'text-emerald-600' :
+              insight.type === 'action' ? 'text-blue-600' :
+              'text-amber-600'
+            }`} />
+            <p className="text-gray-700 font-medium">{insight.message}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-4">
+        <button className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group">
+          <MessageSquare className="w-8 h-8 mb-3 group-hover:rotate-12 transition-transform" />
+          <div className="font-bold text-lg">Talk to Agent</div>
+          <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
+        </button>
+        <button className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group">
+          <Calendar className="w-8 h-8 mb-3 group-hover:rotate-12 transition-transform" />
+          <div className="font-bold text-lg">Schedule Visit</div>
+          <div className="text-blue-100 text-sm mt-1">Book appointment</div>
+        </button>
+      </div>
+
+      {/* Active Missions */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <Award className="w-5 h-5 text-amber-500" />
+          Active Missions
+        </h3>
+        {userData.missions.map((mission, idx) => (
+          <div 
+            key={mission.id} 
+            className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                  <mission.icon className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800">{mission.title}</h4>
+                  <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
+                <div className="text-xs text-gray-500">{mission.deadline}</div>
+              </div>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                style={{ width: `${mission.progress}%` }}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const AppointmentsView = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
+        <button className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          Schedule New
+        </button>
+      </div>
+
+      {userData.appointments.map((apt, idx) => (
+        <div 
+          key={apt.id}
+          className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
+                {apt.status === 'verified' && (
+                  <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+                    <CheckCircle className="w-3 h-3" />
+                    Insurance Verified
+                  </span>
+                )}
+                {apt.status === 'pending' && (
+                  <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
+                    <Clock className="w-3 h-3" />
+                    Verifying
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1 text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{apt.date} at {apt.time}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  <span>{apt.doctor}</span>
+                </div>
+                {apt.prep && (
+                  <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">Reschedule</button>
+              <button className="text-gray-500 hover:text-gray-600 font-semibold text-sm">Cancel</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const MedicationsView = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+        <button className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2">
+          <Pill className="w-4 h-4" />
+          Add Medication
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {userData.medications.map((med, idx) => (
+          <div 
+            key={med.id}
+            className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-emerald-200 transition-all"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-1">{med.name}</h3>
+                <p className="text-gray-600">{med.dose} • {med.frequency}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
+                <div className="text-xs text-gray-500">Adherence</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span className="font-semibold text-gray-700">{med.streak} day streak</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">Next: {med.nextDose}</span>
+              </div>
+            </div>
+
+            <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                style={{ width: `${med.adherence}%` }}
+              ></div>
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              <button className="flex-1 bg-emerald-50 text-emerald-700 py-2 rounded-xl font-semibold hover:bg-emerald-100 transition-colors">
+                Mark Taken
+              </button>
+              <button className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
+                Details
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pharmacy Info */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+            <Pill className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
+            <p className="text-gray-600 text-sm mb-3">Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.</p>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm">
+              Get Directions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
+      {/* Floating notification */}
+      {showNotification && (
+        <div 
+          className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm animate-slide-in-right z-50"
+          style={{
+            animation: 'slideInRight 0.5s ease-out'
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <div className="font-bold text-gray-800">AI Agent Update</div>
+              <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
+            </div>
+            <button 
+              onClick={() => setShowNotification(false)}
+              className="text-gray-400 hover:text-gray-600 ml-auto"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <header className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                <Heart className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  CareLoop
+                </h1>
+                <p className="text-sm text-gray-500 font-medium">Your AI Healthcare Companion</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                <Bell className="w-6 h-6 text-gray-600" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              <button className="p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                <Phone className="w-6 h-6 text-gray-600" />
+              </button>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
+                SC
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Navigation */}
+        <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
+          <div className="flex gap-2">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+              { id: 'appointments', label: 'Appointments', icon: Calendar },
+              { id: 'medications', label: 'Medications', icon: Pill },
+              { id: 'insurance', label: 'Insurance', icon: Shield }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <tab.icon className="w-5 h-5" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className={`transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {activeTab === 'dashboard' && <DashboardView />}
+          {activeTab === 'appointments' && <AppointmentsView />}
+          {activeTab === 'medications' && <MedicationsView />}
+          {activeTab === 'insurance' && (
+            <div className="bg-white rounded-2xl p-8 border-2 border-gray-100">
+              <div className="text-center py-12">
+                <Shield className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Insurance Dashboard</h2>
+                <p className="text-gray-600">All your coverage information, eligibility checks, and claims in one place.</p>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * {
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        button {
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default CareLoop;

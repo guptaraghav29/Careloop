@@ -1,0 +1,99 @@
+import json
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+
+@dataclass
+class ToolCall:
+    tool_name: str
+    arguments: Dict[str, Any]
+
+class CareLoopAgent:
+    """
+    Orchestrator for the CareLoop AI Healthcare Agent.
+    Integrates with Toolhouse-style tools to manage appointments and medications.
+    """
+
+    def __init__(self, user_id: str, provider_npi: Optional[str] = None):
+        self.user_id = user_id
+        self.provider_npi = provider_npi
+        self.system_prompt = """
+        Role: You are an intelligent healthcare scheduling assistant.
+        Rules:
+        1. Intent Recognition: Identify if the user wants to Book, Reschedule, Cancel, or Query.
+        2. Conflict Detection: Check the Current Calendar State.
+        3. Provider Constraints: Only book slots in Provider Availability.
+        4. Confirmation: Always ask for explicit confirmation.
+        5. Tone: Empathetic and efficient.
+        """
+
+    def process_request(self, user_input: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Processes natural language input and determines the necessary tool calls.
+        """
+        # In a real implementation, this would call the LLM (e.g., Claude 3.5 Sonnet)
+        # Here we simulate the logic defined in the appointment_manager.prompt
+        
+        intent = self._identify_intent(user_input)
+        
+        if "missed" in user_input.lower() and "metformin" in user_input.lower():
+            return self._handle_medication_adherence(user_input)
+            
+        if intent in ["Book", "Reschedule"]:
+            return self._handle_appointment_logic(user_input, context)
+            
+        return {
+            "action_taken": "clarification_requested",
+            "user_response_text": "I'm here to help. Could you provide more details about your request?",
+            "tool_calls": []
+        }
+
+    def _identify_intent(self, text: str) -> str:
+        text = text.lower()
+        if "reschedule" in text or "move" in text:
+            return "Reschedule"
+        if "cancel" in text:
+            return "Cancel"
+        if "book" in text or "schedule" in text:
+            return "Book"
+        return "Query"
+
+    def _handle_medication_adherence(self, input_text: str) -> Dict[str, Any]:
+        # Logic from section 3.1
+        return {
+            "action_taken": "medication_logged",
+            "user_response_text": "It's okay. Since it's been less than 4 hours, take it now. I've updated your log.",
+            "tool_calls": [
+                {"tool": "database_query_meds", "params": {"med_name": "Metformin"}},
+                {"tool": "gamification_update_streak", "params": {"action": "reset_freeze"}}
+            ]
+        }
+
+    def _handle_appointment_logic(self, input_text: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        # Logic from section 2 (Appointment Manager Logic)
+        has_conflict = context.get("has_conflict", False)
+        
+        if has_conflict:
+            return {
+                "action_taken": "conflict_detected",
+                "user_response_text": "I see a conflict. Would you like to move it to Tuesday at 10 AM, 2 PM, or 4 PM?",
+                "tool_calls": []
+            }
+            
+        return {
+            "action_taken": "pending_confirmation",
+            "user_response_text": f"I can help with that. Should I proceed with {input_text}?",
+            "tool_calls": []
+        }
+
+if __name__ == "__main__":
+    # Example usage of the Agent Orchestrator
+    agent = CareLoopAgent(user_id="uuid-123")
+    
+    # Scenario: Medication adherence
+    med_response = agent.process_request("I missed my Metformin this morning.", {})
+    print(f"Medication Response: {json.dumps(med_response, indent=2)}")
+    
+    # Scenario: Appointment rescheduling with conflict
+    appt_context = {"has_conflict": True}
+    appt_response = agent.process_request("Move my physical to Friday", appt_context)
+    print(f"Appointment Response: {json.dumps(appt_response, indent=2)}")
