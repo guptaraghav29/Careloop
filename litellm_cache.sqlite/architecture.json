@@ -1,25 +1,72 @@
 {
-    "name": "HealthAgent",
-    "description": "HIPAA-compliant agent that synthesizes HealthKit data for clinical review.",
+    "name": "HealthBridge Agent",
+    "description": "A HIPAA-aligned agent that synthesizes Apple HealthKit data into clinical summaries for healthcare providers.",
     "tech_stack": [
         "SwiftUI",
         "HealthKit",
+        "React",
         "ElevenLabs",
-        "FHIR-R4"
+        "rtrvr.ai"
+    ],
+    "components": [
+        {
+            "name": "PatientVitalsDashboard",
+            "description": "A SwiftUI-based view for patients to authorize and view HealthKit sync status."
+        },
+        {
+            "name": "DoctorBriefingView",
+            "description": "A web-based interface for clinicians to view agent-generated health summaries."
+        },
+        {
+            "name": "VoiceSynthesisModule",
+            "description": "Integration with ElevenLabs to provide audio handoffs for doctors."
+        }
     ],
     "capabilities": [
         {
-            "name": "ClinicalSync",
-            "description": "Fetches FHIR records and Vitals using HKAnchoredObjectQuery."
+            "name": "HealthKitDataIngestion",
+            "description": "Syncing heart rate, HRV, and sleep data via HKAnchoredObjectQuery."
         },
         {
-            "name": "VoiceBriefing",
-            "description": "ElevenLabs-powered summary for doctors to hear patient status 'eyes-free'."
+            "name": "AgenticSummarization",
+            "description": "Using rtrvr to analyze 7-day trends and generate clinical insights."
+        },
+        {
+            "name": "SecureProviderSharing",
+            "description": "Exporting data in FHIR-compliant JSON formats for doctor review."
         }
     ],
     "data_models": [
-        "VitalsSummary",
-        "EHRConnection",
-        "PatientAuth"
+        {
+            "name": "VitalsSnapshot",
+            "fields": [
+                "heart_rate",
+                "hrv",
+                "timestamp",
+                "patient_id"
+            ]
+        },
+        {
+            "name": "ClinicalInsight",
+            "fields": [
+                "summary_text",
+                "severity_level",
+                "suggested_action"
+            ]
+        }
+    ],
+    "milestones": [
+        {
+            "name": "HealthKit Integration",
+            "description": "Establish baseline data sync from Apple Health."
+        },
+        {
+            "name": "Agent Intelligence",
+            "description": "Connect rtrvr to synthesize raw data into human-readable insights."
+        },
+        {
+            "name": "Provider Portal",
+            "description": "Deliver the final dashboard and voice briefing interface."
+        }
     ]
 }
