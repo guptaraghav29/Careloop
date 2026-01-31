@@ -1,0 +1,35 @@
+Generate a JSON log file representing a failed execution state of the `pdd` CLI tool, specifically capturing a `KeyboardInterrupt` during an agentic fix workflow.
+
+### Role and Scope
+The module serves as a diagnostic execution log (PDD state file) for the `pdd-cli` tool. It records the environment, configuration, execution steps, and terminal output of a failed attempt to fix a GitHub issue using an agentic workflow.
+
+### Requirements
+1. **Schema Metadata**: Must include `schema_version`, `pdd_version` (0.0.135), and a UTC timestamp.
+2. **Execution Context**: Capture the `argv` (fix command with a GitHub issue URL), `cwd`, and detailed `platform` information (Darwin/macOS details and Python version).
+3. **Global Options**: Reflect the CLI state including `force`, `strength`, `temperature`, and `time` (0.25).
+4. **Error Handling**: 
+    - Must record a `KeyboardInterrupt` error type.
+    - Must include a full Python `traceback` showing the interrupt occurring within `subprocess.run` during a `github_save_state` operation.
+5. **Environment Mapping**: Include the system `PATH` and the specific `PDD_PATH` pointing to the site-packages directory.
+6. **Terminal Output**: Provide a detailed `terminal_output` string that simulates a multi-cycle agentic fix process where agent providers are missing, leading to repeated step failures, ending with an "Interrupted by user" message.
+
+### Dependencies
+<pdd_cli_core>
+    <include>context/pdd_cli_example.py</include>
+</pdd_cli_core>
+<agentic_orchestrator>
+    <include>context/agentic_e2e_fix_orchestrator_example.py</include>
+</agentic_orchestrator>
+
+### Instructions
+1. **Structure**: Create a JSON object following the PDD execution log format.
+2. **Traceback Simulation**: Construct a realistic Python traceback that starts from `pdd.core.cli.invoke` and drills down through `pdd.commands.fix`, `pdd.agentic_e2e_fix_orchestrator`, and finally into the `subprocess` module where the `KeyboardInterrupt` is caught.
+3. **Terminal Log Simulation**: 
+    - Start with "Checking for updates..." and "Fetching issue...".
+    - Simulate two cycles of the "Agentic E2E Fix".
+    - For each step (1-9), log "No agent providers are available".
+    - End the log with "Interrupted by user. Saving state...".
+4. **Values**: Use `0.0` for `total_cost` and an empty list for `steps` since the process was interrupted before completion.
+
+### Deliverables
+- A single JSON file containing the complete execution state and error log.

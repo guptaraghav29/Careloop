@@ -1,0 +1,28 @@
+Role and Scope:
+You are a system configuration specialist. Your responsibility is to generate a "PDD Setup Complete" summary message that confirms the successful installation and configuration of the Prompt-Driven Development (PDD) environment. This message serves as a final report for the user, detailing the API keys, file paths, and next steps for using the PDD CLI tool.
+
+Requirements:
+1. Visual Formatting: Use ASCII art borders (━━━━━━━━, ────────────────) and clear section headers to make the summary readable.
+2. Configuration Details: List the configured API keys (specifically GEMINI_API_KEY with a masked value) and a list of all created files/directories (e.g., ~/.pdd/, api-env.zsh, llm_model.csv, success_python.prompt, .zshrc, and the summary text file).
+3. Quick Start Instructions: Provide clear, numbered steps for the user to reload their shell environment and run their first 'pdd generate' command.
+4. Documentation & Support: Include links to PDD documentation, the website, and the Discord community.
+5. Pro-Tips: Include a "TIPS" section covering shell reloading, 'pdd test', 'pdd example', configuration settings (.pddrc), and optimization via llm_model.csv.
+6. Shell Specifics: Explicitly mention the zsh shell and the specific path to the user's .zshrc and api-env.zsh files.
+
+Dependencies:
+<pdd_cli_docs>
+    <include>context/pdd_cli_help_output.txt</include>
+</pdd_cli_docs>
+<environment_config>
+    <include>context/api_env_template.zsh</include>
+</environment_config>
+
+Instructions:
+1. Generate the output as a plain text summary suitable for terminal display.
+2. Use the specific path `/Users/kenniongubler/` for all file references as seen in the target environment.
+3. Ensure the "QUICK START" section highlights the `source` command as the immediate next step.
+4. In the "TIPS" section, emphasize the importance of reloading the shell environment.
+5. Maintain a professional and encouraging tone to welcome the user to the PDD community.
+
+Deliverables:
+- A single text-based summary file (PDD-SETUP-SUMMARY.txt) containing the formatted setup report.

@@ -1,0 +1,31 @@
+Generate a JSON-formatted execution report for a CLI tool named "PDD" that captures the environment state, configuration, and terminal output of a specific command execution.
+
+### Requirements
+1. **Schema Versioning**: The output must include `schema_version` (integer) and `pdd_version` (string).
+2. **Execution Metadata**: Capture the `timestamp_utc`, the command-line arguments (`argv`), and the current working directory (`cwd`).
+3. **Platform Information**: Detail the host system (`system`, `release`, `version`) and the specific Python version used.
+4. **Global Configuration**: Include a `global_options` object capturing flags such as `force`, `strength`, `temperature`, `time`, `verbose`, `quiet`, `local`, and `context`.
+5. **Execution State**: Provide placeholders for `invoked_subcommands`, `total_cost`, `steps`, and `errors`.
+6. **Environment Context**: Capture relevant environment variables, specifically `PATH`, `PDD_PATH`, and `PDD_ENV`.
+7. **Output Capture**: Include a `terminal_output` string that captures the full STDOUT/STDERR log, including server startup messages, port redirection, cloud registration warnings, and request logs.
+
+### Dependencies
+<pdd_core_schemas>
+    <include>context/pdd_report_schema_example.json</include>
+</pdd_core_schemas>
+<system_info_provider>
+    <include>context/system_info_provider_example.py</include>
+</system_info_provider>
+
+### Instructions
+1. **Structure**: Create a flat JSON structure for metadata and nested objects for `platform`, `global_options`, and `environment`.
+2. **Data Population**:
+    - Set `pdd_version` to "0.0.135".
+    - Set `argv` to `["connect"]`.
+    - Populate `platform` with Darwin/macOS specific kernel and Python 3.12 details.
+    - In `global_options`, set `time` to 0.25 and all other flags to their default/null states.
+3. **Environment Mapping**: Ensure the `PATH` reflects a macOS environment with `homebrew`, `anaconda`, and local `uv` tool paths.
+4. **Terminal Log Simulation**: The `terminal_output` must reflect a "connect" command sequence: checking for updates, handling a port collision (9876 to 9877), a failed cloud registration due to "Account approval pending", and the subsequent local server logs with GET request history.
+
+### Deliverables
+- A single JSON file containing the complete execution report for the `connect` command.

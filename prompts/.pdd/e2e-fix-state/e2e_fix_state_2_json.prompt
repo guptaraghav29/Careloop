@@ -1,0 +1,26 @@
+Generate a JSON state file representing the execution status of an end-to-end (e2e) bug fixing workflow for a GitHub issue. This file serves as the persistent state for tracking progress, costs, and step-by-step execution results.
+
+### Requirements
+1. **Workflow Metadata**: Must include the workflow type ('e2e_fix'), the target GitHub issue URL, the issue number, and the current execution cycle.
+2. **Step Tracking**: Maintain a 'step_outputs' object mapping step numbers (1-7) to their execution status. In this instance, all steps should reflect a failure due to missing agent providers.
+3. **State Management**: Track the 'last_completed_step' (0 if none succeeded), 'dev_unit_states' (empty object), and 'changed_files' (empty list).
+4. **Resource Accounting**: Include 'total_cost' (0.0) and 'model_used' ('unknown').
+5. **Audit Trail**: Include a 'last_saved_at' ISO timestamp and a 'github_comment_id' for reference.
+
+### Dependencies
+<workflow_schema>
+  <include>context/workflow_state_schema.json</include>
+</workflow_schema>
+<github_integration>
+  <include>context/github_api_example.py</include>
+</github_integration>
+
+### Instructions
+- Initialize the JSON object with the specific issue details for 'guptaraghav29/PDD-Hackathon/issues/2'.
+- Set the 'current_cycle' to 2.
+- Populate 'step_outputs' for keys "1" through "7" with the specific error message: "FAILED: No agent providers are available (check CLI installation and API keys)".
+- Ensure the 'last_saved_at' field uses a valid UTC ISO 8601 format.
+- The 'github_comment_id' should be set to 3829197544.
+
+### Deliverables
+- A single JSON file containing the serialized state of the e2e_fix workflow.
