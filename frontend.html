@@ -1,420 +1,289 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareLoop Front-End 1</title>
+    <title>CareLoop (Single-File Demo)</title>
+
+    <!-- Tailwind (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/lucide-react@0.378.0/dist/umd/lucide-react.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      }
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
   </head>
-  <body class="bg-slate-50">
+
+  <body class="min-h-screen">
     <div id="root"></div>
 
+    <!-- React (UMD) + Babel (for JSX in-browser) -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide (non-React) -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
     <script type="text/babel">
-      const { useState, useEffect } = React;
-      const {
-        Calendar,
-        Pill,
-        Shield,
-        Award,
-        TrendingUp,
-        Clock,
-        CheckCircle,
-        AlertCircle,
-        Phone,
-        MessageSquare,
-        Bell,
-        ChevronRight,
-        Sparkles,
-        Heart,
-        Activity,
-        Zap,
-        Star,
-        X,
-        Plus,
-        MapPin,
-        DollarSign,
-        FileText,
-        ChevronDown,
-        ChevronUp,
-        Building,
-        User,
-        CreditCard
-      } = lucideReact;
+      const { useEffect, useMemo, useState } = React;
+
+      // Simple icon wrapper: lucide will replace <i data-lucide="..."> with an <svg>
+      const Icon = ({ name, className = "" }) => (
+        <i data-lucide={name} className={className}></i>
+      );
 
       const CareLoop = () => {
-        const [activeTab, setActiveTab] = useState('dashboard');
+        const [activeTab, setActiveTab] = useState("dashboard");
         const [showNotification, setShowNotification] = useState(false);
         const [animateIn, setAnimateIn] = useState(false);
         const [expandedAppointment, setExpandedAppointment] = useState(null);
+
         const [showAddMedication, setShowAddMedication] = useState(false);
         const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
         const [showReschedule, setShowReschedule] = useState(false);
         const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
         const [showFileClaim, setShowFileClaim] = useState(false);
         const [showFindProviders, setShowFindProviders] = useState(false);
+
         const [selectedAppointment, setSelectedAppointment] = useState(null);
+
         const [medications, setMedications] = useState([
           { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
           { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
           { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
         ]);
-        const [appointments, setAppointments] = useState([
-          {
-            id: 1,
-            provider: "Dr. Sarah Chen",
-            specialty: "Endocrinology",
-            date: "Tomorrow",
-            time: "2:30 PM",
-            location: "Medical Center - Suite 402",
-            type: "Follow-up",
-            status: "upcoming",
-            notes: "Review blood glucose trends"
-          },
-          {
-            id: 2,
-            provider: "Dr. Michael Rodriguez",
-            specialty: "Primary Care",
-            date: "Jan 28",
-            time: "10:00 AM",
-            location: "Downtown Clinic",
-            type: "Annual Physical",
-            status: "completed",
-            notes: "Discussed lifestyle modifications"
-          },
-          {
-            id: 3,
-            provider: "Lisa Thompson",
-            specialty: "Nutritionist",
-            date: "Feb 5",
-            time: "11:00 AM",
-            location: "Virtual",
-            type: "Consultation",
-            status: "upcoming",
-            notes: "Meal planning session"
+
+        const [newMedication, setNewMedication] = useState({
+          name: "",
+          dose: "",
+          frequency: "Once daily",
+          time: "08:00"
+        });
+
+        const [newAppointment, setNewAppointment] = useState({
+          type: "",
+          doctor: "",
+          date: "",
+          time: "",
+          reason: ""
+        });
+
+        // Mock user data
+        const userData = useMemo(() => ({
+          name: "Sarah Chen",
+          healthXP: 2840,
+          level: 7,
+          nextLevelXP: 3000,
+          streak: 12,
+          appointments: [
+            {
+              id: 1,
+              type: "Endocrinologist",
+              date: "Mar 15, 2026",
+              time: "9:00 AM",
+              doctor: "Dr. Jennifer Martinez",
+              status: "verified",
+              prep: "Fasting required - 8 hours",
+              location: "City Medical Center, 123 Health Ave, Suite 400",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$25",
+                coverage: "100% covered - In Network",
+                authRequired: false
+              },
+              notes: "Bring recent glucose logs. Discuss HbA1c results from March 8th lab work.",
+              reason: "Quarterly diabetes management check-up"
+            },
+            {
+              id: 2,
+              type: "Annual Eye Exam",
+              date: "Mar 22, 2026",
+              time: "2:30 PM",
+              doctor: "Dr. Robert Kim",
+              status: "verified",
+              location: "Vision Care Specialists, 456 Optical Blvd",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$0",
+                coverage: "100% covered - Preventive Care",
+                authRequired: false
+              },
+              notes: "Diabetic retinopathy screening included.",
+              reason: "Annual diabetic eye exam (required)"
+            },
+            {
+              id: 3,
+              type: "Lab Work - HbA1c",
+              date: "Mar 8, 2026",
+              time: "7:00 AM",
+              doctor: "Quest Diagnostics",
+              status: "pending",
+              location: "Quest Diagnostics - Downtown, 789 Lab Street",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$0",
+                coverage: "Verifying coverage...",
+                authRequired: false
+              },
+              notes: "Fasting required - 8-12 hours. Water is okay.",
+              reason: "Quarterly diabetes monitoring"
+            }
+          ],
+          missions: [
+            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
+            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
+            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
+          ],
+          insights: [
+            { type: "success", message: "Insurance verified for all upcoming appointments", icon: "check-circle" },
+            { type: "action", message: "Prescription refill ready for pickup at CVS", icon: "pill" },
+            { type: "reminder", message: "Fasting required before tomorrow's lab work", icon: "alert-circle" }
+          ],
+          insurance: {
+            provider: "Blue Cross Blue Shield PPO",
+            memberId: "BCB123456789",
+            groupNumber: "GRP-9876",
+            effectiveDate: "Jan 1, 2026",
+            deductible: { individual: 1500, met: 450, remaining: 1050 },
+            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
+            coverage: {
+              inNetwork: "80% after deductible",
+              outOfNetwork: "60% after deductible",
+              preventiveCare: "100% covered"
+            }
           }
-        ]);
-        const [claims, setClaims] = useState([
-          { id: 1, service: "Lab Work", date: "Jan 10", amount: 245.0, status: "processed", covered: 196.0 },
-          { id: 2, service: "Specialist Visit", date: "Jan 15", amount: 350.0, status: "pending", covered: null },
-          { id: 3, service: "Prescription", date: "Jan 20", amount: 85.0, status: "approved", covered: 68.0 }
-        ]);
-        const [careTeam] = useState([
-          {
-            id: 1,
-            name: "Dr. Sarah Chen",
-            role: "Endocrinologist",
-            rating: 4.9,
-            nextAvailable: "Today",
-            experience: "12 yrs",
-            status: "online"
-          },
-          {
-            id: 2,
-            name: "Dr. Michael Rodriguez",
-            role: "Primary Care",
-            rating: 4.8,
-            nextAvailable: "Tomorrow",
-            experience: "8 yrs",
-            status: "busy"
-          },
-          {
-            id: 3,
-            name: "Lisa Thompson",
-            role: "Nutritionist",
-            rating: 4.9,
-            nextAvailable: "Feb 2",
-            experience: "6 yrs",
-            status: "online"
-          }
-        ]);
-        const [benefits] = useState([
-          {
-            id: 1,
-            type: "Primary Care",
-            copay: "$20",
-            deductible: "N/A",
-            coverage: "100%",
-            status: "active"
-          },
-          {
-            id: 2,
-            type: "Specialist",
-            copay: "$40",
-            deductible: "$200",
-            coverage: "80%",
-            status: "active"
-          },
-          {
-            id: 3,
-            type: "Prescription",
-            copay: "$10-$50",
-            deductible: "N/A",
-            coverage: "90%",
-            status: "active"
-          }
-        ]);
+        }), []);
 
         useEffect(() => {
-          setTimeout(() => setAnimateIn(true), 100);
-          setTimeout(() => setShowNotification(true), 1000);
+          setAnimateIn(true);
+          const t = setTimeout(() => setShowNotification(true), 1500);
+          return () => clearTimeout(t);
         }, []);
 
-        const markMedicationTaken = (id) => {
+        // After every render, (re)create lucide icons (since lucide works by DOM replacement)
+        useEffect(() => {
+          if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+          }
+        });
+
+        const handleMarkTaken = (medId) => {
           setMedications(prev => prev.map(med =>
-            med.id === id ? { ...med, taken: !med.taken } : med
+            med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
           ));
+          setShowNotification(true);
+          setTimeout(() => setShowNotification(false), 3000);
         };
 
-        const calculateAdherenceScore = () => {
-          const totalAdherence = medications.reduce((sum, med) => sum + med.adherence, 0);
-          return Math.round(totalAdherence / medications.length);
+        const handleAddMedication = () => {
+          if (newMedication.name && newMedication.dose) {
+            const newMed = {
+              id: medications.length + 1,
+              name: newMedication.name,
+              dose: newMedication.dose,
+              frequency: newMedication.frequency,
+              nextDose: `Today, ${newMedication.time}`,
+              streak: 0,
+              adherence: 0,
+              taken: false
+            };
+            setMedications([...medications, newMed]);
+            setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
+            setShowAddMedication(false);
+          }
         };
 
-        const MetricCard = ({ icon: Icon, label, value, trend, trendValue, color }) => (
-          <div className={`bg-gradient-to-br ${color} p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-              {trend && (
-                <div className="flex items-center text-white/80 text-sm">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  +{trendValue}%
-                </div>
-              )}
-            </div>
-            <div className="text-white">
-              <div className="text-3xl font-bold mb-1">{value}</div>
-              <div className="text-white/80 text-sm">{label}</div>
-            </div>
-          </div>
-        );
+        const handleScheduleAppointment = () => {
+          if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
+            setShowScheduleAppointment(false);
+            setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
+            alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
+          }
+        };
 
-        const CircularProgress = ({ value, size = 120 }) => {
-          const circumference = 2 * Math.PI * 45;
-          const offset = circumference - (value / 100) * circumference;
+        const handleReschedule = (appointment) => {
+          setSelectedAppointment(appointment);
+          setShowReschedule(true);
+        };
 
-          return (
-            <div className="relative">
-              <svg width={size} height={size} className="transform -rotate-90">
-                <circle
-                  cx={size/2}
-                  cy={size/2}
-                  r="45"
-                  stroke="#e5e7eb"
-                  strokeWidth="10"
-                  fill="none"
-                />
-                <circle
-                  cx={size/2}
-                  cy={size/2}
-                  r="45"
-                  stroke="#10b981"
-                  strokeWidth="10"
-                  fill="none"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-800">{value}%</div>
-                  <div className="text-xs text-gray-500">Adherence</div>
-                </div>
-              </div>
-            </div>
+        const handleAddToCalendar = (appointment) => {
+          alert(
+            `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
           );
         };
 
-        const QuickAction = ({ icon: Icon, label, onClick, color }) => (
-          <button
-            onClick={onClick}
-            className={`p-4 rounded-xl ${color} text-white hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl`}
-          >
-            <Icon className="w-6 h-6 mb-2" />
-            <div className="text-sm font-medium">{label}</div>
-          </button>
-        );
+        const handleCancelAppointment = (appointment) => {
+          if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
+            alert(`Appointment cancelled. Your provider has been notified.`);
+          }
+        };
 
-        const MedicationCard = ({ medication }) => (
-          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-1">{medication.name}</h4>
-                <p className="text-sm text-gray-500">{medication.dose} • {medication.frequency}</p>
-              </div>
-              <button
-                onClick={() => markMedicationTaken(medication.id)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${medication.taken ? 'bg-emerald-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                <CheckCircle className={`w-5 h-5 ${medication.taken ? 'text-white' : 'text-gray-500'}`} />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Next dose</span>
-                <span className="text-sm font-medium text-gray-800">{medication.nextDose}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Adherence</span>
-                <span className="text-sm font-medium text-emerald-600">{medication.adherence}%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Streak</span>
-                <div className="flex items-center">
-                  <Zap className="w-4 h-4 text-yellow-500 mr-1" />
-                  <span className="text-sm font-medium text-gray-800">{medication.streak} days</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        const handleGetDirections = (location) => {
+          alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
+        };
 
-        const AppointmentCard = ({ appointment }) => (
-          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-1">{appointment.provider}</h4>
-                <p className="text-sm text-gray-500">{appointment.specialty}</p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                appointment.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-              }`}>
-                {appointment.status}
-              </span>
-            </div>
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="w-4 h-4 mr-2" />
-                {appointment.date} at {appointment.time}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="w-4 h-4 mr-2" />
-                {appointment.location}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <FileText className="w-4 h-4 mr-2" />
-                {appointment.type}
-              </div>
-            </div>
-            <button
-              onClick={() => setExpandedAppointment(expandedAppointment === appointment.id ? null : appointment.id)}
-              className="flex items-center text-emerald-600 text-sm font-medium hover:text-emerald-700"
-            >
-              {expandedAppointment === appointment.id ? 'Hide details' : 'View details'}
-              {expandedAppointment === appointment.id ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-            </button>
-            {expandedAppointment === appointment.id && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-600">{appointment.notes}</p>
-                {appointment.status === 'upcoming' && (
-                  <div className="flex space-x-2 mt-4">
-                    <button
-                      onClick={() => {
-                        setSelectedAppointment(appointment);
-                        setShowReschedule(true);
-                      }}
-                      className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors"
-                    >
-                      Reschedule
-                    </button>
-                    <button className="flex-1 py-2 px-4 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
-                      Join Visit
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
+        const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
+          const radius = (size - strokeWidth) / 2;
+          const circumference = radius * 2 * Math.PI;
+          const offset = circumference - (progress / 100) * circumference;
 
-        const ClaimCard = ({ claim }) => (
-          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-1">{claim.service}</h4>
-                <p className="text-sm text-gray-500">{claim.date}</p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                claim.status === 'processed' ? 'bg-green-100 text-green-700' :
-                claim.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
-              }`}>
-                {claim.status}
-              </span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Total amount</span>
-                <span className="text-sm font-medium text-gray-800">${claim.amount}</span>
-              </div>
-              {claim.covered && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Covered</span>
-                  <span className="text-sm font-medium text-emerald-600">${claim.covered}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-        const CareTeamCard = ({ member }) => (
-          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-1">{member.name}</h4>
-                <p className="text-sm text-gray-500">{member.role}</p>
-              </div>
-              <div className={`w-3 h-3 rounded-full ${member.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <Star className="w-4 h-4 mr-2 text-yellow-500" />
-                {member.rating} rating
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="w-4 h-4 mr-2" />
-                Next available: {member.nextAvailable}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Award className="w-4 h-4 mr-2" />
-                {member.experience} experience
-              </div>
-            </div>
-            <button className="mt-4 w-full py-2 px-4 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
-              Message
-            </button>
-          </div>
-        );
-
-        const BenefitsCard = ({ benefit }) => (
-          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-1">{benefit.type}</h4>
-                <p className="text-sm text-gray-500">Copay: {benefit.copay}</p>
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                {benefit.status}
-              </span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Deductible</span>
-                <span className="text-sm font-medium text-gray-800">{benefit.deductible}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Coverage</span>
-                <span className="text-sm font-medium text-emerald-600">{benefit.coverage}</span>
-              </div>
-            </div>
-          </div>
-        );
+          return (
+            <svg width={size} height={size} className="transform -rotate-90">
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="rgba(134, 191, 157, 0.2)"
+                strokeWidth={strokeWidth}
+                fill="none"
+              />
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="url(#gradient)"
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s ease-out" }}
+              />
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#86BF9D" />
+                  <stop offset="100%" stopColor="#5A9B73" />
+                </linearGradient>
+              </defs>
+            </svg>
+          );
+        };
 
         const ScheduleAppointmentModal = () => (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -425,46 +294,101 @@
                   onClick={() => setShowScheduleAppointment(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Appointment Type</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Primary Care</option>
-                    <option>Specialist</option>
-                    <option>Virtual Visit</option>
+                  <select
+                    value={newAppointment.type}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, type: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  >
+                    <option value="">Select type...</option>
+                    <option>Primary Care Visit</option>
+                    <option>Specialist Consultation</option>
                     <option>Lab Work</option>
+                    <option>Physical Therapy</option>
+                    <option>Annual Physical</option>
+                    <option>Follow-up Visit</option>
+                    <option>Urgent Care</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Date</label>
-                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider/Doctor</label>
+                  <input
+                    type="text"
+                    value={newAppointment.doctor}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, doctor: e.target.value })}
+                    placeholder="e.g., Dr. Smith or City Medical Center"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Time</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Morning (8AM - 12PM)</option>
-                    <option>Afternoon (12PM - 4PM)</option>
-                    <option>Evening (4PM - 7PM)</option>
-                  </select>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                    <input
+                      type="date"
+                      value={newAppointment.date}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Time</label>
+                    <input
+                      type="time"
+                      value={newAppointment.time}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
                 </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for Visit</label>
-                  <textarea rows="3" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="Brief description..."></textarea>
+                  <textarea
+                    value={newAppointment.reason}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, reason: e.target.value })}
+                    placeholder="Brief description of why you're scheduling this appointment"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                  />
                 </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={() => setShowScheduleAppointment(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Schedule
-                </button>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                      <div className="font-semibold mb-1">AI Agent will help you:</div>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Verify your insurance coverage automatically</li>
+                        <li>• Send you prep instructions if needed</li>
+                        <li>• Add reminders to your calendar</li>
+                        <li>• Check for in-network providers</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={handleScheduleAppointment}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Schedule Appointment
+                  </button>
+                  <button
+                    onClick={() => setShowScheduleAppointment(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -472,91 +396,163 @@
 
         const RescheduleModal = () => (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
                 <button
                   onClick={() => setShowReschedule(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-2">Current appointment</p>
-                  <p className="font-medium text-gray-800">{selectedAppointment?.provider}</p>
-                  <p className="text-sm text-gray-600">{selectedAppointment?.date} at {selectedAppointment?.time}</p>
+
+              {selectedAppointment && (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
+                    <div className="text-sm text-gray-600 mb-1">Current Appointment</div>
+                    <div className="font-bold text-gray-800">{selectedAppointment.type}</div>
+                    <div className="text-gray-600">
+                      {selectedAppointment.date} at {selectedAppointment.time}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <Icon name="check-circle" className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-emerald-800">
+                        <div className="font-semibold mb-1">Available Time Slots</div>
+                        <div className="space-y-2 mt-2">
+                          {[
+                            "March 18, 2026 - 10:00 AM",
+                            "March 19, 2026 - 2:30 PM",
+                            "March 22, 2026 - 9:15 AM"
+                          ].map((slot) => (
+                            <button
+                              key={slot}
+                              className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-emerald-100 transition-colors font-medium"
+                            >
+                              {slot}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setShowReschedule(false);
+                        alert("Appointment rescheduled! Confirmation sent to your email.");
+                      }}
+                      className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                    >
+                      Confirm Reschedule
+                    </button>
+                    <button
+                      onClick={() => setShowReschedule(false)}
+                      className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
-                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>9:00 AM</option>
-                    <option>10:30 AM</option>
-                    <option>2:00 PM</option>
-                    <option>3:30 PM</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={() => setShowReschedule(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Reschedule
-                </button>
-              </div>
+              )}
             </div>
           </div>
         );
 
         const VerifyCoverageModal = () => (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Verify Coverage</h3>
+                <h3 className="text-2xl font-bold text-gray-800">Verify Insurance Coverage</h3>
                 <button
                   onClick={() => setShowVerifyCoverage(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Specialist Visit</option>
-                    <option>Lab Tests</option>
-                    <option>Imaging</option>
-                    <option>Physical Therapy</option>
-                  </select>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Dr. Jennifer Martinez"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider</label>
-                  <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="Enter provider name" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Procedure/Service</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Annual Physical, MRI, Lab Work"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
-                <div className="p-4 bg-emerald-50 rounded-xl">
-                  <p className="text-sm text-emerald-700">Estimated coverage: 80% after deductible</p>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Facility</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., City Medical Center"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={() => setShowVerifyCoverage(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Close
-                </button>
-                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Verify
-                </button>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                      <div className="font-semibold mb-1">AI will verify:</div>
+                      <ul className="space-y-1 text-xs">
+                        <li>✓ Provider network status (in/out of network)</li>
+                        <li>✓ Procedure coverage and copay amount</li>
+                        <li>✓ Prior authorization requirements</li>
+                        <li>✓ Estimated out-of-pocket costs</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowVerifyCoverage(false);
+                      alert("Verification in progress! You'll receive results within 2-3 minutes.");
+                    }}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Verify Coverage
+                  </button>
+                  <button
+                    onClick={() => setShowVerifyCoverage(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -564,49 +560,92 @@
 
         const FileClaimModal = () => (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">File New Claim</h3>
+                <h3 className="text-2xl font-bold text-gray-800">File Insurance Claim</h3>
                 <button
                   onClick={() => setShowFileClaim(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Date</label>
-                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Service</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Office Visit</option>
-                    <option>Lab Work</option>
-                    <option>Prescription</option>
-                    <option>Emergency Care</option>
-                  </select>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                  <input
+                    type="text"
+                    placeholder="Doctor or facility name"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
-                  <input type="number" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="$0.00" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Description</label>
+                  <textarea
+                    placeholder="Describe the medical service received"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                  />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Charge</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Amount Paid</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Receipt</label>
-                  <input type="file" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Receipt/Invoice</label>
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-colors cursor-pointer"
+                    onClick={() => alert("Demo: file picker would open here.")}
+                  >
+                    <Icon name="file-text" className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <div className="text-gray-600 font-medium">Click to upload or drag and drop</div>
+                    <div className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 10MB</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={() => setShowFileClaim(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Submit
-                </button>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowFileClaim(false);
+                      alert("Claim submitted! You'll receive updates on its status via email.");
+                    }}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Submit Claim
+                  </button>
+                  <button
+                    onClick={() => setShowFileClaim(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -616,403 +655,896 @@
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Find Providers</h3>
+                <h3 className="text-2xl font-bold text-gray-800">Find In-Network Providers</h3>
                 <button
                   onClick={() => setShowFindProviders(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
                   <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option value="">Select specialty...</option>
                     <option>Primary Care</option>
-                    <option>Endocrinology</option>
                     <option>Cardiology</option>
                     <option>Dermatology</option>
+                    <option>Endocrinology</option>
+                    <option>Orthopedics</option>
+                    <option>Ophthalmology</option>
+                    <option>Mental Health</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                  <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="ZIP or city" />
+                  <input
+                    type="text"
+                    placeholder="City, ZIP code, or address"
+                    defaultValue="Fremont, CA"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Insurance</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Distance</label>
                   <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Kaiser Permanente</option>
-                    <option>Blue Cross</option>
-                    <option>Aetna</option>
-                    <option>UnitedHealthcare</option>
+                    <option>Within 5 miles</option>
+                    <option>Within 10 miles</option>
+                    <option>Within 25 miles</option>
+                    <option>Within 50 miles</option>
                   </select>
                 </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
+
+                <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 space-y-3">
+                  <div className="font-semibold text-emerald-800 mb-2">In-Network Providers Found</div>
+
+                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-gray-800">Dr. Sarah Johnson</div>
+                        <div className="text-sm text-gray-600">Endocrinology • 2.3 miles away</div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs text-gray-600 ml-1">(247 reviews)</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => alert("Demo: booking flow would start here.")}
+                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                      >
+                        Book
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-600">City Medical Center • Accepting new patients</div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-gray-800">Dr. Michael Chen</div>
+                        <div className="text-sm text-gray-600">Endocrinology • 4.1 miles away</div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-gray-300" />
+                          <span className="text-xs text-gray-600 ml-1">(183 reviews)</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => alert("Demo: booking flow would start here.")}
+                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                      >
+                        Book
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-600">Health Partners Clinic • Accepting new patients</div>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setShowFindProviders(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
                   Close
-                </button>
-                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                  Search
                 </button>
               </div>
             </div>
           </div>
         );
 
-        return (
-          <div className="min-h-screen bg-gray-50">
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-              <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold mb-2">CareLoop</h1>
-                    <p className="text-emerald-100">Your personalized health companion</p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <button className="relative p-2 hover:bg-white/20 rounded-full transition-colors">
-                      <Bell className="w-6 h-6" />
-                      {showNotification && (
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-                      )}
-                    </button>
-                    <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
-                      <div className="w-8 h-8 bg-white/30 rounded-full mr-3 flex items-center justify-center">
-                        <User className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">Alex Johnson</div>
-                        <div className="text-xs text-emerald-100">Member ID: 45892</div>
-                      </div>
+        const DashboardView = () => (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
+
+              <div className="relative flex items-start justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    Welcome back, {userData.name.split(" ")[0]}! 👋
+                  </h2>
+                  <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
+                      <div className="text-xs text-gray-500 font-medium">Level</div>
                     </div>
                   </div>
+                  <div className="mt-3 text-center">
+                    <div className="text-sm font-semibold text-gray-700">
+                      {userData.healthXP} / {userData.nextLevelXP} XP
+                    </div>
+                    <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
+                <Icon name="zap" className="w-6 h-6 text-amber-500" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
+                  <div className="text-xs text-gray-600 font-medium">Current streak</div>
                 </div>
               </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
-              <div className="flex flex-wrap gap-4 mb-8">
-                {[
-                  { id: 'dashboard', label: 'Dashboard', icon: Activity },
-                  { id: 'medications', label: 'Medications', icon: Pill },
-                  { id: 'appointments', label: 'Appointments', icon: Calendar },
-                  { id: 'claims', label: 'Claims', icon: FileText },
-                  { id: 'careteam', label: 'Care Team', icon: Heart },
-                  { id: 'benefits', label: 'Benefits', icon: Shield }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                      activeTab === tab.id
-                        ? 'bg-emerald-600 text-white shadow-lg'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Icon name="sparkles" className="w-5 h-5 text-emerald-500" />
+                AI Insights
+              </h3>
+
+              {userData.insights.map((insight, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
+                    insight.type === "success"
+                      ? "bg-emerald-50 border-emerald-200"
+                      : insight.type === "action"
+                      ? "bg-blue-50 border-blue-200"
+                      : "bg-amber-50 border-amber-200"
+                  }`}
+                >
+                  <Icon
+                    name={insight.icon}
+                    className={`w-5 h-5 flex-shrink-0 ${
+                      insight.type === "success"
+                        ? "text-emerald-600"
+                        : insight.type === "action"
+                        ? "text-blue-600"
+                        : "text-amber-600"
                     }`}
-                  >
-                    <tab.icon className="w-5 h-5 mr-2" />
-                    {tab.label}
-                  </button>
-                ))}
+                  />
+                  <p className="text-gray-700 font-medium">{insight.message}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => alert("Opening AI Agent chat interface...")}
+                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="message-square" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Talk to Agent</div>
+                <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("appointments")}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="calendar" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Schedule Visit</div>
+                <div className="text-blue-100 text-sm mt-1">Book appointment</div>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Icon name="award" className="w-5 h-5 text-amber-500" />
+                Active Missions
+              </h3>
+
+              {userData.missions.map((mission) => (
+                <div
+                  key={mission.id}
+                  className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <Icon name={mission.icon} className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800">{mission.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
+                      <div className="text-xs text-gray-500">{mission.deadline}</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                      style={{ width: `${mission.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+        const AppointmentsView = () => (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
+              <button
+                onClick={() => setShowScheduleAppointment(true)}
+                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <Icon name="calendar" className="w-4 h-4" />
+                Schedule New
+              </button>
+            </div>
+
+            {userData.appointments.map((apt) => (
+              <div
+                key={apt.id}
+                className="bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg overflow-hidden"
+              >
+                <div
+                  className="p-6 cursor-pointer"
+                  onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
+
+                        {apt.status === "verified" && (
+                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+                            <Icon name="check-circle" className="w-3 h-3" />
+                            Insurance Verified
+                          </span>
+                        )}
+                        {apt.status === "pending" && (
+                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
+                            <Icon name="clock" className="w-3 h-3" />
+                            Verifying
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-1 text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Icon name="calendar" className="w-4 h-4" />
+                          <span>{apt.date} at {apt.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="user" className="w-4 h-4" />
+                          <span>{apt.doctor}</span>
+                        </div>
+
+                        {apt.prep && !expandedAppointment && (
+                          <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                            <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      {expandedAppointment === apt.id ? (
+                        <Icon name="chevron-up" className="w-5 h-5 text-gray-600" />
+                      ) : (
+                        <Icon name="chevron-down" className="w-5 h-5 text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {expandedAppointment === apt.id && (
+                  <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-50 pt-4">
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Reason for Visit</div>
+                      <div className="text-gray-800 font-medium">{apt.reason}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Location</div>
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                        <Icon name="map-pin" className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-gray-800 font-medium">{apt.location}</div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleGetDirections(apt.location); }}
+                            className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm mt-1"
+                          >
+                            Get Directions →
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Insurance & Cost</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                          <div className="text-xs text-emerald-700 font-semibold mb-1">Provider</div>
+                          <div className="text-gray-800 font-bold">{apt.insuranceDetails.provider}</div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+                          <div className="text-xs text-blue-700 font-semibold mb-1">Copay</div>
+                          <div className="text-gray-800 font-bold text-xl">{apt.insuranceDetails.copay}</div>
+                        </div>
+                        <div className="col-span-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                          <div className="text-xs text-emerald-700 font-semibold mb-1">Coverage Status</div>
+                          <div className="text-gray-800 font-medium">{apt.insuranceDetails.coverage}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {apt.prep && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Preparation Required</div>
+                        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                          <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {apt.notes && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Notes</div>
+                        <div className="p-3 bg-gray-50 rounded-xl">
+                          <div className="text-gray-700 text-sm">{apt.notes}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleReschedule(apt); }}
+                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAddToCalendar(apt); }}
+                        className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                      >
+                        Add to Calendar
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCancelAppointment(apt); }}
+                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+        );
 
-              {activeTab === 'dashboard' && (
-                <div className={`space-y-8 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard
-                      icon={Activity}
-                      label="Health Score"
-                      value="92"
-                      trend
-                      trendValue="5"
-                      color="from-emerald-500 to-teal-500"
-                    />
-                    <MetricCard
-                      icon={Pill}
-                      label="Adherence"
-                      value={`${calculateAdherenceScore()}%`}
-                      trend
-                      trendValue="3"
-                      color="from-blue-500 to-indigo-500"
-                    />
-                    <MetricCard
-                      icon={Calendar}
-                      label="Upcoming Visits"
-                      value="2"
-                      color="from-purple-500 to-pink-500"
-                    />
-                    <MetricCard
-                      icon={Award}
-                      label="Rewards"
-                      value="1,250"
-                      trend
-                      trendValue="12"
-                      color="from-orange-500 to-red-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-gray-800">Today's Overview</h2>
-                        <button className="text-emerald-600 text-sm font-medium hover:text-emerald-700">View all</button>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center p-4 bg-emerald-50 rounded-xl">
-                          <div className="p-2 bg-emerald-100 rounded-lg mr-4">
-                            <Pill className="w-5 h-5 text-emerald-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-800">Time for Metformin</p>
-                            <p className="text-sm text-gray-600">Due in 30 minutes</p>
-                          </div>
-                          <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
-                            Take now
-                          </button>
-                        </div>
-                        <div className="flex items-center p-4 bg-blue-50 rounded-xl">
-                          <div className="p-2 bg-blue-100 rounded-lg mr-4">
-                            <Calendar className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-800">Appointment Tomorrow</p>
-                            <p className="text-sm text-gray-600">Dr. Sarah Chen at 2:30 PM</p>
-                          </div>
-                          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
-                            Prepare
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-6 shadow-sm">
-                      <h2 className="text-xl font-bold text-gray-800 mb-6">Adherence Score</h2>
-                      <div className="flex flex-col items-center">
-                        <CircularProgress value={calculateAdherenceScore()} />
-                        <div className="mt-4 text-center">
-                          <p className="text-sm text-gray-600">You're doing great!</p>
-                          <p className="text-xs text-gray-500 mt-1">Keep it up for better outcomes</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-bold text-gray-800">Quick Actions</h2>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <QuickAction
-                        icon={Calendar}
-                        label="Schedule"
-                        onClick={() => setShowScheduleAppointment(true)}
-                        color="bg-gradient-to-r from-emerald-500 to-teal-500"
-                      />
-                      <QuickAction
-                        icon={Pill}
-                        label="Add Med"
-                        onClick={() => setShowAddMedication(true)}
-                        color="bg-gradient-to-r from-blue-500 to-indigo-500"
-                      />
-                      <QuickAction
-                        icon={Shield}
-                        label="Coverage"
-                        onClick={() => setShowVerifyCoverage(true)}
-                        color="bg-gradient-to-r from-purple-500 to-pink-500"
-                      />
-                      <QuickAction
-                        icon={FileText}
-                        label="File Claim"
-                        onClick={() => setShowFileClaim(true)}
-                        color="bg-gradient-to-r from-orange-500 to-red-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'medications' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
-                    <button
-                      onClick={() => setShowAddMedication(true)}
-                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      <Plus className="w-5 h-5 mr-2" />
-                      Add Medication
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {medications.map(med => (
-                      <MedicationCard key={med.id} medication={med} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'appointments' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-800">Appointments</h2>
-                    <button
-                      onClick={() => setShowScheduleAppointment(true)}
-                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      <Plus className="w-5 h-5 mr-2" />
-                      Schedule
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {appointments.map(appointment => (
-                      <AppointmentCard key={appointment.id} appointment={appointment} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'claims' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-800">Claims</h2>
-                    <button
-                      onClick={() => setShowFileClaim(true)}
-                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      <Plus className="w-5 h-5 mr-2" />
-                      File Claim
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {claims.map(claim => (
-                      <ClaimCard key={claim.id} claim={claim} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'careteam' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-800">Your Care Team</h2>
-                    <button
-                      onClick={() => setShowFindProviders(true)}
-                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      <MapPin className="w-5 h-5 mr-2" />
-                      Find Providers
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {careTeam.map(member => (
-                      <CareTeamCard key={member.id} member={member} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'benefits' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-800">Benefits Overview</h2>
-                    <button
-                      onClick={() => setShowVerifyCoverage(true)}
-                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      <CreditCard className="w-5 h-5 mr-2" />
-                      Verify Coverage
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {benefits.map(benefit => (
-                      <BenefitsCard key={benefit.id} benefit={benefit} />
-                    ))}
-                  </div>
-                </div>
-              )}
+        const MedicationsView = () => (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+              <button
+                onClick={() => setShowAddMedication(true)}
+                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <Icon name="plus" className="w-4 h-4" />
+                Add Medication
+              </button>
             </div>
 
             {showAddMedication && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold text-gray-800">Add Medication</h3>
-                    <button
-                      onClick={() => setShowAddMedication(false)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5 text-gray-500" />
+                    <h3 className="text-2xl font-bold text-gray-800">Add New Medication</h3>
+                    <button onClick={() => setShowAddMedication(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Icon name="x" className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Medication Name</label>
-                      <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                      <input
+                        type="text"
+                        value={newMedication.name}
+                        onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
+                        placeholder="e.g., Aspirin"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
                     </div>
+
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
-                      <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="e.g. 500mg" />
+                      <input
+                        type="text"
+                        value={newMedication.dose}
+                        onChange={(e) => setNewMedication({ ...newMedication, dose: e.target.value })}
+                        placeholder="e.g., 100mg"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
                     </div>
+
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
-                      <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                      <select
+                        value={newMedication.frequency}
+                        onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      >
                         <option>Once daily</option>
                         <option>Twice daily</option>
                         <option>Three times daily</option>
+                        <option>Four times daily</option>
                         <option>As needed</option>
                       </select>
                     </div>
-                  </div>
-                  <div className="flex space-x-3 mt-6">
-                    <button
-                      onClick={() => setShowAddMedication(false)}
-                      className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
-                      Add
-                    </button>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Reminder Time</label>
+                      <input
+                        type="time"
+                        value={newMedication.time}
+                        onChange={(e) => setNewMedication({ ...newMedication, time: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={handleAddMedication}
+                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                      >
+                        Add Medication
+                      </button>
+                      <button
+                        onClick={() => setShowAddMedication(false)}
+                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+
+            <div className="grid grid-cols-1 gap-4">
+              {medications.map((med) => (
+                <div
+                  key={med.id}
+                  className={`bg-white rounded-2xl p-6 border-2 transition-all ${
+                    med.taken ? "border-emerald-300 bg-emerald-50/50" : "border-gray-100 hover:border-emerald-200"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">{med.name}</h3>
+                        {med.taken && <Icon name="check-circle" className="w-5 h-5 text-emerald-600" />}
+                      </div>
+                      <p className="text-gray-600 mt-1">{med.dose} • {med.frequency}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
+                      <div className="text-xs text-gray-500">Adherence</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon name="zap" className="w-4 h-4 text-amber-500" />
+                      <span className="font-semibold text-gray-700">{med.streak} day streak</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon name="clock" className="w-4 h-4 text-blue-500" />
+                      <span className="text-gray-600">Next: {med.nextDose}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                      style={{ width: `${med.adherence}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => handleMarkTaken(med.id)}
+                      disabled={med.taken}
+                      className={`flex-1 py-2 rounded-xl font-semibold transition-colors ${
+                        med.taken
+                          ? "bg-emerald-200 text-emerald-800 cursor-not-allowed"
+                          : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      }`}
+                    >
+                      {med.taken ? "✓ Taken Today" : "Mark Taken"}
+                    </button>
+                    <button
+                      onClick={() => alert(`View details for ${med.name}`)}
+                      className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                    >
+                      Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+                  <Icon name="pill" className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
+                  <p className="text-gray-600 text-sm mb-3">
+                    Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.
+                  </p>
+                  <button
+                    onClick={() => handleGetDirections("CVS Pharmacy, 123 Main Street, Fremont, CA")}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    Get Directions
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const InsuranceView = () => (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Insurance Dashboard</h2>
+
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+
+              <div className="relative">
+                <div className="flex items-start justify-between mb-8">
+                  <div>
+                    <div className="text-sm opacity-80 mb-1">Health Insurance</div>
+                    <div className="text-2xl font-bold">{userData.insurance.provider}</div>
+                  </div>
+                  <Icon name="shield" className="w-12 h-12 opacity-80" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <div className="text-xs opacity-70 mb-1">Member ID</div>
+                    <div className="font-mono text-lg font-semibold">{userData.insurance.memberId}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs opacity-70 mb-1">Group Number</div>
+                    <div className="font-mono text-lg font-semibold">{userData.insurance.groupNumber}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs opacity-70">Effective Date</div>
+                    <div className="font-semibold">{userData.insurance.effectiveDate}</div>
+                  </div>
+                  <button
+                    onClick={() => alert("Downloading insurance card...")}
+                    className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm"
+                  >
+                    Download Card
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-800">Annual Deductible</h3>
+                  <Icon name="dollar-sign" className="w-5 h-5 text-emerald-600" />
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex items-end justify-between mb-2">
+                    <div>
+                      <div className="text-3xl font-bold text-emerald-600">
+                        ${userData.insurance.deductible.met.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        of ${userData.insurance.deductible.individual.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-800">
+                        {Math.round((userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100)}%
+                      </div>
+                      <div className="text-xs text-gray-500">Met</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${(userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">${userData.insurance.deductible.remaining.toLocaleString()}</span> remaining
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-800">Out-of-Pocket Max</h3>
+                  <Icon name="credit-card" className="w-5 h-5 text-blue-600" />
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex items-end justify-between mb-2">
+                    <div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        ${userData.insurance.outOfPocketMax.met.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        of ${userData.insurance.outOfPocketMax.individual.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-800">
+                        {Math.round((userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100)}%
+                      </div>
+                      <div className="text-xs text-gray-500">Met</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${(userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">${userData.insurance.outOfPocketMax.remaining.toLocaleString()}</span> remaining
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Icon name="file-text" className="w-5 h-5 text-emerald-600" />
+                Coverage Details
+              </h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div className="text-xs text-emerald-700 font-semibold mb-1">In-Network</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.inNetwork}</div>
+                </div>
+                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                  <div className="text-xs text-amber-700 font-semibold mb-1">Out-of-Network</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.outOfNetwork}</div>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <div className="text-xs text-blue-700 font-semibold mb-1">Preventive Care</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.preventiveCare}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4">Recent Claims</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">Lab Work - Jan 15</div>
+                      <div className="text-xs text-gray-600">Quest Diagnostics</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-700 font-bold">Approved</div>
+                      <div className="text-xs text-gray-600">$0 due</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">Office Visit - Jan 8</div>
+                      <div className="text-xs text-gray-600">Dr. Martinez</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-700 font-bold">Approved</div>
+                      <div className="text-xs text-gray-600">$25 copay</div>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => alert("View all claims history...")}
+                  className="w-full mt-4 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+                >
+                  View All Claims →
+                </button>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4">Prior Authorizations</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">MRI Scan</div>
+                      <div className="text-xs text-gray-600">City Imaging Center</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-amber-700 font-bold">Pending</div>
+                      <div className="text-xs text-gray-600">2-3 days</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200 text-sm text-blue-800">
+                  <div className="font-semibold mb-1">AI Agent is tracking this</div>
+                  <div className="text-xs">You'll be notified as soon as it's approved</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <button
+                onClick={() => setShowVerifyCoverage(true)}
+                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="check-circle" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Verify Coverage</div>
+                <div className="text-emerald-100 text-sm mt-1">Check eligibility</div>
+              </button>
+
+              <button
+                onClick={() => setShowFileClaim(true)}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="file-text" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">File Claim</div>
+                <div className="text-blue-100 text-sm mt-1">Submit manually</div>
+              </button>
+
+              <button
+                onClick={() => setShowFindProviders(true)}
+                className="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="building" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Find Providers</div>
+                <div className="text-purple-100 text-sm mt-1">In-network search</div>
+              </button>
+            </div>
+          </div>
+        );
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
+            {showNotification && (
+              <div
+                className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm z-50"
+                style={{ animation: "slideInRight 0.5s ease-out" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Icon name="sparkles" className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-800">AI Agent Update</div>
+                    <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
+                  </div>
+                  <button onClick={() => setShowNotification(false)} className="text-gray-400 hover:text-gray-600 ml-auto">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-7xl mx-auto p-6">
+              <header className="mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                      <Icon name="heart" className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        CareLoop
+                      </h1>
+                      <p className="text-sm text-gray-500 font-medium">Your AI Healthcare Companion</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                      <Icon name="bell" className="w-6 h-6 text-gray-600" />
+                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <button className="p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                      <Icon name="phone" className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
+                      SC
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
+                <div className="flex gap-2">
+                  {[
+                    { id: "dashboard", label: "Dashboard", icon: "trending-up" },
+                    { id: "appointments", label: "Appointments", icon: "calendar" },
+                    { id: "medications", label: "Medications", icon: "pill" },
+                    { id: "insurance", label: "Insurance", icon: "shield" }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg"
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Icon name={tab.icon} className="w-5 h-5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </nav>
+
+              <main className={`transition-all duration-500 ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+                {activeTab === "dashboard" && <DashboardView />}
+                {activeTab === "appointments" && <AppointmentsView />}
+                {activeTab === "medications" && <MedicationsView />}
+                {activeTab === "insurance" && <InsuranceView />}
+              </main>
+            </div>
 
             {showScheduleAppointment && <ScheduleAppointmentModal />}
             {showReschedule && <RescheduleModal />}
             {showVerifyCoverage && <VerifyCoverageModal />}
             {showFileClaim && <FileClaimModal />}
             {showFindProviders && <FindProvidersModal />}
-
-            <style>{`
-              @keyframes slideInRight {
-                from {
-                  transform: translateX(100%);
-                  opacity: 0;
-                }
-                to {
-                  transform: translateX(0);
-                  opacity: 1;
-                }
-              }
-
-              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-              * {
-                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-              }
-
-              button {
-                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-              }
-            `}</style>
           </div>
         );
       };
 
-      const root = ReactDOM.createRoot(document.getElementById('root'));
+      const root = ReactDOM.createRoot(document.getElementById("root"));
       root.render(<CareLoop />);
     </script>
   </body>
