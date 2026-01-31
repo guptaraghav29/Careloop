@@ -1,0 +1,16 @@
+{
+    "name": "MyProject",
+    "description": "An audio health monitoring system that tells a user what they might need to do to stay healthy.",
+    "tech_stack": [
+        "SwiftUI",
+        "Firebase",
+        "ElevenLabs"
+    ],
+    "components": [
+        {
+            "name": "MainView",
+            "description": "An audio agent that tells a user what they might need to do to stay healthy."
+        }
+    ],
+    "data_models": []
+}
