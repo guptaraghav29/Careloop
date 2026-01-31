@@ -1,0 +1,31 @@
+Generate a JSON log file representing the execution trace of a PDD (Prompt-Driven Development) CLI tool. This file serves as a diagnostic record of a failed 'change' command execution on a Darwin-based system.
+
+### Requirements
+1. **Schema & Metadata**: The output must be a JSON object containing `schema_version` (1), `pdd_version` (0.0.135), and a UTC `timestamp_utc` (e.g., "20260131T213137Z").
+2. **Execution Context**: Include `argv` showing a command to change a specific GitHub issue URL with the `--force` flag, the current working directory (`cwd`), and detailed `platform` information (system, release, version, and python version).
+3. **Configuration**: Define `global_options` including `force: true`, `time: 0.25`, and other standard CLI flags (strength, temperature, verbose, etc.).
+4. **Execution Trace**: 
+    - List `invoked_subcommands` as `["change"]`.
+    - Provide a `steps` array documenting the initial command execution.
+    - Include an `environment` object containing system environment variables like `PATH`, `PDD_PATH`, `PDD_ENV`, and `PDD_FORCE`.
+5. **Terminal Output**: Provide a detailed `terminal_output` string within the JSON that simulates a multi-step agentic workflow (Steps 1-5). 
+    - Steps 1-4 should show "No agent providers are available" warnings.
+    - Step 5 must show a hard failure with the message: "Context missing key for step 5: '"url"'".
+6. **Financials**: Set `total_cost` and individual step costs to `0.0` as no LLM providers were successfully reached.
+
+### Dependencies
+<pdd_cli_schema>
+  <include>context/pdd_execution_log_schema.json</include>
+</pdd_cli_schema>
+<system_environment>
+  <include>context/darwin_env_vars.txt</include>
+</system_environment>
+
+### Instructions
+- Ensure the `terminal_output` field uses escaped newline characters (`\n`) to represent the console log.
+- The `terminal_output` must explicitly mention the loading of specific prompt templates (e.g., `agentic_change_step1_duplicate_LLM`).
+- The `file_contents` object should be empty as no files were successfully modified during this failed run.
+- Match the specific Darwin kernel and Python versions provided in the reference trace.
+
+### Deliverable
+- A single JSON file containing the complete execution log of the failed PDD CLI session.

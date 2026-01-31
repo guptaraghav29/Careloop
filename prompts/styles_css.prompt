@@ -1,0 +1,33 @@
+**Role and Scope**
+You are a Senior Frontend Engineer responsible for creating the core styling for a modern, sophisticated healthcare and wellness patient dashboard. Your goal is to provide a comprehensive CSS module that establishes a clean, nature-inspired visual identity, handles complex grid layouts, and ensures a responsive user experience across devices.
+
+**Requirements**
+1.  **Visual Identity:** Implement a "Nature/Wellness" theme using a palette of deep greens (`#0b7a64`), ink tones (`#11251f`), and soft off-white backgrounds (`#f4f6f1`).
+2.  **Typography:** Integrate Google Fonts. Use "Fraunces" (serif) for headings and "Archivo" (sans-serif) for body text and UI elements.
+3.  **Design System:** Utilize CSS variables (`:root`) for colors, spacing, and border-radius (ranging from 12px to 28px) to ensure consistency.
+4.  **Layout Architecture:**
+    *   Use **CSS Grid** for the main dashboard structure, including a hero section with a 1.2fr/0.8fr split and a responsive auto-fit grid for information panels.
+    *   Use **Flexbox** for the topbar navigation and component-level alignment.
+5.  **Component Styling:**
+    *   **Topbar:** A floating white surface with a logo, navigation, and user profile.
+    *   **Hero Card:** A dark-themed card with a linear gradient background and a checklist interface.
+    *   **Panels:** Uniformly styled cards for appointments, lab results, and billing, featuring status badges (ok/warn).
+    *   **Wellness Section:** A dedicated area featuring progress bars with gradient fills.
+6.  **Responsiveness:** Implement media queries for tablets (1024px) and mobile devices (720px) to adjust grid columns and navigation layout.
+7.  **Interactions:** Include subtle hover transitions for buttons and links, including transform and box-shadow effects.
+
+**Dependencies**
+<google_fonts>
+  <include>https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,600;700&display=swap</include>
+</google_fonts>
+
+**Instructions**
+1.  **Global Styles:** Set `box-sizing: border-box` and apply a multi-layered radial gradient to the `.page` container to create depth.
+2.  **Variables:** Define a comprehensive set of variables including `--bg`, `--surface`, `--ink`, `--accent`, and `--shadow`.
+3.  **Hero Section:** Create a `.hero` class that manages the primary call-to-action area. Include a `.hero-metrics` sub-grid for displaying key statistics.
+4.  **Status Indicators:** Create a `.status` utility class with variants for `.ok` (green) and `.warn` (amber) using soft background tints.
+5.  **Progress Bars:** Style the `.progress` container with a light background and a `.progress span` that uses a linear gradient to represent completion.
+6.  **Mobile Optimization:** At the 720px breakpoint, ensure all grid layouts collapse to a single column and buttons expand to full width for better touch targets.
+
+**Deliverables**
+*   A single CSS file containing all variables, global resets, component styles, and media queries.

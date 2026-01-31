@@ -1,0 +1,28 @@
+Generate a JSON-formatted execution report for a CLI tool named 'pdd'. This report serves as a comprehensive log of a command execution, capturing system metadata, configuration options, environment variables, and terminal output.
+
+### Requirements
+1. **Schema Metadata**: Include `schema_version` (integer), `pdd_version` (semantic version string), and a `timestamp_utc` in ISO 8601 basic format.
+2. **Execution Context**: Capture the `argv` (list of command arguments), `cwd` (current working directory), and a `platform` object containing system OS, release, kernel version, and Python version details.
+3. **Configuration Tracking**: Include a `global_options` object that maps CLI flags (force, strength, temperature, time, verbose, quiet, local, context, output_cost, review_examples) to their invoked values.
+4. **Execution Results**: Provide placeholders for `invoked_subcommands` (list), `total_cost` (float), `steps` (list), and `errors` (list).
+5. **Environment Snapshot**: Capture key environment variables, specifically `PATH` and `PDD_PATH`.
+6. **Output Capture**: Include a `terminal_output` string that encapsulates the STDOUT of the command, including update checks and execution summaries.
+7. **Data Integrity**: Ensure all file paths and system-specific strings reflect a Darwin (macOS) environment.
+
+### Dependencies
+<pdd_cli_schema>
+  <include>context/pdd_report_schema_example.json</include>
+</pdd_cli_schema>
+<system_info_provider>
+  <include>context/platform_utils_example.py</include>
+</system_info_provider>
+
+### Instructions
+1. Initialize the JSON structure with the `setup` command as the primary argument in `argv`.
+2. Populate the `platform` object with Darwin-specific kernel and Python 3.13.7 details.
+3. Set the `global_options` to their default states (e.g., `time` at 0.25, boolean flags to `false`).
+4. Map the `PATH` environment variable to include standard macOS paths and local `.antigravity` bin directories.
+5. Format the `terminal_output` to include the specific header `=== STDOUT ===` followed by the status of shell completion and the command execution summary.
+
+### Deliverables
+- A single JSON file containing the structured execution report for the `setup` command.

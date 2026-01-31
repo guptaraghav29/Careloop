@@ -1,0 +1,383 @@
+Write a python module "prdpart2" that Product Requirements Document
+CareLoop
+An AI-Powered Healthcare Orchestration Platform
+Using Prompt-Driven Development for Healthcare Innovation
+An AI‑powered healthcare agent platform that helps patients manage appointments, treatments, insurance, and pharmacy interactions—while gamifying preventive care and adherence.
+
+
+
+
+
+
+
+1. Problem Statement & Market Gap
+The Fragmentation Crisis
+Healthcare is fragmented, reactive, and cognitively expensive for patients. Healthcare today operates in silos, creating massive friction for patients:
+Appointment no-show rates cost the US healthcare system $150B annually — 30% of patients miss appointments due to forgotten dates, transportation issues, or insurance uncertainty
+Medication non-adherence affects 50% of chronic disease patients — leading to 125,000 preventable deaths and $300B in avoidable costs yearly
+Insurance claim denials due to eligibility issues occur in 20% of cases — patients discover coverage problems only after care is delivered
+Administrative burden consumes 4+ hours per patient per month — coordinating appointments, refills, referrals, and follow-ups across disconnected systems
+
+What Existing Solutions Miss
+Current healthcare tools fall into three categories, each with critical gaps:
+
+Solution Type
+What They Do
+Critical Gaps
+Patient Portals
+View records, schedule appointments, message providers
+Passive, reactive, no intelligence, no cross-provider coordination
+Reminder Apps
+Send medication and appointment reminders
+No context awareness, no automation, no insurance integration
+Gamified Wellness Apps
+Points, badges, challenges for health behaviors
+Manipulative, unsustainable motivation, no real healthcare integration
+
+
+Patients struggle to:
+Remember and attend appointments
+Adhere to prescribed treatments (medications, tests, follow‑ups)
+Verify insurance eligibility before visits
+Navigate pharmacies and refills
+Stay motivated to complete preventive care (e.g., flu shots, screenings)
+As a result:
+Missed appointments cost providers billions annually
+Non‑adherence leads to worse outcomes and higher costs
+Patients delay care due to insurance uncertainty
+Opportunity: Create a proactive, intelligent healthcare agent that acts as a single orchestration layer across providers, insurance, and pharmacies—while motivating behavior through thoughtful gamification.
+
+2. Vision & Goals
+Vision
+Transform healthcare from a reactive burden into a proactive, seamless experience where patients never have to think about administrative complexity — the system works invisibly in the background to ensure optimal health outcomes.
+Primary Goals
+Reduce appointment no-shows by 60% through predictive intervention and automated barrier removal
+Increase medication adherence to 85%+ using behavioral AI and contextual reminders
+Eliminate insurance-related appointment cancellations via real-time eligibility verification
+Reduce patient administrative time by 75% through intelligent automation
+Drive 40% increase in preventive care completion via personalized, non-gamified engagement
+Success Metrics (North Stars)
+Appointment no‑show rate ↓
+Medication adherence rate ↑
+Preventive care completion ↑
+Insurance denials due to eligibility ↓
+Weekly active users (WAU)
+
+3. Target Users
+Primary User Segments
+Chronic disease patients (Ages 40-70) — Managing diabetes, hypertension, heart disease, arthritis. Need: medication adherence, regular monitoring appointments, lab coordination, specialist referrals. Pain points: juggling multiple providers, remembering medication schedules, coordinating care sequence
+Working professionals (Ages 25-55) — Busy schedules, employer-sponsored insurance. Need: convenient appointment scheduling, prescription refills without thinking, insurance verification before care. Pain points: taking time off work for appointments, pharmacy runs, insurance confusion
+Family caregivers (Ages 30-60) — Managing healthcare for children, aging parents, or both. Need: multi-person coordination, appointment scheduling across family members, medication tracking for dependents. Pain points: cognitive overload, remembering who needs what when
+Elderly patients (Ages 65+) — Complex medication regimens, multiple chronic conditions, Medicare. Need: simple interfaces, voice interaction, caregiver involvement, clear medication instructions. Pain points: technology complexity, remembering appointments, navigating Medicare coverage
+Secondary User Segments
+Caregivers managing dependents
+Healthcare providers (downstream benefit)
+Insurers and pharmacies (integration partners)
+User Stories
+Story 1: Sarah, Type 2 Diabetic (52)
+Sarah takes 4 medications daily, needs quarterly HbA1c tests, and sees her endocrinologist every 6 months. Before CareLoop: she forgot her morning metformin 3-4 times per week, missed her annual eye exam, and showed up to an endocrinologist appointment only to discover her insurance required a new referral. After CareLoop: medication reminders adapt to her morning routine (after coffee notification), the system auto-scheduled her eye exam and sent pre-appointment prep instructions, insurance verification caught the referral issue 72 hours early and agent automatically processed a new referral.
+Story 2: Marcus, Working Parent (38)
+Marcus works full-time, has two kids, and struggles to schedule his annual physical. Before CareLoop: repeatedly postponed his physical for 18 months, uncertain about insurance coverage for preventive visit, pharmacy called about refills during work meetings. After CareLoop: agent found a 7am appointment slot before work, confirmed $0 copay for preventive care, automated prescription refills with delivery scheduled to his home, coordinated his kids' annual checkups on same day at pediatrician.
+
+4. User Jobs to Be Done
+“Help me stay on top of my healthcare without having to think about it.”
+Key jobs:
+Track and manage appointments
+Reschedule or cancel easily
+Remember and follow treatment plans
+Confirm insurance coverage before visits
+Handle pharmacy needs (refills, pickup reminders)
+Feel motivated—not nagged—to take care of my health
+
+5. Core Features
+5.1 AI Healthcare Agent (Core Experience)
+A conversational agent available via app + SMS + email.
+Capabilities:
+Natural‑language appointment management
+Proactive reminders and follow‑ups
+Personalized nudges based on behavior patterns
+Escalation to human support when needed
+
+5.2 Appointment Management
+Features
+View upcoming appointments across providers
+One‑tap reschedule or cancellation
+Smart reminders (time‑based + behavior‑based)
+Prep reminders (fasting, forms, labs)
+Advanced
+Predictive no‑show detection
+Transportation reminders (where supported)
+
+5.3 Insurance Verification (Pre‑Visit)
+Goal: Eliminate surprise denials and patient anxiety.
+Features
+Verify insurance eligibility for:
+Facility
+Provider
+Procedure (when possible)
+Pre‑visit coverage confirmation
+Alert users if out‑of‑network or prior auth required
+Provide cost‑estimate ranges (v1: directional)
+Automated prior authorization initiation and tracking
+Out-of-network detection with alternative provider suggestions
+Cost transparency upfront
+Automated claims dispute process
+Flow
+Appointment scheduled
+Agent runs eligibility check
+User receives confirmation or action needed
+What makes it different: We don't just check eligibility — we automatically resolve issues and secure pre-authorization.
+Pre-visit verification workflow — 72 hours before appointment, AI agent verifies: (a) Active coverage status, (b) Provider network status, (c) Facility in-network status, (d) Procedure/CPT code coverage, (e) Prior authorization requirements
+Automated prior authorization — When prior auth is needed, agent automatically: (1) Initiates request with provider, (2) Tracks status, (3) Alerts patient if documentation needed, (4) Follows up until approved
+Out-of-network alerts with alternatives — If provider/facility is out-of-network, agent suggests in-network alternatives within same distance/time window
+Cost transparency upfront — Provides estimated out-of-pocket cost based on deductible status, coinsurance, copay structure
+Claims dispute automation — Post-visit, if claims are denied, agent automatically initiates appeals process using Toolhouse integrations
+PDD Implementation
+Insurance workflows are defined in prompts with decision trees for different scenarios. When insurance rules change or we discover new edge cases, we update prompts and regenerate — maintaining perfect test coverage of all known scenarios.
+
+5.4 Pharmacy Integration
+Features
+Prescription tracking
+Refill reminders
+Pharmacy pickup notifications
+Delivery status (where available)
+Medication interaction alerts (future)
+
+5.5 Treatment & Medication Adherence
+Treatments Covered
+Medications
+Lab tests
+Imaging
+Physical therapy
+Follow‑up visits
+Features
+Treatment plan timeline
+Daily medication reminders
+Missed‑dose detection and recovery guidance
+Test completion tracking
+Smart Logic
+Adjust reminders based on adherence history
+Flag non‑adherence risks early
+
+5.6 Predictive No-Show Prevention Engine
+What makes it different: Traditional systems send reminders. We predict and prevent no-shows before they happen.
+Risk scoring algorithm — Analyzes historical behavior, appointment type, time, weather, traffic patterns to calculate no-show probability
+Proactive intervention triggers — High-risk appointments trigger automated barrier removal (transportation booking, childcare suggestions, appointment slot alternatives)
+Dynamic reminder optimization — AI learns when each patient responds best (morning vs evening, 1 day vs 3 days prior)
+Automated rescheduling suggestions — If life events conflict (detected via calendar integration), agent proactively offers alternative slots
+PDD Implementation
+Prompts define the risk scoring logic and intervention strategies. Tests accumulate as we discover edge cases (e.g., patients who cancel due to weather, but not other reasons). Code regenerates with improved logic while maintaining all historical test coverage.
+
+5.7 Contextual Medication Intelligence
+Features
+Behavioral pattern learning (learns when you take meds)
+Context-aware reminder suppression (detects meetings, travel)
+Smart refill automation with supply level monitoring
+Medication interaction monitoring and side effect tracking
+What makes it different: Beyond simple reminders — understands your life context, medication interactions, and automatically handles refill logistics.
+Behavioral pattern learning — Learns when you typically take meds (with morning coffee, after dinner, before bed) and adapts reminder timing
+Context-aware reminder suppression — Detects when you're in meetings, traveling, or sleeping (via calendar/location) and adjusts reminder timing or delivery method (silent notification vs alarm)
+Smart refill automation — Monitors medication supply levels, predicts run-out dates, automatically requests refills 7 days before depletion, coordinates with preferred pharmacy, schedules pickup or delivery
+Medication interaction monitoring — When new prescriptions are added, automatically checks for: (a) Drug-drug interactions, (b) Drug-food interactions, (c) Duplicate therapies, (d) Dosing conflicts. Alerts patient and provider if issues detected.
+Adherence gap recovery — If a dose is missed, provides evidence-based guidance: 'Take now if within 4 hours, skip if past window' based on medication class and prescribing guidelines
+Side effect tracking & reporting — Proactive check-ins after starting new medications, correlates reported symptoms with known side effects, auto-reports concerning patterns to provider
+
+5.8 Intelligent Care Coordination Engine
+Features
+Automated referral workflow (finds specialists, schedules, sends records)
+Lab/imaging coordination with result tracking
+Post-visit action extraction and automated follow-up
+What makes it different: Orchestrates complex multi-provider care sequences that patients currently manage manually.
+Referral workflow automation — When specialist referral is ordered: (1) Finds in-network specialists with availability, (2) Ranks by quality scores and distance, (3) Schedules appointment, (4) Ensures medical records are sent, (5) Tracks referral completion
+Lab/imaging coordination — Orders from provider trigger: (a) Lab facility search (in-network, convenient), (b) Scheduling coordination, (c) Fasting/prep reminders, (d) Result tracking, (e) Automatic sharing with ordering provider, (f) Follow-up appointment scheduling if abnormal results
+Procedure pre-authorization pipeline — For scheduled procedures: (a) Initiates insurance pre-auth, (b) Schedules pre-op appointments, (c) Coordinates facility and anesthesia, (d) Manages medication holds, (e) Arranges transportation if needed
+Post-visit action tracking — After appointments, extracts action items from visit notes: (a) New prescriptions → verify insurance coverage, (b) Lab orders → schedule within recommended timeframe, (c) Follow-ups → automatically schedule, (d) Lifestyle changes → create tracking plan
+
+5.9 Preventive Care Intelligence
+Features
+Evidence-based screening recommendations based on age and risk
+Vaccine schedule management
+No manipulative game mechanics - respects patient autonomy
+What makes it different: Evidence-based nudges that respect patient autonomy rather than manipulative game mechanics.
+Age and risk-based screening recommendations — Tracks USPSTF guidelines and patient risk factors to surface timely recommendations: 'Based on your age (45) and family history, you're due for a colonoscopy screening'
+Vaccine schedule management — Maintains complete immunization record, sends reminders for: (a) Annual flu shots, (b) COVID boosters based on CDC timing, (c) Age-based vaccines (shingles at 50, pneumonia at 65), (d) Travel vaccines when calendar shows international trips
+Seasonal health campaigns — Proactive outreach for: (a) Flu shots (September-October), (b) Allergy medication refills (before spring), (c) Heat wave hydration for elderly patients, (d) Winter fall prevention for at-risk groups
+Chronic disease monitoring — For patients with chronic conditions, ensures: (a) Quarterly HbA1c for diabetics, (b) Annual eye exams for diabetics, (c) Lipid panels for cardiovascular disease, (d) Kidney function tests for specific medications
+No manipulation tactics — Zero gamification, points, streaks, or competitive elements. Instead: clear health rationale, easy opt-out, flexible timing, respectful frequency
+
+5.10 Financial Optimization Engine
+Features
+Deductible optimization for timing elective procedures
+Generic medication substitution suggestions
+Prescription savings program automation
+Facility cost comparison
+What makes it different: Proactively reduces healthcare costs through timing and provider optimization.
+Deductible optimization — Tracks annual deductible status and recommends timing for elective procedures: 'You've met your deductible — good time to schedule that dermatology appointment before year-end'
+Generic medication substitution — Identifies expensive brand-name prescriptions with generic alternatives, calculates savings, facilitates provider communication for prescription changes
+Prescription savings programs — Automatically checks GoodRx, manufacturer coupons, and patient assistance programs for all prescriptions, applies best option without patient action
+Facility cost comparison — For lab work and imaging, compares in-network facility costs and suggests lowest-cost option: 'Quest Diagnostics: $45 copay vs LabCorp: $15 copay for same test'
+
+5.11 Multi-Modal Communication
+Features
+Voice-first accessibility using ElevenLabs
+Intelligent channel selection per message type
+Language translation with cultural awareness
+What makes it different: Meets patients where they are with adaptive, accessible communication.
+Intelligent channel selection — Learns preferred communication channels per message type (urgent: phone call, routine: SMS, detailed: email, quick confirm: push notification)
+Voice-first for accessibility — Full voice interaction using ElevenLabs for: (a) Elderly patients, (b) Visual impairments, (c) Low literacy, (d) Hands-free convenience (driving, cooking)
+Language translation — All communications available in patient's preferred language with cultural context awareness
+Caregiver coordination mode — For elderly or dependent care, simultaneous communication with patient and designated caregivers with appropriate privacy controls
+
+6. Gamification Strategy (Key Differentiator)
+Design Principles
+No shame or punishment
+Reward consistency, not perfection
+Emphasize progress over outcomes
+Healthcare‑appropriate tone (serious but encouraging)
+
+6.1 Health XP & Levels
+Users earn Health XP for:
+Attending appointments
+Completing labs/tests
+Taking medications consistently
+Getting vaccines
+Annual checkups and screenings
+Levels (Examples)
+Level 1: Getting Started
+Level 5: Preventive Pro
+Level 10: Health Hero
+Levels unlock:
+Visual badges
+Custom agent personalities
+Enhanced insights
+
+6.2 Streaks & Consistency Rewards
+Streaks
+Medication streaks
+Appointment attendance streaks
+Preventive care streaks (yearly)
+Recovery‑Friendly
+Grace periods
+“Streak freeze” earned via XP
+
+6.3 Missions & Quests
+Short‑term goals framed as missions:
+Examples:
+“Flu Fighter: Get your flu shot this month”
+“Annual Check‑In: Complete your yearly physical”
+“Lab Legend: Finish all ordered labs”
+Missions include:
+Clear why it matters
+Deadline window
+XP + badge reward
+
+6.4 Real‑World Incentives (Optional)
+Partner‑driven rewards:
+HSA/FSA contributions
+Insurance premium discounts
+Pharmacy credits
+Employer wellness rewards
+(Phase 2+)
+
+6.5 Social & Care Circles (Opt‑In)
+Family or caregiver groups
+Shared milestones
+Gentle accountability (no leaderboards by default)
+
+7. Technical Architecture
+4.1 Prompt-Driven Development Implementation
+Our entire application follows PDD principles where prompts are the source of truth:
+Module architecture — Each feature (appointment management, medication tracking, insurance verification) is a separate module with: (a) .prompt file defining behavior, (b) Generated code from prompts, (c) Test suite that accumulates over time, (d) Usage examples and documentation
+Regeneration workflow — When requirements change: (1) Update .prompt file, (2) Run pdd-cli to regenerate code, (3) Execute accumulated tests, (4) All historical edge cases remain covered
+Test accumulation strategy — Every bug becomes a permanent test case: (a) Missed appointment due to timezone confusion? → Add test case, (b) Update prompt to handle timezones, (c) Regenerate code, (d) Test now permanently prevents this issue
+Prompt organization — /prompts directory structure: /prompts/core/appointment-manager.prompt, /prompts/core/medication-tracker.prompt, /prompts/integrations/insurance-verifier.prompt, /prompts/ai-agents/no-show-predictor.prompt
+4.2 AI Agent Architecture with Toolhouse
+Core AI capabilities — Claude Sonnet 4 for: (a) Natural language interaction, (b) Context understanding, (c) Decision-making logic, (d) Multi-step reasoning
+Toolhouse.ai integration — Gives agents real-world action capabilities: (a) Calendar API (Google Calendar, Outlook) for appointment management, (b) SMS/Email APIs for communications, (c) Healthcare APIs (Epic MyChart, Cerner) for EHR integration, (d) Insurance eligibility APIs (Availity, Change Healthcare), (e) Pharmacy APIs (Surescripts, RxNT) for prescriptions, (f) Payment APIs for financial transactions, (g) Maps/Transportation APIs (Uber Health, Lyft) for ride coordination
+Agent workflow examples — Appointment rescheduling agent: (1) Detects schedule conflict via calendar API, (2) Queries provider API for available slots, (3) Calculates patient preference score (time of day, day of week), (4) Sends rescheduling options via SMS, (5) Books appointment upon confirmation, (6) Updates calendar and sends confirmation
+4.3 Data Architecture & Security
+HIPAA compliance from day one — (a) End-to-end encryption for all PHI, (b) Encrypted databases (AWS RDS with encryption at rest), (c) Audit logging for all data access, (d) Role-based access controls, (e) Business Associate Agreements with all third parties
+Data minimization — Store only essential data: (a) Appointment metadata (not full medical records), (b) Medication names and schedules (not diagnoses), (c) Insurance eligibility status (not full member details), (d) User preferences and behavior patterns
+Integration security — OAuth 2.0 for all external API connections, token rotation, webhook signature verification, rate limiting and monitoring
+
+8. User Experience Flow (Example)
+User schedules appointment
+Agent confirms + verifies insurance
+Prep reminders sent automatically
+User attends appointment → XP earned
+Follow‑up labs added as mission
+Medication plan tracked daily
+Preventive care suggestions surfaced
+
+9. Privacy, Trust & Compliance
+Critical Requirements
+HIPAA compliance
+Data minimization
+Explicit consent for data sharing
+Clear explanations for AI actions
+Trust Features
+“Why am I seeing this?” explanations
+Manual override for all actions
+Audit logs for insurance checks
+
+10. MVP Scope vs Future
+MVP (Phase 1)
+Appointment management/tracking/reminders agent: Natural language scheduling, rescheduling, cancellation. Calendar integration via Toolhouse. Smart reminder system based on historical behavior.
+Medication tracking with contextual reminders: Add medications, set schedules, receive adaptive reminders. Simple missed-dose recovery guidance.
+Pharmacy refill reminders
+Basic insurance verification and eligibility checks: Pre-appointment eligibility check using insurance API integration. Simple in-network vs out-of-network detection.
+Core gamification (XP, missions)
+PDD demonstration module: At least one complete feature showing: .prompt file, generated code, test suite, regeneration workflow example
+Multi-channel communication: SMS and email support via Toolhouse APIs. Voice interaction using ElevenLabs for accessibility demo.
+Phase 2+
+Cost estimates
+Deeper insurance auth support
+Advanced personalization
+Provider and employer dashboards
+Employer & insurer incentives
+Care coordination engine (referrals, labs, imaging)
+Full EHR integration (Epic, Cerner)
+
+11. Risks & Mitigations
+Risk
+Impact
+Mitigation
+Data integration complexity
+Slow rollout, limited provider coverage
+Start with major EHRs (Epic, Cerner), use FHIR standards, manual entry fallback
+User trust in AI
+Low adoption, skepticism about automated decisions
+Transparent explanations, human override always available, gradual capability rollout
+Regulatory compliance
+HIPAA violations, fines, legal liability
+HIPAA compliance from day one, legal review, BAAs with all vendors, security audits
+Insurance API limitations
+Inaccurate eligibility checks, patient frustration
+Multiple API providers (Availity, Change Healthcare), human verification for high-stakes cases
+AI errors in medical context
+Medication errors, missed appointments, patient harm
+Conservative automation (no clinical decisions), human-in-loop for critical actions, extensive testing via PDD
+
+
+12. Open Questions
+Should insurance verification be real‑time or batch?
+How aggressive should preventive nudges be?
+Who is the primary buyer (consumer vs payer vs provider)?
+Should rewards ever be financial by default?
+
+13. Summary
+By combining AI agents, operational integrations, and humane gamification, CareLoop can meaningfully improve health outcomes while reducing system waste.
+
+End of PRD.
+
+## Requirements
+
+- [Add your requirements here]
+
+## Inputs
+
+- [Define input parameters]
+
+## Outputs
+
+- [Define expected outputs]

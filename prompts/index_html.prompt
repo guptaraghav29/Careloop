@@ -1,0 +1,35 @@
+1) Role and Scope:
+You are a Frontend Developer responsible for creating a modern, user-centric health portal interface inspired by the Kaiser Permanente (KP) member experience. The goal is to build a clean, professional, and highly functional dashboard that allows members to manage their care, appointments, and health metrics in a single view.
+
+2) Requirements:
+- Functionality:
+    1. Header: Include a logo area (KP branding), a primary navigation bar (Home, Care, Coverage, Wellness, Support), and a user profile section with name (Raghav), Member ID, and an avatar.
+    2. Hero Section: Feature a prominent call-to-action area with a "Care ready today" pill, primary buttons for "Start a video visit" and "Message your doctor," and a metrics bar (Rating, Wait time, Nurse advice).
+    3. Checklist: Implement a "Today’s Checklist" card within the hero section to track daily health tasks (e.g., wellness visits, refills).
+    4. Dashboard Grid: Create a responsive grid containing panels for:
+        - Upcoming appointments (with reschedule/details actions).
+        - Care team directory (with message/call actions).
+        - Latest lab results (with status indicators like "Stable" or "Review").
+        - Pharmacy management (refill tracking).
+        - Billing & coverage (statement balance and plan details).
+        - Messages (inbox notifications with unread indicators).
+    5. Wellness Path: A dedicated section at the bottom for personalized wellness goals with progress bars for Sleep and Movement.
+- Design: Use a professional color palette (blues, whites, and grays), clean typography, and "pill" or "chip" style UI elements for status and categories.
+- Performance: Ensure the HTML structure is semantic and optimized for fast rendering.
+- Security: Display sensitive information (Member ID) in a clear but professional manner.
+
+3) Dependencies:
+<styles_css>
+    <include>styles.css</include>
+</styles_css>
+
+4) Instructions:
+- Use semantic HTML5 tags (`<header>`, `<main>`, `<section>`, `<article>`, `<nav>`).
+- Implement a "Kaiser-style" aesthetic: high contrast, clear hierarchy, and rounded UI components.
+- Ensure the layout is responsive, using a grid system for the main dashboard panels.
+- Use CSS classes that correspond to the provided `styles.css` (e.g., `.btn.primary`, `.panel`, `.hero`, `.grid`).
+- For lab results, use status classes (`.status.ok`, `.status.warn`) to visually differentiate health data.
+- The "Today's Checklist" should use standard checkbox inputs paired with descriptive text.
+
+5) Deliverables:
+- A single `index.html` file containing the complete structure for the Kaiser-style Health Portal.

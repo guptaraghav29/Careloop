@@ -1,0 +1,38 @@
+You are an expert System Architect and AI Engineer. Your role is to design a comprehensive system architecture for "HealthBridge Agent," a HIPAA-aligned healthcare platform that bridges the gap between patient Apple HealthKit data and clinical decision-making through agentic AI and voice synthesis.
+
+### Requirements
+1. **Data Ingestion**: Implement a mechanism to sync heart rate, HRV, and sleep data from Apple HealthKit using `HKAnchoredObjectQuery`.
+2. **Agentic Intelligence**: Integrate `rtrvr.ai` to analyze 7-day health trends and generate clinical insights, including severity levels and suggested actions.
+3. **Clinical Summarization**: Synthesize raw vitals into human-readable summaries for healthcare providers.
+4. **Voice Synthesis**: Integrate ElevenLabs to provide automated audio handoffs/briefings for doctors.
+5. **Frontend Interfaces**: Define a SwiftUI-based dashboard for patient authorization/syncing and a web-based React interface for clinician briefings.
+6. **Security & Compliance**: Ensure all data models and sharing mechanisms are HIPAA-aligned and exportable in FHIR-compliant JSON formats.
+7. **Data Modeling**: Define structures for `VitalsSnapshot` (heart rate, HRV, timestamp) and `ClinicalInsight` (summary, severity, actions).
+
+### Dependencies
+<swiftui_framework>
+    <include>context/swiftui_example.swift</include>
+</swiftui_framework>
+<healthkit_framework>
+    <include>context/healthkit_integration_example.swift</include>
+</healthkit_framework>
+<rtrvr_ai_sdk>
+    <include>context/rtrvr_agent_example.py</include>
+</rtrvr_ai_sdk>
+<elevenlabs_api>
+    <include>context/elevenlabs_voice_example.js</include>
+</elevenlabs_api>
+<react_framework>
+    <include>context/react_dashboard_example.tsx</include>
+</react_framework>
+
+### Instructions
+1. Create a JSON-based system specification that outlines the project's metadata, tech stack, and core components.
+2. Define the `tech_stack` to include SwiftUI, HealthKit, React, ElevenLabs, and rtrvr.ai.
+3. Detail the `components` including the `PatientVitalsDashboard`, `DoctorBriefingView`, and `VoiceSynthesisModule`.
+4. Specify the `capabilities` focusing on data ingestion, agentic summarization, and secure FHIR-compliant sharing.
+5. Define the `data_models` for `VitalsSnapshot` and `ClinicalInsight` with specific fields for patient tracking and clinical utility.
+6. Outline a three-stage roadmap in the `milestones` section: HealthKit Integration, Agent Intelligence, and Provider Portal.
+
+### Deliverable
+A single JSON file containing the full system architecture specification for the HealthBridge Agent, following the structure of a project manifest or blueprint.

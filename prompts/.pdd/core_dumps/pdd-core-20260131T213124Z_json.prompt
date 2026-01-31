@@ -1,0 +1,35 @@
+Generate a JSON execution log for a PDD (Prompt-Driven Development) CLI tool that captures the metadata, environment state, and terminal output of a failed "change" command execution.
+
+### Requirements
+1. **Schema Compliance**: The output must be a valid JSON object following the PDD execution log schema (version 1).
+2. **Metadata**: Include `pdd_version` (0.0.135), a UTC timestamp, the specific `argv` used (`--force`, `change`, and a GitHub issue URL), and the current working directory.
+3. **Platform Information**: Capture system details including OS (Darwin/macOS), kernel version, and the specific Python version/build used.
+4. **Global Options**: Reflect the state of CLI flags, specifically setting `force` to true and `time` to 0.25.
+5. **Execution Trace**: 
+    - List "change" as the invoked subcommand.
+    - Detail the steps taken, showing a single step for the "change" command with zero cost and an empty model string.
+6. **Environment State**: Record relevant environment variables including `PATH`, `PDD_PATH`, `PDD_ENV` (set to prod), and `PDD_FORCE`.
+7. **Terminal Output Capture**: Provide a full string representation of the STDOUT, documenting the progression through an "Agentic Change Orchestrator" (Steps 1-5), including specific error messages regarding missing agent providers and a final failure due to a missing context key ('"url"').
+
+### Dependencies
+<pdd_cli_schema>
+    <include>context/pdd_log_schema_v1.json</include>
+</pdd_cli_schema>
+<system_context>
+    <include>context/darwin_arm64_env.sh</include>
+</system_context>
+
+### Instructions
+1. **Structure**: Initialize the JSON with `schema_version`, `pdd_version`, and `timestamp_utc`.
+2. **Platform Block**: Populate the `platform` object with Darwin-specific kernel and Python 3.12.12 details.
+3. **Options Block**: Ensure `global_options` reflects the command-line arguments provided in `argv`.
+4. **Environment Block**: Include the user's local paths and PDD-specific environment variables.
+5. **Terminal Output**: Construct the `terminal_output` string to simulate a CLI session where:
+    - The tool fetches a GitHub issue.
+    - It attempts 13 steps of an agentic workflow.
+    - Steps 1-4 fail due to "No agent providers are available".
+    - Step 5 fails with a "Context missing key" error.
+6. **Financials**: Set all cost-related fields to 0.0 as no LLM providers were successfully reached.
+
+### Deliverable
+A single JSON file containing the complete execution log as described above.
