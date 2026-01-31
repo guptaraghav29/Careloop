@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "pdd_version": "0.0.135",
+  "timestamp_utc": "20260131T191235Z",
+  "argv": [
+    "setup"
+  ],
+  "cwd": "/Users/kenniongubler/Desktop/PDD-Hackathon",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.2.0",
+    "version": "Darwin Kernel Version 25.2.0: Tue Nov 18 21:09:45 PST 2025; root:xnu-12377.61.12~1/RELEASE_ARM64_T6030",
+    "python": "3.13.7 (main, Aug 14 2025, 11:12:11) [Clang 16.0.0 (clang-1600.0.26.6)]"
+  },
+  "global_options": {
+    "force": false,
+    "strength": null,
+    "temperature": null,
+    "time": 0.25,
+    "verbose": false,
+    "quiet": false,
+    "local": false,
+    "context": null,
+    "output_cost": null,
+    "review_examples": false
+  },
+  "invoked_subcommands": [],
+  "total_cost": 0.0,
+  "steps": [],
+  "errors": [],
+  "environment": {
+    "PATH": "/Users/kenniongubler/.antigravity/antigravity/bin:/Users/kenniongubler/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pmk/env/global/bin:/Library/Apple/usr/bin:/Users/kenniongubler/.antigravity/antigravity/bin:/Users/kenniongubler/.local/bin",
+    "PDD_PATH": "/Users/kenniongubler/.local/share/uv/tools/pdd-cli/lib/python3.13/site-packages/pdd"
+  },
+  "file_contents": {},
+  "terminal_output": "=== STDOUT ===\nChecking for updates...\nShell completion already installed for zsh.\n\n--- Command Execution Summary ---\n-------------------------------------\n"
+}
