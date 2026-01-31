@@ -1,0 +1,92 @@
+version: "1.0"
+
+contexts:
+  # ============================================================
+  # CONFIGURATION / SERVICES
+  # ============================================================
+
+  firebase_config:
+    paths: ["*firebase_config*"]
+    defaults:
+      outputs:
+        code:
+          path: "lib/firebase.ts"
+
+  elevenlabs_service:
+    paths: ["*elevenlabs_service*"]
+    defaults:
+      outputs:
+        code:
+          path: "lib/elevenlabs.ts"
+
+  # ============================================================
+  # STATE MANAGEMENT
+  # ============================================================
+
+  chat_store:
+    paths: ["*chat_store*"]
+    defaults:
+      outputs:
+        code:
+          path: "lib/stores/chatStore.ts"
+
+  # ============================================================
+  # SERVICES
+  # ============================================================
+
+  message_service:
+    paths: ["*message_service*"]
+    defaults:
+      outputs:
+        code:
+          path: "lib/services/messageService.ts"
+
+  # ============================================================
+  # COMPONENTS
+  # ============================================================
+
+  voice_button_component:
+    paths: ["*voice_button_component*"]
+    defaults:
+      outputs:
+        code:
+          path: "src/components/VoiceButton.tsx"
+
+  enhanced_chat_interface:
+    paths: ["*enhanced_chat_interface*"]
+    defaults:
+      outputs:
+        code:
+          path: "src/components/ChatInterface.tsx"
+
+  # ============================================================
+  # PAGES (Next.js App Router)
+  # ============================================================
+
+  chat_page:
+    paths: ["*chat_page*"]
+    defaults:
+      outputs:
+        code:
+          path: "src/app/chat/page.tsx"
+
+  # ============================================================
+  # HTML MODIFICATIONS
+  # ============================================================
+
+  index_nav_update:
+    paths: ["*index_nav_update*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  # ============================================================
+  # DEFAULT FALLBACK
+  # ============================================================
+  # CRITICAL: prompts_dir goes ONLY here, not in other contexts!
+
+  default:
+    defaults:
+      prompts_dir: "prompts/"
+      generate_output_path: "src/"

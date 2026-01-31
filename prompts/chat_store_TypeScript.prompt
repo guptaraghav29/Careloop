@@ -1,0 +1,63 @@
+<prompt>
+You are implementing a Zustand state management store for chat functionality in a healthcare application. This store manages global chat state including messages, participants, chat status, and audio playback state, providing a centralized source of truth for the chat interface.
+
+Requirements
+1. Create a Zustand store with TypeScript-first strict typing
+2. Manage messages array with ChatMessage type (id, content, senderId, timestamp, status)
+3. Track chat status (idle, connecting, active, error) with proper state transitions
+4. Manage active participants list (user and doctor information)
+5. Track audio playback state (isPlaying, currentAudioId)
+6. Implement `sendMessage(content: string, participantId: string): void` action with optimistic updates
+7. Implement `updateStatus(status: ChatStatus): void` action for connection state management
+8. Implement `setAudioPlaying(isPlaying: boolean): void` action for audio state
+9. Implement `addParticipant(participant: Participant): void` and `removeParticipant(participantId: string): void` actions
+10. Support optimistic updates for sending messages with rollback on error
+11. Provide proper TypeScript types for all state properties and actions
+12. Follow Zustand best practices for state updates and derived state
+
+Dependencies
+
+<zustand_state_management_library_documentation>
+  <web>https://github.com/pmndrs/zustand</web>
+</zustand_state_management_library_documentation>
+
+<zustand_typescript_patterns_and_best_practices>
+  <web>https://docs.pmnd.rs/zustand/guides/typescript</web>
+</zustand_typescript_patterns_and_best_practices>
+
+<zustand_state_update_patterns>
+  <web>https://docs.pmnd.rs/zustand/guides/updating-state</web>
+</zustand_state_update_patterns>
+
+Instructions
+- Import `create` from 'zustand'
+- Define TypeScript interfaces for the store state: ChatMessage, ChatStatus, Participant, AudioState, ChatStore
+- Create the store using `create<ChatStore>()` with a setter function
+- Initialize state with empty messages array, idle status, empty participants array, and default audio state
+- For `sendMessage`: add the message to the messages array with a temporary ID, optimistically update the UI, and provide a mechanism to rollback if the actual send fails
+- For `updateStatus`: validate the status transition and update the chatStatus property
+- For `setAudioPlaying`: update the audio playback state with the provided boolean
+- For `addParticipant` and `removeParticipant`: manage the participants array by adding or removing entries
+- Use Immer middleware (if needed) for immutable state updates, or use spread operators for shallow updates
+- Export the custom hook `useChatStore` for components to access the store
+- Implement selector patterns for performance optimization when accessing specific state slices
+- Define clear TypeScript types for ChatStatus enum ('idle' | 'connecting' | 'active' | 'error')
+- Handle edge cases: adding duplicate participants, removing non-existent participants, invalid status transitions
+
+Deliverable
+- A TypeScript module at `lib/stores/chatStore.ts` exporting the Zustand store hook
+- Named export: `export const useChatStore`
+- Complete TypeScript interfaces for all state and action types
+- Store implementation with the four main actions and state management
+- Proper type safety with no `any` types
+
+Implementation assumptions (explicit)
+- Messages will be persisted to Firebase by other services (this store is for UI state only)
+- Optimistic updates will be rolled back by the calling component on error
+- The store will be used by React client components via the `useChatStore` hook
+- ChatMessage includes fields: id (string), content (string), senderId (string), timestamp (number), status ('pending' | 'sent' | 'delivered' | 'error')
+- Participant includes fields: id (string), name (string), role ('user' | 'doctor'), avatarUrl (optional string)
+- Audio state tracks whether any message audio is currently playing
+
+Please produce production-ready code that implements the Zustand chat store consistent with the above requirements.
+</prompt>

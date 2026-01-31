@@ -1,0 +1,71 @@
+<prompt>
+You are implementing the message service layer for Firebase Realtime Database operations in a healthcare chat application. This service handles CRUD operations for chat messages, real-time listeners, HIPAA-compliant data handling, and offline support.
+
+Requirements
+1. Implement `sendMessage(userId: string, doctorId: string, content: string): Promise<string>` to create a new message and return its ID
+2. Implement `subscribeToMessages(conversationId: string, callback: (messages: ChatMessage[]) => void): () => void` to listen for real-time message updates and return an unsubscribe function
+3. Implement `updateMessageStatus(messageId: string, status: MessageStatus): Promise<void>` to update message delivery status
+4. Implement `getConversationHistory(userId: string, doctorId: string, limit?: number): Promise<ChatMessage[]>` to fetch historical messages
+5. Structure messages in Firebase with proper indexing by timestamp and participant for efficient queries
+6. Implement HIPAA-compliant encryption helpers for sensitive message content (if required)
+7. Handle offline support with Firebase's offline persistence capabilities
+8. Provide proper error handling for DatabaseError and AuthError
+9. Use TypeScript with strict typing for all Firebase operations
+10. Index messages by conversationId (deterministic combination of userId and doctorId)
+11. Implement message ordering by timestamp in descending order (newest first)
+12. Validate message content before persisting to database
+
+Dependencies
+
+<firebase_config>
+  <include>src/firebase_config_example.ts</include>
+</firebase_config>
+
+<firebase_realtime_database_read_and_write_operations>
+  <web>https://firebase.google.com/docs/database/web/read-and-write</web>
+</firebase_realtime_database_read_and_write_operations>
+
+<firebase_data_structure_patterns_for_chat_messages>
+  <web>https://firebase.google.com/docs/database/web/lists-of-data</web>
+</firebase_data_structure_patterns_for_chat_messages>
+
+<firebase_security_rules_for_hipaa_compliance>
+  <web>https://firebase.google.com/docs/database/security</web>
+</firebase_security_rules_for_hipaa_compliance>
+
+Prompt Dependencies:
+- firebase_config_TypeScript.prompt
+
+Instructions
+- Import the Firebase database instance from 'lib/firebase'
+- Import Firebase Realtime Database functions: `ref`, `push`, `set`, `onValue`, `query`, `orderByChild`, `limitToLast`, `get`
+- Define TypeScript interfaces: ChatMessage, MessageStatus ('pending' | 'sent' | 'delivered' | 'read' | 'error')
+- For `sendMessage`: create a conversationId by sorting and combining userId and doctorId (e.g., `${sortedIds[0]}_${sortedIds[1]}`), generate a new message reference using `push(ref(database, 'messages/{conversationId}'))`, create the message object with id, content, senderId (userId), recipientId (doctorId), timestamp (Date.now()), status ('sent'), set the data using `set()`, return the message ID
+- For `subscribeToMessages`: create a database query ordered by timestamp, call `onValue()` to listen for changes, transform the snapshot data into a ChatMessage array, invoke the callback with the messages, return a function that calls `off()` to unsubscribe
+- For `updateMessageStatus`: locate the message by ID, update only the status field using `update()`, handle errors if message doesn't exist
+- For `getConversationHistory`: create a conversationId from userId and doctorId, query messages with `orderByChild('timestamp')` and optional `limitToLast(limit)`, fetch using `get()`, transform snapshot to array, return messages sorted newest first
+- Generate conversationId deterministically so the same pair always produces the same ID
+- Structure database path as: `/messages/{conversationId}/{messageId}`
+- Each message object should contain: { id, content, senderId, recipientId, timestamp, status, conversationId }
+- Implement proper error handling with try-catch blocks, throwing DatabaseError or AuthError as appropriate
+- Use strict TypeScript types for all function parameters and return values
+- Handle edge cases: empty content, invalid user IDs, network failures, permission errors
+
+Deliverable
+- A TypeScript module at `lib/services/messageService.ts` exporting the four main functions
+- Named exports: `sendMessage`, `subscribeToMessages`, `updateMessageStatus`, `getConversationHistory`
+- Complete TypeScript interfaces for ChatMessage and MessageStatus
+- Proper error handling with typed error classes
+- Database path structure documentation in code comments
+
+Implementation assumptions (explicit)
+- Firebase Realtime Database is initialized via lib/firebase.ts
+- ConversationId is deterministically generated from sorted participant IDs
+- Messages are stored under /messages/{conversationId}/{messageId}
+- Firebase security rules enforce user authentication and authorization
+- Offline persistence is handled by Firebase SDK configuration
+- Message content is plain text (encryption can be added later if needed for HIPAA)
+- The service will be used by React client components
+
+Please produce production-ready code that implements the message service consistent with the above requirements.
+</prompt>

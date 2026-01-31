@@ -1,0 +1,75 @@
+<prompt>
+You are implementing a Next.js App Router page component for the /chat route in a healthcare application. This page provides the main interface for doctor-patient messaging, handling authentication, server-side data fetching, and rendering the ChatInterface component.
+
+Requirements
+1. Create a Next.js App Router page component (server component by default)
+2. Implement authentication check via middleware or in the component (redirect to login if not authenticated)
+3. Fetch initial conversation data and doctor information server-side
+4. Display doctor information header with name, avatar, and specialty
+5. Include back navigation button to return to member portal
+6. Render the ChatInterface component with initial data
+7. Handle error states: doctor not found, unauthorized access, network failures
+8. Use Suspense for streaming initial messages (progressive rendering)
+9. Export metadata for SEO (page title, description)
+10. Follow Next.js 16 App Router conventions with proper file structure
+11. Style with Tailwind CSS following Coastal Aesthetic theme
+12. Support dynamic routing if needed (e.g., /chat/[doctorId])
+
+Dependencies
+
+<enhanced_chat_interface>
+  <include>src/enhanced_chat_interface_example.tsx</include>
+</enhanced_chat_interface>
+
+<next_js_app_router_page_conventions>
+  <web>https://nextjs.org/docs/app/building-your-application/routing/pages</web>
+</next_js_app_router_page_conventions>
+
+<next_js_server_actions_for_data_fetching>
+  <web>https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations</web>
+</next_js_server_actions_for_data_fetching>
+
+<next_js_metadata_api_for_seo>
+  <web>https://nextjs.org/docs/app/api-reference/file-conventions/metadata</web>
+</next_js_metadata_api_for_seo>
+
+Prompt Dependencies:
+- enhanced_chat_interface_TypeScriptReact.prompt
+
+Instructions
+- Create a page component at `src/app/chat/page.tsx` (server component, no 'use client' directive)
+- Export metadata object with title: "Chat with Doctor" and description for SEO
+- Define TypeScript interface for page props (if using searchParams or params)
+- Implement authentication check: access session/user from Firebase Auth or Next-Auth, redirect to login page if not authenticated
+- Fetch doctor information: for this initial implementation, use a hardcoded doctor object or fetch from Firebase database
+- Fetch initial conversation messages using getConversationHistory from message service (note: server components may need a server-compatible Firebase admin SDK)
+- Render a header section with: back button (← Back to Portal), doctor avatar, doctor name, doctor specialty
+- Render ChatInterface component with props: userId (from authenticated user), doctorId, doctorName, initialMessages
+- Wrap ChatInterface in Suspense with a loading fallback (skeleton or spinner)
+- Implement error handling: create an error.tsx file if needed, or use try-catch with error UI
+- Style header with Tailwind: sticky top-0, bg-white, shadow, padding, flex layout
+- Use Coastal Aesthetic colors for header and background
+- Handle edge cases: missing doctor data, no messages yet, authentication failure, network errors
+- Consider whether to make this a dynamic route (/chat/[doctorId]) or static route (/chat with doctorId from query params)
+
+Deliverable
+- A Next.js page component at `src/app/chat/page.tsx`
+- Default export: `export default function ChatPage()`
+- Exported metadata for SEO
+- Server-side data fetching for doctor and messages
+- Header with doctor information and back navigation
+- ChatInterface component integration
+- Error handling and loading states
+
+Implementation assumptions (explicit)
+- User authentication is handled by Firebase Auth with server-side session checking
+- DoctorId can be retrieved from user profile, query parameters, or hardcoded for MVP
+- Firebase Admin SDK is available for server-side database queries (or use client-side fetching in useEffect)
+- Initial messages are optional (ChatInterface can start empty and load via real-time subscription)
+- Back navigation goes to "/" (member portal index page)
+- Doctor information includes: id, name, specialty, avatarUrl
+- The page is protected and requires authentication
+- Tailwind CSS and Coastal Aesthetic theme are configured
+
+Please produce production-ready code that implements the Chat page component consistent with the above requirements.
+</prompt>

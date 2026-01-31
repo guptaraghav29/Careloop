@@ -1,0 +1,63 @@
+<prompt>
+You are implementing the ElevenLabs integration service for a healthcare chat application with voice capabilities. This service provides streaming text-to-speech for AI doctor responses and speech-to-text for user audio input, enabling real-time voice communication in a HIPAA-compliant manner.
+
+Requirements
+1. Integrate the ElevenLabs JavaScript SDK for voice agent functionality
+2. Implement `startVoiceSession(voiceId: string): Promise<void>` to initiate a voice conversation with microphone streaming
+3. Implement `stopVoiceSession(): void` to cleanly terminate the active voice session
+4. Implement `textToSpeech(text: string, voiceId: string): Promise<ArrayBuffer>` for converting text responses to audio
+5. Implement `onTranscript(callback: (text: string) => void): void` to register callbacks for receiving speech-to-text transcriptions
+6. Handle microphone permissions with proper error handling for PermissionDeniedError
+7. Implement HIPAA-compliant audio handling with no persistent storage of audio data
+8. Manage connection states (idle, connecting, connected, error) with proper state transitions
+9. Support audio streaming with real-time transcription delivery
+10. Handle API errors gracefully with retry logic for transient failures
+11. Implement proper cleanup on session termination to prevent memory leaks
+12. Use TypeScript with strict typing for all SDK interactions
+
+Dependencies
+
+<elevenlabs_javascript_sdk_repository_and_examples>
+  <web>https://github.com/elevenlabs/elevenlabs-js</web>
+</elevenlabs_javascript_sdk_repository_and_examples>
+
+<elevenlabs_streaming_api_documentation>
+  <web>https://elevenlabs.io/docs/api-reference/streaming</web>
+</elevenlabs_streaming_api_documentation>
+
+<browser_microphone_permissions_and_mediastream_api>
+  <web>https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia</web>
+</browser_microphone_permissions_and_mediastream_api>
+
+Instructions
+- Import the ElevenLabs SDK client and necessary types
+- Create a service class or module with the four main functions defined in the interface
+- For `startVoiceSession`: request microphone permissions using `navigator.mediaDevices.getUserMedia({ audio: true })`, initialize the ElevenLabs voice agent with the specified voiceId, establish the streaming connection, and handle PermissionDeniedError if user denies access
+- For `stopVoiceSession`: gracefully disconnect the active session, release microphone resources, and clean up event listeners
+- For `textToSpeech`: call the ElevenLabs text-to-speech API with the provided text and voiceId, return the audio data as an ArrayBuffer for playback
+- For `onTranscript`: register the callback to be invoked when speech-to-text transcriptions are received from the voice agent
+- Implement internal state management to track session status (idle, connecting, connected, error)
+- Store the ElevenLabs API key in environment variable `NEXT_PUBLIC_ELEVENLABS_API_KEY`
+- Ensure no audio data is persisted to disk or local storage (HIPAA compliance)
+- Add error handling for network failures, API errors, and permission issues
+- Implement proper TypeScript types for all function signatures and internal state
+- Support multiple concurrent transcript callbacks if needed
+- Handle edge cases: attempting to start a session while one is active, stopping when no session exists, calling functions before initialization
+
+Deliverable
+- A TypeScript module at `lib/elevenlabs.ts` exporting the four main functions
+- Named exports: `startVoiceSession`, `stopVoiceSession`, `textToSpeech`, `onTranscript`
+- Proper error handling with typed error classes (PermissionDeniedError, APIError)
+- State management for tracking active sessions
+- Type-safe implementation using ElevenLabs SDK TypeScript types
+
+Implementation assumptions (explicit)
+- The ElevenLabs API key is available in the environment as `NEXT_PUBLIC_ELEVENLABS_API_KEY`
+- Voice agents are pre-configured in the ElevenLabs dashboard with specific voiceIds
+- The application runs in a browser environment with access to navigator.mediaDevices
+- Audio playback will be handled by the calling component (this service only provides the audio data)
+- HIPAA compliance requires no persistent storage of PHI (including audio recordings)
+- The service will be used by React client components
+
+Please produce production-ready code that implements the ElevenLabs service consistent with the above requirements.
+</prompt>

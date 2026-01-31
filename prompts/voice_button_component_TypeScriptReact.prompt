@@ -1,0 +1,84 @@
+<prompt>
+You are implementing a React client component for voice chat functionality in a healthcare application. This component renders a toggle button for voice input with visual indicators and integrates with the ElevenLabs service for speech-to-text, enabling patients to communicate with doctors via voice.
+
+Requirements
+1. Create a React client component ('use client' directive) with TypeScript
+2. Accept props: `doctorId` (string, required), `voiceId` (string, optional), `onTranscript` (callback, optional), `disabled` (boolean, optional)
+3. Render a toggle button with microphone icon that starts/stops voice recording
+4. Display visual indicators: microphone icon, recording pulse animation, speaking state
+5. Integrate with ElevenLabs service to start/stop voice sessions
+6. Handle microphone permissions with user-friendly error messages
+7. Display real-time transcription preview below the button
+8. Show audio level indicators during recording
+9. Implement accessibility features: ARIA labels, keyboard navigation (Enter/Space to toggle), focus management
+10. Emit events: 'transcriptReceived' when text is transcribed, 'permissionDenied' when mic access fails, 'error' for other failures
+11. Use Tailwind CSS for styling with the Coastal Aesthetic theme
+12. Manage component state: isRecording, transcript, error, permissionStatus
+13. Implement proper cleanup on component unmount
+
+Dependencies
+
+<elevenlabs_service>
+  <include>src/elevenlabs_service_example.ts</include>
+</elevenlabs_service>
+
+<chat_store>
+  <include>src/chat_store_example.ts</include>
+</chat_store>
+
+<react_18_hooks_documentation>
+  <web>https://react.dev/reference/react/hooks</web>
+</react_18_hooks_documentation>
+
+<react_typescript_patterns>
+  <web>https://react.dev/learn/typescript</web>
+</react_typescript_patterns>
+
+<accessibility_guidelines_for_audio_controls>
+  <web>https://www.w3.org/WAI/WCAG21/Understanding/audio-control.html</web>
+</accessibility_guidelines_for_audio_controls>
+
+Prompt Dependencies:
+- elevenlabs_service_TypeScript.prompt
+- chat_store_TypeScript.prompt
+
+Instructions
+- Add 'use client' directive at the top of the file
+- Import React hooks: useState, useEffect, useCallback, useRef
+- Import ElevenLabs service functions: startVoiceSession, stopVoiceSession, onTranscript
+- Import Zustand store: useChatStore (if needed for global state)
+- Define TypeScript interface for component props: VoiceButtonProps with doctorId, voiceId?, onTranscript?, disabled?
+- Initialize state: isRecording (boolean), transcript (string), error (string | null), permissionStatus ('granted' | 'denied' | 'prompt')
+- Create a toggleRecording function that checks current recording state, requests permissions if needed, calls startVoiceSession or stopVoiceSession accordingly
+- Use useEffect to register transcript callback via onTranscript when component mounts
+- Handle permission denied errors by setting error state and showing user-friendly message
+- Render a button with microphone icon (use lucide-react or heroicons)
+- Apply conditional styling: blue background when recording, gray when idle, red pulse animation during recording
+- Display transcript preview below button if transcript exists
+- Add ARIA attributes: aria-label="Voice input", aria-pressed={isRecording}, role="button"
+- Support keyboard navigation: onKeyDown handler for Enter and Space keys
+- Implement useEffect cleanup to stop voice session on unmount
+- Use Tailwind classes matching Coastal Aesthetic: blues, teals, soft shadows, rounded corners
+- Handle edge cases: clicking while permission is being requested, rapid toggling, component unmount during active session
+- Call optional onTranscript prop when new transcripts arrive
+- Display error messages in a styled alert below the button
+
+Deliverable
+- A TypeScript React component at `src/components/VoiceButton.tsx`
+- Default export: `export default function VoiceButton(props: VoiceButtonProps)`
+- Props interface fully typed
+- Accessible button with keyboard support and ARIA labels
+- Visual feedback for all states (idle, recording, error)
+- Integration with ElevenLabs service
+
+Implementation assumptions (explicit)
+- The component will be used in a Next.js App Router environment
+- ElevenLabs service is already configured with API key
+- The voiceId prop corresponds to a pre-configured ElevenLabs voice agent
+- If voiceId is not provided, use a default voice ID from environment variable
+- Tailwind CSS is configured in the project
+- The component will be placed in ChatInterface or similar parent components
+- Transcripts will be sent to the chat via the parent component's onTranscript callback
+
+Please produce production-ready code that implements the VoiceButton component consistent with the above requirements.
+</prompt>

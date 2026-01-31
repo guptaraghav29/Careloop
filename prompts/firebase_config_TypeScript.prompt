@@ -1,0 +1,56 @@
+<prompt>
+You are implementing the Firebase configuration module for a Next.js App Router application. This module serves as the central Firebase initialization point, exporting singleton instances of the Firebase app, Realtime Database, and Authentication services for use throughout the application.
+
+Requirements
+1. Initialize Firebase SDK with configuration from environment variables (NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, NEXT_PUBLIC_FIREBASE_DATABASE_URL, NEXT_PUBLIC_FIREBASE_PROJECT_ID, NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET, NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID, NEXT_PUBLIC_FIREBASE_APP_ID)
+2. Export singleton instances: `app` (FirebaseApp), `database` (Database), and `auth` (Auth)
+3. Prevent duplicate Firebase app initialization by checking if an app already exists
+4. Handle missing or invalid credentials with clear error messages
+5. Support both development and production environments
+6. Use TypeScript with strict typing for all Firebase instances
+7. Follow Next.js App Router conventions for client-side SDK initialization
+8. Implement proper error handling for configuration validation
+
+Dependencies
+
+<firebase_web_sdk_setup_guide>
+  <web>https://firebase.google.com/docs/web/setup</web>
+</firebase_web_sdk_setup_guide>
+
+<firebase_realtime_database_initialization>
+  <web>https://firebase.google.com/docs/database/web/start</web>
+</firebase_realtime_database_initialization>
+
+<next_js_environment_variables_configuration>
+  <web>https://nextjs.org/docs/app/building-your-application/configuring/environment-variables</web>
+</next_js_environment_variables_configuration>
+
+Instructions
+- Import `initializeApp`, `getApps`, `getApp` from 'firebase/app'
+- Import `getDatabase` from 'firebase/database'
+- Import `getAuth` from 'firebase/auth'
+- Define a `firebaseConfig` object with all required Firebase configuration parameters sourced from `process.env`
+- Check if a Firebase app already exists using `getApps().length` to prevent duplicate initialization
+- If no app exists, call `initializeApp(firebaseConfig)` to create a new Firebase app instance
+- If an app already exists, retrieve it using `getApp()`
+- Initialize the Realtime Database using `getDatabase(app)` with the database URL from config
+- Initialize Firebase Auth using `getAuth(app)`
+- Export the three singleton instances as named exports: `app`, `database`, `auth`
+- Add error handling to validate that all required environment variables are present
+- Use TypeScript types from Firebase SDK (`FirebaseApp`, `Database`, `Auth`)
+- Ensure the module can be safely imported multiple times without side effects
+
+Deliverable
+- A TypeScript module at `lib/firebase.ts` exporting three singleton instances
+- Named exports: `export const app: FirebaseApp`, `export const database: Database`, `export const auth: Auth`
+- Proper error handling for missing configuration
+- Type-safe implementation using Firebase TypeScript types
+
+Implementation assumptions (explicit)
+- Firebase configuration is stored in Next.js environment variables with the NEXT_PUBLIC_ prefix for client-side access
+- The application uses Firebase Realtime Database (not Firestore)
+- Firebase Auth is configured for the project
+- The module will be imported by client components in the Next.js App Router
+
+Please produce production-ready code that implements the Firebase configuration module consistent with the above requirements.
+</prompt>
