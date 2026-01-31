@@ -51,7 +51,7 @@
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 
     <script type="text/babel">
-      const { useEffect, useMemo, useState } = React;
+      const { useEffect, useMemo, useState, useRef } = React;
 
       // Simple icon wrapper: lucide will replace <i data-lucide="..."> with an <svg>
       const Icon = ({ name, className = "" }) => (
@@ -70,6 +70,7 @@
         const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
         const [showFileClaim, setShowFileClaim] = useState(false);
         const [showFindProviders, setShowFindProviders] = useState(false);
+        const [showChatInterface, setShowChatInterface] = useState(false);
 
         const [selectedAppointment, setSelectedAppointment] = useState(null);
 
@@ -93,6 +94,17 @@
           time: "",
           reason: ""
         });
+
+        const [chatMessages, setChatMessages] = useState([
+          {
+            id: "1",
+            participantId: "assistant-1",
+            content: "Hello! I am Dr. AI. How can I assist you with your health today?",
+            timestamp: new Date(),
+            status: "delivered"
+          }
+        ]);
+        const [chatInput, setChatInput] = useState("");
 
         // Mock user data
         const userData = useMemo(() => ({
@@ -651,6 +663,136 @@
           </div>
         );
 
+        const handleSendChatMessage = (e) => {
+          e.preventDefault();
+          if (!chatInput.trim()) return;
+
+          const newMessage = {
+            id: Date.now().toString(),
+            participantId: "user-1",
+            content: chatInput,
+            timestamp: new Date(),
+            status: "sending"
+          };
+
+          setChatMessages(prev => [...prev, newMessage]);
+          setChatInput("");
+
+          // Simulate assistant response
+          setTimeout(() => {
+            const responseMessage = {
+              id: (Date.now() + 1).toString(),
+              participantId: "assistant-1",
+              content: "I'm processing your request. This is a demo response. In a full implementation, this would connect to your AI agent backend.",
+              timestamp: new Date(),
+              status: "delivered"
+            };
+            setChatMessages(prev => [...prev, responseMessage]);
+          }, 1500);
+        };
+
+        const ChatInterfaceModal = () => {
+          const messagesEndRef = useRef(null);
+
+          useEffect(() => {
+            if (messagesEndRef.current) {
+              messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+          }, [chatMessages]);
+
+          return (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
+                {/* Header */}
+                <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Icon name="sparkles" className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">CareLoop Assistant</h3>
+                      <p className="text-sm text-emerald-100 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
+                        Online
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowChatInterface(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <Icon name="x" className="w-6 h-6" />
+                  </button>
+                </header>
+
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-emerald-50/50 to-white">
+                  {chatMessages.map((msg) => {
+                    const isUser = msg.participantId === "user-1";
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}
+                      >
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                            isUser
+                              ? "bg-emerald-600 text-white"
+                              : "bg-teal-100 text-teal-700"
+                          }`}
+                        >
+                          <Icon name={isUser ? "user" : "sparkles"} className="w-5 h-5" />
+                        </div>
+                        <div
+                          className={`max-w-[75%] p-4 rounded-2xl shadow-sm ${
+                            isUser
+                              ? "bg-emerald-500 text-white rounded-tr-sm"
+                              : "bg-white border-2 border-emerald-100 text-gray-800 rounded-tl-sm"
+                          }`}
+                        >
+                          <p className="leading-relaxed">{msg.content}</p>
+                          <span
+                            className={`text-xs block mt-2 ${
+                              isUser ? "text-emerald-100" : "text-gray-500"
+                            }`}
+                          >
+                            {msg.timestamp.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input Area */}
+                <div className="p-6 bg-white border-t-2 border-gray-100">
+                  <form onSubmit={handleSendChatMessage} className="flex gap-3">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 px-4 py-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors text-gray-800 placeholder:text-gray-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!chatInput.trim()}
+                      className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl"
+                    >
+                      <Icon name="arrow-right" className="w-5 h-5" />
+                      Send
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
         const FindProvidersModal = () => (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -836,7 +978,7 @@
 
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => alert("Opening AI Agent chat interface...")}
+                onClick={() => setShowChatInterface(true)}
                 className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
               >
                 <Icon name="message-square" className="w-8 h-8 mb-3" />
@@ -1540,6 +1682,7 @@
             {showVerifyCoverage && <VerifyCoverageModal />}
             {showFileClaim && <FileClaimModal />}
             {showFindProviders && <FindProvidersModal />}
+            {showChatInterface && <ChatInterfaceModal />}
           </div>
         );
       };
