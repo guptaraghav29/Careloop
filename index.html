@@ -1,731 +1,1551 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Portal | Kaiser Permanente</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareLoop (Single-File Demo)</title>
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,600;700&display=swap');
-
-        :root {
-            color-scheme: light;
-            --bg: #f4f6f1;
-            --surface: #ffffff;
-            --surface-2: #eff3ee;
-            --ink: #11251f;
-            --muted: #5b6b66;
-            --accent: #0b7a64;
-            --accent-2: #195f8c;
-            --highlight: #d9f1ea;
-            --warning: #f6b351;
-            --shadow: 0 24px 60px rgba(17, 37, 31, 0.12);
-            --radius-lg: 28px;
-            --radius-md: 18px;
-            --radius-sm: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: "Archivo", sans-serif;
-            background: radial-gradient(circle at top, #ffffff 0%, #eef2ed 35%, #dde6e0 100%);
-            color: var(--ink);
-        }
-
-        .page {
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at 15% 20%, rgba(11, 122, 100, 0.12), transparent 40%),
-                radial-gradient(circle at 85% 10%, rgba(25, 95, 140, 0.12), transparent 35%),
-                radial-gradient(circle at 20% 80%, rgba(246, 179, 81, 0.16), transparent 45%);
-            padding: 28px 32px 64px;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 18px 28px;
-            box-shadow: var(--shadow);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .logo-mark {
-            font-family: "Fraunces", serif;
-            font-weight: 700;
-            font-size: 20px;
-            letter-spacing: 1px;
-            background: var(--accent);
-            color: #fff;
-            border-radius: 12px;
-            padding: 10px 12px;
-        }
-
-        .logo-title {
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .logo-subtitle {
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .nav {
-            display: flex;
-            gap: 18px;
-            font-size: 15px;
-        }
-
-        .nav a {
-            text-decoration: none;
-            color: var(--muted);
-            font-weight: 500;
-        }
-
-        .nav a:hover {
-            color: var(--ink);
-        }
-
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-text {
-            text-align: right;
-            font-size: 14px;
-        }
-
-        .profile-name {
-            font-weight: 600;
-        }
-
-        .profile-meta {
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--accent-2);
-            color: #fff;
-            display: grid;
-            place-items: center;
-            font-weight: 600;
-        }
-
-        .main {
-            margin-top: 32px;
-            display: grid;
-            gap: 32px;
-        }
-
-        .hero {
-            display: grid;
-            grid-template-columns: minmax(280px, 1.2fr) minmax(240px, 0.8fr);
-            gap: 32px;
-            align-items: stretch;
-        }
-
-        .hero-copy {
-            background: var(--surface);
-            padding: 36px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            display: grid;
-            gap: 22px;
-        }
-
-        .hero-copy h1 {
-            font-family: "Fraunces", serif;
-            font-size: 36px;
-            line-height: 1.2;
-        }
-
-        .hero-copy p {
-            color: var(--muted);
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .pill {
-            align-self: start;
-            background: var(--highlight);
-            color: var(--accent);
-            font-weight: 600;
-            font-size: 13px;
-            padding: 6px 12px;
-            border-radius: 999px;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 999px;
-            padding: 12px 20px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(17, 37, 31, 0.12);
-        }
-
-        .btn.primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn.secondary {
-            background: var(--surface-2);
-            color: var(--ink);
-        }
-
-        .btn.ghost {
-            background: transparent;
-            border: 1px solid #d9e3de;
-            color: var(--ink);
-        }
-
-        .btn.tiny {
-            padding: 8px 14px;
-            font-size: 12px;
-            border-radius: 10px;
-            background: var(--surface-2);
-        }
-
-        .hero-metrics {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 12px;
-            padding-top: 24px;
-            border-top: 1px solid #eff3ee;
-        }
-
-        .hero-metrics strong {
-            display: block;
-            font-size: 20px;
-        }
-
-        .hero-metrics span {
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .hero-card {
-            background: linear-gradient(135deg, #0b7a64 0%, #0f5c47 55%, #0c3b2d 100%);
-            color: #fff;
-            border-radius: var(--radius-lg);
-            padding: 28px;
-            display: grid;
-            gap: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-header h3 {
-            font-size: 20px;
-        }
-
-        .chip {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
-
-        .checklist {
-            list-style: none;
-            display: grid;
-            gap: 14px;
-        }
-
-        .checklist li {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 12px;
-            align-items: start;
-        }
-
-        .checklist input {
-            accent-color: #b1f0d0;
-            margin-top: 4px;
-            width: 16px;
-            height: 16px;
-        }
-
-        .checklist span {
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .panel {
-            background: var(--surface);
-            border-radius: var(--radius-md);
-            padding: 22px;
-            display: grid;
-            gap: 18px;
-            box-shadow: var(--shadow);
-        }
-
-        .panel header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel h3 {
-            font-size: 18px;
-        }
-
-        .panel.highlight {
-            background: linear-gradient(140deg, #ffffff 0%, #f3f7f2 45%, #e6f2ec 100%);
-            border: 1px solid #d4e7de;
-        }
-
-        .link {
-            border: none;
-            background: transparent;
-            color: var(--accent-2);
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .appointment, 
-        .care-team, 
-        .lab, 
-        .pharmacy, 
-        .billing, 
-        .message {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            background: var(--surface-2);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-        }
-
-        .appointment span, 
-        .care-team span, 
-        .pharmacy span, 
-        .billing span, 
-        .message span {
-            color: var(--muted);
-            font-size: 13px;
-            display: block;
-            margin-top: 4px;
-        }
-
-        .lab {
-            background: #f9fbf8;
-        }
-
-        .status {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 999px;
-        }
-
-        .status.ok {
-            background: #d7f3e7;
-            color: #0c6c4b;
-        }
-
-        .status.warn {
-            background: #fff1db;
-            color: #9a5b00;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-        }
-
-        .wellness {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            display: grid;
-            grid-template-columns: minmax(240px, 1.2fr) minmax(240px, 0.8fr);
-            gap: 24px;
-            align-items: center;
-            box-shadow: var(--shadow);
-        }
-
-        .wellness h2 {
-            font-family: "Fraunces", serif;
-            font-size: 28px;
-            margin-bottom: 12px;
-        }
-
-        .wellness p {
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .wellness-actions {
-            margin-top: 18px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .wellness-cards {
-            display: grid;
-            gap: 14px;
-        }
-
-        .well-card {
-            background: var(--surface-2);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            display: grid;
-            gap: 8px;
-        }
-        
-        .well-card h4 {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .progress {
-            height: 8px;
-            background: #d9e3de;
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .progress span {
-            display: block;
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #37b08f);
-        }
-
-        @media (max-width: 1024px) {
-            .topbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .nav {
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-
-            .profile {
-                justify-content: space-between;
-            }
-
-            .hero, 
-            .wellness {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .page {
-                padding: 20px;
-            }
-
-            .hero-copy h1 {
-                font-size: 28px;
-            }
-
-            .hero-metrics {
-                grid-template-columns: 1fr;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
+      * {
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      }
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
     </style>
-</head>
-<body>
-    <div class="page">
-        <!-- Header -->
-        <header class="topbar">
-            <div class="logo">
-                <div class="logo-mark">KP</div>
-                <div>
-                    <div class="logo-title">Kaiser Permanente</div>
-                    <div class="logo-subtitle">Member Portal</div>
-                </div>
-            </div>
-            <nav class="nav">
-                <a href="#">Home</a>
-                <a href="#">Care</a>
-                <a href="#">Coverage</a>
-                <a href="#">Wellness</a>
-                <a href="#">Support</a>
-            </nav>
-            <div class="profile">
-                <div class="profile-text">
-                    <div class="profile-name">Raghav</div>
-                    <div class="profile-meta">ID: 492-001-992</div>
-                </div>
-                <div class="avatar">R</div>
-            </div>
-        </header>
+  </head>
 
-        <main class="main">
-            <!-- Hero Section -->
-            <section class="hero">
-                <article class="hero-copy">
-                    <div class="pill">Care ready today</div>
+  <body class="min-h-screen">
+    <div id="root"></div>
+
+    <!-- React (UMD) + Babel (for JSX in-browser) -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide (non-React) -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+    <script type="text/babel">
+      const { useEffect, useMemo, useState } = React;
+
+      // Simple icon wrapper: lucide will replace <i data-lucide="..."> with an <svg>
+      const Icon = ({ name, className = "" }) => (
+        <i data-lucide={name} className={className}></i>
+      );
+
+      const CareLoop = () => {
+        const [activeTab, setActiveTab] = useState("dashboard");
+        const [showNotification, setShowNotification] = useState(false);
+        const [animateIn, setAnimateIn] = useState(false);
+        const [expandedAppointment, setExpandedAppointment] = useState(null);
+
+        const [showAddMedication, setShowAddMedication] = useState(false);
+        const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
+        const [showReschedule, setShowReschedule] = useState(false);
+        const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
+        const [showFileClaim, setShowFileClaim] = useState(false);
+        const [showFindProviders, setShowFindProviders] = useState(false);
+
+        const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+        const [medications, setMedications] = useState([
+          { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
+          { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
+          { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
+        ]);
+
+        const [newMedication, setNewMedication] = useState({
+          name: "",
+          dose: "",
+          frequency: "Once daily",
+          time: "08:00"
+        });
+
+        const [newAppointment, setNewAppointment] = useState({
+          type: "",
+          doctor: "",
+          date: "",
+          time: "",
+          reason: ""
+        });
+
+        // Mock user data
+        const userData = useMemo(() => ({
+          name: "Sarah Chen",
+          healthXP: 2840,
+          level: 7,
+          nextLevelXP: 3000,
+          streak: 12,
+          appointments: [
+            {
+              id: 1,
+              type: "Endocrinologist",
+              date: "Mar 15, 2026",
+              time: "9:00 AM",
+              doctor: "Dr. Jennifer Martinez",
+              status: "verified",
+              prep: "Fasting required - 8 hours",
+              location: "City Medical Center, 123 Health Ave, Suite 400",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$25",
+                coverage: "100% covered - In Network",
+                authRequired: false
+              },
+              notes: "Bring recent glucose logs. Discuss HbA1c results from March 8th lab work.",
+              reason: "Quarterly diabetes management check-up"
+            },
+            {
+              id: 2,
+              type: "Annual Eye Exam",
+              date: "Mar 22, 2026",
+              time: "2:30 PM",
+              doctor: "Dr. Robert Kim",
+              status: "verified",
+              location: "Vision Care Specialists, 456 Optical Blvd",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$0",
+                coverage: "100% covered - Preventive Care",
+                authRequired: false
+              },
+              notes: "Diabetic retinopathy screening included.",
+              reason: "Annual diabetic eye exam (required)"
+            },
+            {
+              id: 3,
+              type: "Lab Work - HbA1c",
+              date: "Mar 8, 2026",
+              time: "7:00 AM",
+              doctor: "Quest Diagnostics",
+              status: "pending",
+              location: "Quest Diagnostics - Downtown, 789 Lab Street",
+              insuranceDetails: {
+                provider: "Blue Cross Blue Shield",
+                copay: "$0",
+                coverage: "Verifying coverage...",
+                authRequired: false
+              },
+              notes: "Fasting required - 8-12 hours. Water is okay.",
+              reason: "Quarterly diabetes monitoring"
+            }
+          ],
+          missions: [
+            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
+            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
+            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
+          ],
+          insights: [
+            { type: "success", message: "Insurance verified for all upcoming appointments", icon: "check-circle" },
+            { type: "action", message: "Prescription refill ready for pickup at CVS", icon: "pill" },
+            { type: "reminder", message: "Fasting required before tomorrow's lab work", icon: "alert-circle" }
+          ],
+          insurance: {
+            provider: "Blue Cross Blue Shield PPO",
+            memberId: "BCB123456789",
+            groupNumber: "GRP-9876",
+            effectiveDate: "Jan 1, 2026",
+            deductible: { individual: 1500, met: 450, remaining: 1050 },
+            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
+            coverage: {
+              inNetwork: "80% after deductible",
+              outOfNetwork: "60% after deductible",
+              preventiveCare: "100% covered"
+            }
+          }
+        }), []);
+
+        useEffect(() => {
+          setAnimateIn(true);
+          const t = setTimeout(() => setShowNotification(true), 1500);
+          return () => clearTimeout(t);
+        }, []);
+
+        // After every render, (re)create lucide icons (since lucide works by DOM replacement)
+        useEffect(() => {
+          if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+          }
+        });
+
+        const handleMarkTaken = (medId) => {
+          setMedications(prev => prev.map(med =>
+            med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
+          ));
+          setShowNotification(true);
+          setTimeout(() => setShowNotification(false), 3000);
+        };
+
+        const handleAddMedication = () => {
+          if (newMedication.name && newMedication.dose) {
+            const newMed = {
+              id: medications.length + 1,
+              name: newMedication.name,
+              dose: newMedication.dose,
+              frequency: newMedication.frequency,
+              nextDose: `Today, ${newMedication.time}`,
+              streak: 0,
+              adherence: 0,
+              taken: false
+            };
+            setMedications([...medications, newMed]);
+            setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
+            setShowAddMedication(false);
+          }
+        };
+
+        const handleScheduleAppointment = () => {
+          if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
+            setShowScheduleAppointment(false);
+            setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
+            alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
+          }
+        };
+
+        const handleReschedule = (appointment) => {
+          setSelectedAppointment(appointment);
+          setShowReschedule(true);
+        };
+
+        const handleAddToCalendar = (appointment) => {
+          alert(
+            `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
+          );
+        };
+
+        const handleCancelAppointment = (appointment) => {
+          if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
+            alert(`Appointment cancelled. Your provider has been notified.`);
+          }
+        };
+
+        const handleGetDirections = (location) => {
+          alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
+        };
+
+        const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
+          const radius = (size - strokeWidth) / 2;
+          const circumference = radius * 2 * Math.PI;
+          const offset = circumference - (progress / 100) * circumference;
+
+          return (
+            <svg width={size} height={size} className="transform -rotate-90">
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="rgba(134, 191, 157, 0.2)"
+                strokeWidth={strokeWidth}
+                fill="none"
+              />
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="url(#gradient)"
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s ease-out" }}
+              />
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#86BF9D" />
+                  <stop offset="100%" stopColor="#5A9B73" />
+                </linearGradient>
+              </defs>
+            </svg>
+          );
+        };
+
+        const ScheduleAppointmentModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Schedule New Appointment</h3>
+                <button
+                  onClick={() => setShowScheduleAppointment(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Appointment Type</label>
+                  <select
+                    value={newAppointment.type}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, type: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  >
+                    <option value="">Select type...</option>
+                    <option>Primary Care Visit</option>
+                    <option>Specialist Consultation</option>
+                    <option>Lab Work</option>
+                    <option>Physical Therapy</option>
+                    <option>Annual Physical</option>
+                    <option>Follow-up Visit</option>
+                    <option>Urgent Care</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider/Doctor</label>
+                  <input
+                    type="text"
+                    value={newAppointment.doctor}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, doctor: e.target.value })}
+                    placeholder="e.g., Dr. Smith or City Medical Center"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                    <input
+                      type="date"
+                      value={newAppointment.date}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Time</label>
+                    <input
+                      type="time"
+                      value={newAppointment.time}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for Visit</label>
+                  <textarea
+                    value={newAppointment.reason}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, reason: e.target.value })}
+                    placeholder="Brief description of why you're scheduling this appointment"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                      <div className="font-semibold mb-1">AI Agent will help you:</div>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Verify your insurance coverage automatically</li>
+                        <li>• Send you prep instructions if needed</li>
+                        <li>• Add reminders to your calendar</li>
+                        <li>• Check for in-network providers</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={handleScheduleAppointment}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Schedule Appointment
+                  </button>
+                  <button
+                    onClick={() => setShowScheduleAppointment(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const RescheduleModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
+                <button
+                  onClick={() => setShowReschedule(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {selectedAppointment && (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
+                    <div className="text-sm text-gray-600 mb-1">Current Appointment</div>
+                    <div className="font-bold text-gray-800">{selectedAppointment.type}</div>
+                    <div className="text-gray-600">
+                      {selectedAppointment.date} at {selectedAppointment.time}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <h1>Good morning, Raghav.<br>Your health is on track.</h1>
-                        <p>You have no urgent alerts. Your care team is available for video visits or messaging if you need assistance today.</p>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
                     </div>
-                    <div class="hero-actions">
-                        <button class="btn primary">Start a video visit</button>
-                        <button class="btn secondary">Message your doctor</button>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
                     </div>
-                    <div class="hero-metrics">
-                        <div>
-                            <strong>4.9/5</strong>
-                            <span>Member Rating</span>
-                        </div>
-                        <div>
-                            <strong>&lt; 10m</strong>
-                            <span>Avg Wait Time</span>
-                        </div>
-                        <div>
-                            <strong>24/7</strong>
-                            <span>Nurse Advice</span>
-                        </div>
-                    </div>
-                </article>
+                  </div>
 
-                <article class="hero-card">
-                    <div class="card-header">
-                        <h3>Today's Checklist</h3>
-                        <span class="chip">3 Tasks</span>
+                  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <Icon name="check-circle" className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-emerald-800">
+                        <div className="font-semibold mb-1">Available Time Slots</div>
+                        <div className="space-y-2 mt-2">
+                          {[
+                            "March 18, 2026 - 10:00 AM",
+                            "March 19, 2026 - 2:30 PM",
+                            "March 22, 2026 - 9:15 AM"
+                          ].map((slot) => (
+                            <button
+                              key={slot}
+                              className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-emerald-100 transition-colors font-medium"
+                            >
+                              {slot}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <ul class="checklist">
-                        <li>
-                            <input type="checkbox" id="task1">
-                            <label for="task1"><span>Schedule annual wellness visit</span></label>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="task2" checked>
-                            <label for="task2"><span>Review lab results from Oct 12</span></label>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="task3">
-                            <label for="task3"><span>Refill Lisinopril prescription</span></label>
-                        </li>
-                    </ul>
-                </article>
-            </section>
+                  </div>
 
-            <!-- Dashboard Grid -->
-            <section class="grid">
-                <!-- Appointments -->
-                <article class="panel highlight">
-                    <header>
-                        <h3>Upcoming Care</h3>
-                        <button class="link">View all</button>
-                    </header>
-                    <div class="appointment">
-                        <div>
-                            <strong>Oct 24, 2:00 PM</strong>
-                            <span>Dr. Sarah Chen (Video)</span>
-                        </div>
-                        <button class="btn tiny">Details</button>
-                    </div>
-                    <div class="appointment">
-                        <div>
-                            <strong>Nov 12, 9:30 AM</strong>
-                            <span>Optometry Checkup</span>
-                        </div>
-                        <button class="btn tiny">Reschedule</button>
-                    </div>
-                </article>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setShowReschedule(false);
+                        alert("Appointment rescheduled! Confirmation sent to your email.");
+                      }}
+                      className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                    >
+                      Confirm Reschedule
+                    </button>
+                    <button
+                      onClick={() => setShowReschedule(false)}
+                      className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
 
-                <!-- Care Team -->
-                <article class="panel">
-                    <header>
-                        <h3>Care Team</h3>
-                        <button class="link">Directory</button>
-                    </header>
-                    <div class="care-team">
-                        <div>
-                            <strong>Dr. Sarah Chen</strong>
-                            <span>Primary Care Physician</span>
-                        </div>
-                        <button class="btn tiny">Message</button>
-                    </div>
-                    <div class="care-team">
-                        <div>
-                            <strong>Dr. Mark Alverez</strong>
-                            <span>Cardiology</span>
-                        </div>
-                        <button class="btn tiny">Call</button>
-                    </div>
-                </article>
+        const VerifyCoverageModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Verify Insurance Coverage</h3>
+                <button
+                  onClick={() => setShowVerifyCoverage(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
 
-                <!-- Lab Results -->
-                <article class="panel">
-                    <header>
-                        <h3>Recent Labs</h3>
-                        <button class="link">History</button>
-                    </header>
-                    <div class="lab">
-                        <div>
-                            <strong>Metabolic Panel</strong>
-                            <span>Oct 12, 2023</span>
-                        </div>
-                        <div class="status ok">Stable</div>
-                    </div>
-                    <div class="lab">
-                        <div>
-                            <strong>Lipid Profile</strong>
-                            <span>Oct 12, 2023</span>
-                        </div>
-                        <div class="status warn">Review</div>
-                    </div>
-                </article>
-
-                <!-- Pharmacy -->
-                <article class="panel">
-                    <header>
-                        <h3>Pharmacy</h3>
-                        <button class="link">Order Refill</button>
-                    </header>
-                    <div class="pharmacy">
-                        <div>
-                            <strong>Lisinopril (10mg)</strong>
-                            <span>Rx #49283 • 2 Refills left</span>
-                        </div>
-                        <button class="btn tiny">Track</button>
-                    </div>
-                    <div class="pharmacy">
-                        <div>
-                            <strong>Atorvastatin (20mg)</strong>
-                            <span>Rx #99210 • Auto-refill on</span>
-                        </div>
-                        <div class="status ok">Active</div>
-                    </div>
-                </article>
-
-                <!-- Billing -->
-                <article class="panel">
-                    <header>
-                        <h3>Billing & Coverage</h3>
-                        <button class="link">Pay Bill</button>
-                    </header>
-                    <div class="billing">
-                        <div>
-                            <strong>Statement Balance</strong>
-                            <span>Due Nov 01</span>
-                        </div>
-                        <strong>$25.00</strong>
-                    </div>
-                    <div class="billing">
-                        <div>
-                            <strong>Plan Deductible</strong>
-                            <span>Individual HMO</span>
-                        </div>
-                        <strong>$450 / $1500</strong>
-                    </div>
-                </article>
-
-                <!-- Messages -->
-                <article class="panel">
-                    <header>
-                        <h3>Messages</h3>
-                        <button class="link">Inbox (2)</button>
-                    </header>
-                    <div class="message">
-                        <div>
-                            <strong>Dr. Chen's Office</strong>
-                            <span>Re: Lab Results Follow-up</span>
-                        </div>
-                        <div class="dot"></div>
-                    </div>
-                    <div class="message">
-                        <div>
-                            <strong>Member Services</strong>
-                            <span>Flu Shot Availability</span>
-                        </div>
-                        <div class="dot"></div>
-                    </div>
-                </article>
-            </section>
-
-            <!-- Wellness Path -->
-            <section class="wellness">
+              <div className="space-y-4">
                 <div>
-                    <h2>Your Wellness Path</h2>
-                    <p>You are making great progress on your personalized health goals. Keep up the momentum to unlock new wellness rewards.</p>
-                    <div class="wellness-actions">
-                        <button class="btn primary">View Care Plan</button>
-                        <button class="btn ghost">Edit Goals</button>
-                    </div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Dr. Jennifer Martinez"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
-                <div class="wellness-cards">
-                    <div class="well-card">
-                        <h4>Sleep Quality</h4>
-                        <div class="progress"><span style="width: 85%"></span></div>
-                        <div style="font-size: 12px; color: var(--muted); display: flex; justify-content: space-between;">
-                            <span>7.5 hrs avg</span>
-                            <span>Goal: 8 hrs</span>
-                        </div>
-                    </div>
-                    <div class="well-card">
-                        <h4>Daily Movement</h4>
-                        <div class="progress"><span style="width: 60%"></span></div>
-                        <div style="font-size: 12px; color: var(--muted); display: flex; justify-content: space-between;">
-                            <span>6,000 steps</span>
-                            <span>Goal: 10,000</span>
-                        </div>
-                    </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Procedure/Service</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Annual Physical, MRI, Lab Work"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
-            </section>
-        </main>
-    </div>
-</body>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Facility</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., City Medical Center"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                      <div className="font-semibold mb-1">AI will verify:</div>
+                      <ul className="space-y-1 text-xs">
+                        <li>✓ Provider network status (in/out of network)</li>
+                        <li>✓ Procedure coverage and copay amount</li>
+                        <li>✓ Prior authorization requirements</li>
+                        <li>✓ Estimated out-of-pocket costs</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowVerifyCoverage(false);
+                      alert("Verification in progress! You'll receive results within 2-3 minutes.");
+                    }}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Verify Coverage
+                  </button>
+                  <button
+                    onClick={() => setShowVerifyCoverage(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const FileClaimModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">File Insurance Claim</h3>
+                <button
+                  onClick={() => setShowFileClaim(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Service</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                  <input
+                    type="text"
+                    placeholder="Doctor or facility name"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Description</label>
+                  <textarea
+                    placeholder="Describe the medical service received"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Charge</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Amount Paid</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Receipt/Invoice</label>
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-colors cursor-pointer"
+                    onClick={() => alert("Demo: file picker would open here.")}
+                  >
+                    <Icon name="file-text" className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <div className="text-gray-600 font-medium">Click to upload or drag and drop</div>
+                    <div className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 10MB</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowFileClaim(false);
+                      alert("Claim submitted! You'll receive updates on its status via email.");
+                    }}
+                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    Submit Claim
+                  </button>
+                  <button
+                    onClick={() => setShowFileClaim(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const FindProvidersModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Find In-Network Providers</h3>
+                <button
+                  onClick={() => setShowFindProviders(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option value="">Select specialty...</option>
+                    <option>Primary Care</option>
+                    <option>Cardiology</option>
+                    <option>Dermatology</option>
+                    <option>Endocrinology</option>
+                    <option>Orthopedics</option>
+                    <option>Ophthalmology</option>
+                    <option>Mental Health</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    placeholder="City, ZIP code, or address"
+                    defaultValue="Fremont, CA"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Distance</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Within 5 miles</option>
+                    <option>Within 10 miles</option>
+                    <option>Within 25 miles</option>
+                    <option>Within 50 miles</option>
+                  </select>
+                </div>
+
+                <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 space-y-3">
+                  <div className="font-semibold text-emerald-800 mb-2">In-Network Providers Found</div>
+
+                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-gray-800">Dr. Sarah Johnson</div>
+                        <div className="text-sm text-gray-600">Endocrinology • 2.3 miles away</div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs text-gray-600 ml-1">(247 reviews)</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => alert("Demo: booking flow would start here.")}
+                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                      >
+                        Book
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-600">City Medical Center • Accepting new patients</div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-gray-800">Dr. Michael Chen</div>
+                        <div className="text-sm text-gray-600">Endocrinology • 4.1 miles away</div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-amber-500" />
+                          <Icon name="star" className="w-4 h-4 text-gray-300" />
+                          <span className="text-xs text-gray-600 ml-1">(183 reviews)</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => alert("Demo: booking flow would start here.")}
+                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                      >
+                        Book
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-600">Health Partners Clinic • Accepting new patients</div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowFindProviders(false)}
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        const DashboardView = () => (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
+
+              <div className="relative flex items-start justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    Welcome back, {userData.name.split(" ")[0]}! 👋
+                  </h2>
+                  <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
+                      <div className="text-xs text-gray-500 font-medium">Level</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-center">
+                    <div className="text-sm font-semibold text-gray-700">
+                      {userData.healthXP} / {userData.nextLevelXP} XP
+                    </div>
+                    <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
+                <Icon name="zap" className="w-6 h-6 text-amber-500" />
+                <div>
+                  <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
+                  <div className="text-xs text-gray-600 font-medium">Current streak</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Icon name="sparkles" className="w-5 h-5 text-emerald-500" />
+                AI Insights
+              </h3>
+
+              {userData.insights.map((insight, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
+                    insight.type === "success"
+                      ? "bg-emerald-50 border-emerald-200"
+                      : insight.type === "action"
+                      ? "bg-blue-50 border-blue-200"
+                      : "bg-amber-50 border-amber-200"
+                  }`}
+                >
+                  <Icon
+                    name={insight.icon}
+                    className={`w-5 h-5 flex-shrink-0 ${
+                      insight.type === "success"
+                        ? "text-emerald-600"
+                        : insight.type === "action"
+                        ? "text-blue-600"
+                        : "text-amber-600"
+                    }`}
+                  />
+                  <p className="text-gray-700 font-medium">{insight.message}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => alert("Opening AI Agent chat interface...")}
+                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="message-square" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Talk to Agent</div>
+                <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("appointments")}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="calendar" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Schedule Visit</div>
+                <div className="text-blue-100 text-sm mt-1">Book appointment</div>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Icon name="award" className="w-5 h-5 text-amber-500" />
+                Active Missions
+              </h3>
+
+              {userData.missions.map((mission) => (
+                <div
+                  key={mission.id}
+                  className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <Icon name={mission.icon} className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800">{mission.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
+                      <div className="text-xs text-gray-500">{mission.deadline}</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                      style={{ width: `${mission.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+        const AppointmentsView = () => (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
+              <button
+                onClick={() => setShowScheduleAppointment(true)}
+                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <Icon name="calendar" className="w-4 h-4" />
+                Schedule New
+              </button>
+            </div>
+
+            {userData.appointments.map((apt) => (
+              <div
+                key={apt.id}
+                className="bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg overflow-hidden"
+              >
+                <div
+                  className="p-6 cursor-pointer"
+                  onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
+
+                        {apt.status === "verified" && (
+                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+                            <Icon name="check-circle" className="w-3 h-3" />
+                            Insurance Verified
+                          </span>
+                        )}
+                        {apt.status === "pending" && (
+                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
+                            <Icon name="clock" className="w-3 h-3" />
+                            Verifying
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-1 text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Icon name="calendar" className="w-4 h-4" />
+                          <span>{apt.date} at {apt.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="user" className="w-4 h-4" />
+                          <span>{apt.doctor}</span>
+                        </div>
+
+                        {apt.prep && !expandedAppointment && (
+                          <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                            <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      {expandedAppointment === apt.id ? (
+                        <Icon name="chevron-up" className="w-5 h-5 text-gray-600" />
+                      ) : (
+                        <Icon name="chevron-down" className="w-5 h-5 text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {expandedAppointment === apt.id && (
+                  <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-50 pt-4">
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Reason for Visit</div>
+                      <div className="text-gray-800 font-medium">{apt.reason}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Location</div>
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                        <Icon name="map-pin" className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-gray-800 font-medium">{apt.location}</div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleGetDirections(apt.location); }}
+                            className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm mt-1"
+                          >
+                            Get Directions →
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Insurance & Cost</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                          <div className="text-xs text-emerald-700 font-semibold mb-1">Provider</div>
+                          <div className="text-gray-800 font-bold">{apt.insuranceDetails.provider}</div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+                          <div className="text-xs text-blue-700 font-semibold mb-1">Copay</div>
+                          <div className="text-gray-800 font-bold text-xl">{apt.insuranceDetails.copay}</div>
+                        </div>
+                        <div className="col-span-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                          <div className="text-xs text-emerald-700 font-semibold mb-1">Coverage Status</div>
+                          <div className="text-gray-800 font-medium">{apt.insuranceDetails.coverage}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {apt.prep && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Preparation Required</div>
+                        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                          <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {apt.notes && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Notes</div>
+                        <div className="p-3 bg-gray-50 rounded-xl">
+                          <div className="text-gray-700 text-sm">{apt.notes}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleReschedule(apt); }}
+                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAddToCalendar(apt); }}
+                        className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                      >
+                        Add to Calendar
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCancelAppointment(apt); }}
+                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+        const MedicationsView = () => (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+              <button
+                onClick={() => setShowAddMedication(true)}
+                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <Icon name="plus" className="w-4 h-4" />
+                Add Medication
+              </button>
+            </div>
+
+            {showAddMedication && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800">Add New Medication</h3>
+                    <button onClick={() => setShowAddMedication(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Icon name="x" className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Medication Name</label>
+                      <input
+                        type="text"
+                        value={newMedication.name}
+                        onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
+                        placeholder="e.g., Aspirin"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
+                      <input
+                        type="text"
+                        value={newMedication.dose}
+                        onChange={(e) => setNewMedication({ ...newMedication, dose: e.target.value })}
+                        placeholder="e.g., 100mg"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
+                      <select
+                        value={newMedication.frequency}
+                        onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      >
+                        <option>Once daily</option>
+                        <option>Twice daily</option>
+                        <option>Three times daily</option>
+                        <option>Four times daily</option>
+                        <option>As needed</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Reminder Time</label>
+                      <input
+                        type="time"
+                        value={newMedication.time}
+                        onChange={(e) => setNewMedication({ ...newMedication, time: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={handleAddMedication}
+                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                      >
+                        Add Medication
+                      </button>
+                      <button
+                        onClick={() => setShowAddMedication(false)}
+                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-4">
+              {medications.map((med) => (
+                <div
+                  key={med.id}
+                  className={`bg-white rounded-2xl p-6 border-2 transition-all ${
+                    med.taken ? "border-emerald-300 bg-emerald-50/50" : "border-gray-100 hover:border-emerald-200"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">{med.name}</h3>
+                        {med.taken && <Icon name="check-circle" className="w-5 h-5 text-emerald-600" />}
+                      </div>
+                      <p className="text-gray-600 mt-1">{med.dose} • {med.frequency}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
+                      <div className="text-xs text-gray-500">Adherence</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon name="zap" className="w-4 h-4 text-amber-500" />
+                      <span className="font-semibold text-gray-700">{med.streak} day streak</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon name="clock" className="w-4 h-4 text-blue-500" />
+                      <span className="text-gray-600">Next: {med.nextDose}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                      style={{ width: `${med.adherence}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => handleMarkTaken(med.id)}
+                      disabled={med.taken}
+                      className={`flex-1 py-2 rounded-xl font-semibold transition-colors ${
+                        med.taken
+                          ? "bg-emerald-200 text-emerald-800 cursor-not-allowed"
+                          : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      }`}
+                    >
+                      {med.taken ? "✓ Taken Today" : "Mark Taken"}
+                    </button>
+                    <button
+                      onClick={() => alert(`View details for ${med.name}`)}
+                      className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                    >
+                      Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+                  <Icon name="pill" className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
+                  <p className="text-gray-600 text-sm mb-3">
+                    Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.
+                  </p>
+                  <button
+                    onClick={() => handleGetDirections("CVS Pharmacy, 123 Main Street, Fremont, CA")}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    Get Directions
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const InsuranceView = () => (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Insurance Dashboard</h2>
+
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+
+              <div className="relative">
+                <div className="flex items-start justify-between mb-8">
+                  <div>
+                    <div className="text-sm opacity-80 mb-1">Health Insurance</div>
+                    <div className="text-2xl font-bold">{userData.insurance.provider}</div>
+                  </div>
+                  <Icon name="shield" className="w-12 h-12 opacity-80" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <div className="text-xs opacity-70 mb-1">Member ID</div>
+                    <div className="font-mono text-lg font-semibold">{userData.insurance.memberId}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs opacity-70 mb-1">Group Number</div>
+                    <div className="font-mono text-lg font-semibold">{userData.insurance.groupNumber}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs opacity-70">Effective Date</div>
+                    <div className="font-semibold">{userData.insurance.effectiveDate}</div>
+                  </div>
+                  <button
+                    onClick={() => alert("Downloading insurance card...")}
+                    className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm"
+                  >
+                    Download Card
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-800">Annual Deductible</h3>
+                  <Icon name="dollar-sign" className="w-5 h-5 text-emerald-600" />
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex items-end justify-between mb-2">
+                    <div>
+                      <div className="text-3xl font-bold text-emerald-600">
+                        ${userData.insurance.deductible.met.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        of ${userData.insurance.deductible.individual.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-800">
+                        {Math.round((userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100)}%
+                      </div>
+                      <div className="text-xs text-gray-500">Met</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${(userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">${userData.insurance.deductible.remaining.toLocaleString()}</span> remaining
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-800">Out-of-Pocket Max</h3>
+                  <Icon name="credit-card" className="w-5 h-5 text-blue-600" />
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex items-end justify-between mb-2">
+                    <div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        ${userData.insurance.outOfPocketMax.met.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        of ${userData.insurance.outOfPocketMax.individual.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-800">
+                        {Math.round((userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100)}%
+                      </div>
+                      <div className="text-xs text-gray-500">Met</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${(userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">${userData.insurance.outOfPocketMax.remaining.toLocaleString()}</span> remaining
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Icon name="file-text" className="w-5 h-5 text-emerald-600" />
+                Coverage Details
+              </h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div className="text-xs text-emerald-700 font-semibold mb-1">In-Network</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.inNetwork}</div>
+                </div>
+                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                  <div className="text-xs text-amber-700 font-semibold mb-1">Out-of-Network</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.outOfNetwork}</div>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <div className="text-xs text-blue-700 font-semibold mb-1">Preventive Care</div>
+                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.preventiveCare}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4">Recent Claims</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">Lab Work - Jan 15</div>
+                      <div className="text-xs text-gray-600">Quest Diagnostics</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-700 font-bold">Approved</div>
+                      <div className="text-xs text-gray-600">$0 due</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">Office Visit - Jan 8</div>
+                      <div className="text-xs text-gray-600">Dr. Martinez</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-700 font-bold">Approved</div>
+                      <div className="text-xs text-gray-600">$25 copay</div>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => alert("View all claims history...")}
+                  className="w-full mt-4 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+                >
+                  View All Claims →
+                </button>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4">Prior Authorizations</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                    <div>
+                      <div className="font-semibold text-gray-800 text-sm">MRI Scan</div>
+                      <div className="text-xs text-gray-600">City Imaging Center</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-amber-700 font-bold">Pending</div>
+                      <div className="text-xs text-gray-600">2-3 days</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200 text-sm text-blue-800">
+                  <div className="font-semibold mb-1">AI Agent is tracking this</div>
+                  <div className="text-xs">You'll be notified as soon as it's approved</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <button
+                onClick={() => setShowVerifyCoverage(true)}
+                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="check-circle" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Verify Coverage</div>
+                <div className="text-emerald-100 text-sm mt-1">Check eligibility</div>
+              </button>
+
+              <button
+                onClick={() => setShowFileClaim(true)}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="file-text" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">File Claim</div>
+                <div className="text-blue-100 text-sm mt-1">Submit manually</div>
+              </button>
+
+              <button
+                onClick={() => setShowFindProviders(true)}
+                className="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+              >
+                <Icon name="building" className="w-8 h-8 mb-3" />
+                <div className="font-bold text-lg">Find Providers</div>
+                <div className="text-purple-100 text-sm mt-1">In-network search</div>
+              </button>
+            </div>
+          </div>
+        );
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
+            {showNotification && (
+              <div
+                className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm z-50"
+                style={{ animation: "slideInRight 0.5s ease-out" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Icon name="sparkles" className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-800">AI Agent Update</div>
+                    <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
+                  </div>
+                  <button onClick={() => setShowNotification(false)} className="text-gray-400 hover:text-gray-600 ml-auto">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-7xl mx-auto p-6">
+              <header className="mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                      <Icon name="heart" className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        CareLoop
+                      </h1>
+                      <p className="text-sm text-gray-500 font-medium">Your AI Healthcare Companion</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                      <Icon name="bell" className="w-6 h-6 text-gray-600" />
+                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <button className="p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                      <Icon name="phone" className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
+                      SC
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
+                <div className="flex gap-2">
+                  {[
+                    { id: "dashboard", label: "Dashboard", icon: "trending-up" },
+                    { id: "appointments", label: "Appointments", icon: "calendar" },
+                    { id: "medications", label: "Medications", icon: "pill" },
+                    { id: "insurance", label: "Insurance", icon: "shield" }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg"
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Icon name={tab.icon} className="w-5 h-5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </nav>
+
+              <main className={`transition-all duration-500 ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+                {activeTab === "dashboard" && <DashboardView />}
+                {activeTab === "appointments" && <AppointmentsView />}
+                {activeTab === "medications" && <MedicationsView />}
+                {activeTab === "insurance" && <InsuranceView />}
+              </main>
+            </div>
+
+            {showScheduleAppointment && <ScheduleAppointmentModal />}
+            {showReschedule && <RescheduleModal />}
+            {showVerifyCoverage && <VerifyCoverageModal />}
+            {showFileClaim && <FileClaimModal />}
+            {showFindProviders && <FindProvidersModal />}
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<CareLoop />);
+    </script>
+  </body>
 </html>
