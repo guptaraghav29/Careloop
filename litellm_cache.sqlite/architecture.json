@@ -2,7 +2,7 @@
     "name": "MyProject",
     "description": "An audio health monitoring system that tells a user what they might need to do to stay healthy.",
     "tech_stack": [
-        "SwiftUI",
+        "TypeScript",
         "Firebase",
         "ElevenLabs"
     ],
