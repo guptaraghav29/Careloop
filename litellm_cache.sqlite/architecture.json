@@ -1,16 +1,25 @@
 {
-    "name": "MyProject",
-    "description": "An audio health monitoring system that tells a user what they might need to do to stay healthy.",
+    "name": "HealthAgent",
+    "description": "HIPAA-compliant agent that synthesizes HealthKit data for clinical review.",
     "tech_stack": [
-        "TypeScript",
-        "Firebase",
-        "ElevenLabs"
+        "SwiftUI",
+        "HealthKit",
+        "ElevenLabs",
+        "FHIR-R4"
     ],
-    "components": [
+    "capabilities": [
         {
-            "name": "MainView",
-            "description": "An audio agent that tells a user what they might need to do to stay healthy."
+            "name": "ClinicalSync",
+            "description": "Fetches FHIR records and Vitals using HKAnchoredObjectQuery."
+        },
+        {
+            "name": "VoiceBriefing",
+            "description": "ElevenLabs-powered summary for doctors to hear patient status 'eyes-free'."
         }
     ],
-    "data_models": []
+    "data_models": [
+        "VitalsSummary",
+        "EHRConnection",
+        "PatientAuth"
+    ]
 }
