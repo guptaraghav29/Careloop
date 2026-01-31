@@ -1,46 +1,42 @@
 <!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>Issue 3</title>
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true, theme: 'default' });
-        window.addEventListener('load', () => {
-            const moduleData = { "schemas_TypeScript": { "filename": "schemas_TypeScript.prompt", "priority": 1, "description": "Defines Zod schemas for Account, CareTask, InsuranceVerification, and Mission entities. Exports inferred TypeScript types. Includes validation helpers for status enums and XP calculations.", "dependencies": [], "tags": ["shared", "validation", "types"], "filepath": "lib/schemas.ts" }, "tailwind_config_JavaScript": { "filename": "tailwind_config_JavaScript.prompt", "priority": 2, "description": "Extends Tailwind with custom color palette (sands, teals, soft greys), typography scale, spacing, and component variants for the healthcare dashboard aesthetic.", "dependencies": [], "tags": ["config", "styling", "design-system"], "filepath": "tailwind.config.js" }, "firebase_config_TypeScript": { "filename": "firebase_config_TypeScript.prompt", "priority": 3, "description": "Singleton Firebase initialization with environment variable configuration. Exports initialized app, auth, and db instances. Handles SSR compatibility for Next.js.", "dependencies": [], "tags": ["backend", "firebase", "config"], "filepath": "lib/firebase/config.ts" }, "firebase_auth_TypeScript": { "filename": "firebase_auth_TypeScript.prompt", "priority": 4, "description": "Wraps Firebase Auth with custom hooks (useAuth, useUser). Implements sign-in/sign-out flows. Handles auth state persistence and error handling with toast notifications.", "dependencies": ["firebase_config_TypeScript.prompt", "schemas_TypeScript.prompt"], "tags": ["backend", "firebase", "auth"], "filepath": "lib/firebase/auth.ts" }, "firestore_service_TypeScript": { "filename": "firestore_service_TypeScript.prompt", "priority": 5, "description": "Generic Firestore operations for Account, CareTask, InsuranceVerification, and Mission collections. Includes real-time listeners, batch operations, and query builders with Zod validation.", "dependencies": ["firebase_config_TypeScript.prompt", "schemas_TypeScript.prompt"], "tags": ["backend", "firebase", "database"], "filepath": "lib/firebase/firestore.ts" }, "user_store_TypeScript": { "filename": "user_store_TypeScript.prompt", "priority": 6, "description": "Zustand store for current user session. Syncs with Firebase Auth state. Caches account data locally. Handles hydration for SSR compatibility.", "dependencies": ["schemas_TypeScript.prompt", "firebase_auth_TypeScript.prompt"], "tags": ["state", "zustand", "auth"], "filepath": "stores/user-store.ts" }, "gamification_store_TypeScript": { "filename": "gamification_store_TypeScript.prompt", "priority": 7, "description": "Zustand store for gamification state. Tracks XP accumulation, level progression, streak maintenance, and grace period logic. Syncs with Firestore for persistence.", "dependencies": ["schemas_TypeScript.prompt", "firestore_service_TypeScript.prompt"], "tags": ["state", "zustand", "gamification"], "filepath": "stores/gamification-store.ts" }, "ui_primitives_TypeScriptReact": { "filename": "ui_primitives_TypeScriptReact.prompt", "priority": 8, "description": "Base UI components: Button, Card, Badge, Input, Toast, Modal. Built with Radix UI primitives and styled with Tailwind. Exports consistent props interfaces.", "dependencies": ["tailwind_config_JavaScript.prompt"], "tags": ["frontend", "ui", "components"], "filepath": "components/ui/primitives.tsx" }, "layout_components_TypeScriptReact": { "filename": "layout_components_TypeScriptReact.prompt", "priority": 9, "description": "Dashboard layout with responsive sidebar navigation, header with user menu, and main content area. Includes mobile drawer for navigation.", "dependencies": ["ui_primitives_TypeScriptReact.prompt", "user_store_TypeScript.prompt"], "tags": ["frontend", "layout", "components"], "filepath": "components/layout/DashboardLayout.tsx" }, "insurance_agent_TypeScript": { "filename": "insurance_agent_TypeScript.prompt", "priority": 10, "description": "Client for rtrvr.ai API to trigger insurance verification workflows. Handles CPT code lookups, status polling, and webhook callbacks. Returns structured verification results.", "dependencies": ["schemas_TypeScript.prompt", "firestore_service_TypeScript.prompt"], "tags": ["backend", "integration", "rtrvr"], "filepath": "lib/services/insurance-agent.ts" }, "audio_briefing_TypeScript": { "filename": "audio_briefing_TypeScript.prompt", "priority": 11, "description": "ElevenLabs Web SDK integration for generating and playing audio briefings. Handles text-to-speech requests, audio streaming, and playback via Web Audio API.", "dependencies": ["schemas_TypeScript.prompt", "user_store_TypeScript.prompt"], "tags": ["backend", "integration", "audio"], "filepath": "lib/services/audio-briefing.ts" }, "carebot_chat_TypeScriptReact": { "filename": "carebot_chat_TypeScriptReact.prompt", "priority": 12, "description": "Persistent sidebar chat interface for CareBot. Handles message input, conversation display, typing indicators, and intent routing for scheduling and pharmacy requests.", "dependencies": ["ui_primitives_TypeScriptReact.prompt", "schemas_TypeScript.prompt", "user_store_TypeScript.prompt"], "tags": ["frontend", "chat", "ai"], "filepath": "src/components/ChatInterface.tsx" }, "timeline_view_TypeScriptReact": { "filename": "timeline_view_TypeScriptReact.prompt", "priority": 13, "description": "SVG-based timeline showing labs, medications, and appointments. Supports zoom, pan, and click interactions. Color-coded by task type with status indicators.", "dependencies": ["ui_primitives_TypeScriptReact.prompt", "schemas_TypeScript.prompt", "firestore_service_TypeScript.prompt"], "tags": ["frontend", "visualization", "svg"], "filepath": "components/features/TimelineView.tsx" }, "mission_center_TypeScriptReact": { "filename": "mission_center_TypeScriptReact.prompt", "priority": 14, "description": "Grid of available and completed missions. Shows XP rewards, progress bars, and completion status. Handles mission claiming and streak displays.", "dependencies": ["ui_primitives_TypeScriptReact.prompt", "schemas_TypeScript.prompt", "gamification_store_TypeScript.prompt"], "tags": ["frontend", "gamification", "missions"], "filepath": "components/features/MissionCenter.tsx" }, "insurance_checker_TypeScriptReact": { "filename": "insurance_checker_TypeScriptReact.prompt", "priority": 15, "description": "Card component showing insurance verification status with color-coded indicators (green/amber/red). Triggers rtrvr.ai verification workflow and displays real-time updates.", "dependencies": ["ui_primitives_TypeScriptReact.prompt", "schemas_TypeScript.prompt", "insurance_agent_TypeScript.prompt"], "tags": ["frontend", "insurance", "verification"], "filepath": "components/features/InsuranceChecker.tsx" }, "root_layout_TypeScriptReact": { "filename": "root_layout_TypeScriptReact.prompt", "priority": 16, "description": "Next.js App Router root layout. Wraps app with Zustand providers, Toast provider, and global CSS. Sets metadata and fonts.", "dependencies": ["tailwind_config_JavaScript.prompt", "user_store_TypeScript.prompt", "gamification_store_TypeScript.prompt"], "tags": ["frontend", "layout", "nextjs"], "filepath": "src/app/layout.tsx" }, "dashboard_page_TypeScriptReact": { "filename": "dashboard_page_TypeScriptReact.prompt", "priority": 17, "description": "Main dashboard page combining TimelineView, MissionCenter, InsuranceChecker, and CareBotChat. Fetches user data and tasks. Handles audio briefing playback on login.", "dependencies": ["root_layout_TypeScriptReact.prompt", "layout_components_TypeScriptReact.prompt", "timeline_view_TypeScriptReact.prompt", "mission_center_TypeScriptReact.prompt", "insurance_checker_TypeScriptReact.prompt", "carebot_chat_TypeScriptReact.prompt", "audio_briefing_TypeScript.prompt", "firestore_service_TypeScript.prompt"], "tags": ["frontend", "page", "dashboard"], "filepath": "src/app/page.tsx" } };
-
-            // Add hover listeners to all nodes
-            setTimeout(() => {
-                const nodes = document.querySelectorAll('.node');
-                nodes.forEach(node => {
-                    const text = node.querySelector('.nodeLabel');
-                    if (!text) return;
-
-                    const nodeText = text.textContent.trim();
-                    const moduleId = nodeText.split(' ')[0];
-                    const data = moduleData[moduleId];
-
-                    if (data) {
-                        node.style.cursor = 'pointer';
-
-                        node.addEventListener('mouseenter', (e) => {
-                            showTooltip(e, data);
-                        });
-
-                        node.addEventListener('mouseleave', () => {
-                            hideTooltip();
-                        });
-                    }
+<html><head><meta charset="UTF-8"><title>Add CareLoop Logo and Title</title>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default'});
+window.addEventListener('load', () => {
+    const moduleData = {"navbar_branding_HTML": {"filename": "navbar_branding_HTML.prompt", "priority": 1, "description": "Modifies the topbar section of index.html to replace the existing Kaiser Permanente logo (KP) and title with a new CareLoop logo (CL) and title. Updates the logo-mark text content, logo-title text, and page title. Maintains existing CSS styling and layout structure while changing only the branding elements.", "dependencies": [], "tags": ["frontend", "html", "branding"], "filepath": "index.html"}};
+    
+    // Add hover listeners to all nodes
+    setTimeout(() => {
+        const nodes = document.querySelectorAll('.node');
+        nodes.forEach(node => {
+            const text = node.querySelector('.nodeLabel');
+            if (!text) return;
+            
+            const nodeText = text.textContent.trim();
+            const moduleId = nodeText.split(' ')[0];
+            const data = moduleData[moduleId];
+            
+            if (data) {
+                node.style.cursor = 'pointer';
+                
+                node.addEventListener('mouseenter', (e) => {
+                    showTooltip(e, data);
                 });
-            }, 500);
+                
+                node.addEventListener('mouseleave', () => {
+                    hideTooltip();
+                });
+            }
         });
-        function showTooltip(e, data) {
-            hideTooltip();
-
-            const tooltip = document.createElement('div');
-            tooltip.id = 'module-tooltip';
-            tooltip.innerHTML = `
+    }, 500);
+});
+function showTooltip(e, data) {
+    hideTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.id = 'module-tooltip';
+    tooltip.innerHTML = `
         <div style="font-weight:600;margin-bottom:8px;font-size:1.1em;">${data.filename}</div>
         <div style="margin-bottom:6px;"><strong>Priority:</strong> ${data.priority}</div>
         <div style="margin-bottom:6px;"><strong>Path:</strong> ${data.filepath}</div>
@@ -48,161 +44,53 @@
         <div style="margin-bottom:6px;"><strong>Dependencies:</strong> ${data.dependencies.length > 0 ? data.dependencies.join(', ') : 'None'}</div>
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ddd;font-size:0.9em;color:#444;">${data.description}</div>
     `;
-
-            document.body.appendChild(tooltip);
-
-            const rect = e.target.closest('.node').getBoundingClientRect();
-            tooltip.style.left = rect.right + 10 + 'px';
-            tooltip.style.top = rect.top + window.scrollY + 'px';
-        }
-        function hideTooltip() {
-            const existing = document.getElementById('module-tooltip');
-            if (existing) existing.remove();
-        }
-    </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box
-        }
-
-        body {
-            font-family: system-ui, sans-serif;
-            background: #fff;
-            color: #000;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #000
-        }
-
-        .diagram {
-            border: 1px solid #000;
-            padding: 2rem;
-            margin: 2rem 0;
-            overflow-x: auto;
-            position: relative
-        }
-
-        .mermaid {
-            display: flex;
-            justify-content: center
-        }
-
-        #module-tooltip {
-            position: absolute;
-            background: #fff;
-            border: 2px solid #000;
-            padding: 1rem;
-            max-width: 400px;
-            z-index: 1000;
-            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .node {
-            transition: opacity 0.2s
-        }
-
-        .node:hover {
-            opacity: 0.8
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Issue 3</h1>
-    <div class="diagram">
-        <pre class="mermaid">flowchart TB
-        PRD["Issue 3"]
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = e.target.closest('.node').getBoundingClientRect();
+    tooltip.style.left = rect.right + 10 + 'px';
+    tooltip.style.top = rect.top + window.scrollY + 'px';
+}
+function hideTooltip() {
+    const existing = document.getElementById('module-tooltip');
+    if (existing) existing.remove();
+}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#fff;color:#000;padding:2rem;max-width:1400px;margin:0 auto}
+h1{font-size:2rem;font-weight:600;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #000}
+.diagram{border:1px solid #000;padding:2rem;margin:2rem 0;overflow-x:auto;position:relative}
+.mermaid{display:flex;justify-content:center}
+#module-tooltip{
+    position:absolute;
+    background:#fff;
+    border:2px solid #000;
+    padding:1rem;
+    max-width:400px;
+    z-index:1000;
+    box-shadow:4px 4px 0 rgba(0,0,0,0.1);
+    font-size:0.9rem;
+    line-height:1.5;
+}
+.node{transition:opacity 0.2s}
+.node:hover{opacity:0.8}
+</style></head><body>
+<h1>Add CareLoop Logo and Title</h1>
+<div class="diagram"><pre class="mermaid">flowchart TB
+        PRD["Add CareLoop Logo and Title"]
     
     subgraph Frontend
-        ui_primitives_TypeScriptReact["ui_primitives_TypeScriptReact (8)"]
-        layout_components_TypeScriptReact["layout_components_TypeScriptReact (9)"]
-        carebot_chat_TypeScriptReact["carebot_chat_TypeScriptReact (12)"]
-        timeline_view_TypeScriptReact["timeline_view_TypeScriptReact (13)"]
-        mission_center_TypeScriptReact["mission_center_TypeScriptReact (14)"]
-        insurance_checker_TypeScriptReact["insurance_checker_TypeScriptReact (15)"]
-        root_layout_TypeScriptReact["root_layout_TypeScriptReact (16)"]
-        dashboard_page_TypeScriptReact["dashboard_page_TypeScriptReact (17)"]
-    end
-    
-    subgraph Backend
-        firebase_config_TypeScript["firebase_config_TypeScript (3)"]
-        firebase_auth_TypeScript["firebase_auth_TypeScript (4)"]
-        firestore_service_TypeScript["firestore_service_TypeScript (5)"]
-        insurance_agent_TypeScript["insurance_agent_TypeScript (10)"]
-        audio_briefing_TypeScript["audio_briefing_TypeScript (11)"]
-    end
-    
-    subgraph Shared
-        schemas_TypeScript["schemas_TypeScript (1)"]
-        tailwind_config_JavaScript["tailwind_config_JavaScript (2)"]
-        user_store_TypeScript["user_store_TypeScript (6)"]
-        gamification_store_TypeScript["gamification_store_TypeScript (7)"]
+        navbar_branding_HTML["navbar_branding_HTML (1)"]
     end
     
     PRD --> Frontend
-    PRD --> Backend
 
-    firebase_auth_TypeScript -->|uses| firebase_config_TypeScript
-    firebase_auth_TypeScript -->|uses| schemas_TypeScript
-    firestore_service_TypeScript -->|uses| firebase_config_TypeScript
-    firestore_service_TypeScript -->|uses| schemas_TypeScript
-    user_store_TypeScript -->|uses| schemas_TypeScript
-    user_store_TypeScript -->|uses| firebase_auth_TypeScript
-    gamification_store_TypeScript -->|uses| schemas_TypeScript
-    gamification_store_TypeScript -->|uses| firestore_service_TypeScript
-    ui_primitives_TypeScriptReact -->|uses| tailwind_config_JavaScript
-    layout_components_TypeScriptReact -->|uses| ui_primitives_TypeScriptReact
-    layout_components_TypeScriptReact -->|uses| user_store_TypeScript
-    insurance_agent_TypeScript -->|uses| schemas_TypeScript
-    insurance_agent_TypeScript -->|uses| firestore_service_TypeScript
-    audio_briefing_TypeScript -->|uses| schemas_TypeScript
-    audio_briefing_TypeScript -->|uses| user_store_TypeScript
-    carebot_chat_TypeScriptReact -->|uses| ui_primitives_TypeScriptReact
-    carebot_chat_TypeScriptReact -->|uses| schemas_TypeScript
-    carebot_chat_TypeScriptReact -->|uses| user_store_TypeScript
-    timeline_view_TypeScriptReact -->|uses| ui_primitives_TypeScriptReact
-    timeline_view_TypeScriptReact -->|uses| schemas_TypeScript
-    timeline_view_TypeScriptReact -->|uses| firestore_service_TypeScript
-    mission_center_TypeScriptReact -->|uses| ui_primitives_TypeScriptReact
-    mission_center_TypeScriptReact -->|uses| schemas_TypeScript
-    mission_center_TypeScriptReact -->|uses| gamification_store_TypeScript
-    insurance_checker_TypeScriptReact -->|uses| ui_primitives_TypeScriptReact
-    insurance_checker_TypeScriptReact -->|uses| schemas_TypeScript
-    insurance_checker_TypeScriptReact -->|uses| insurance_agent_TypeScript
-    root_layout_TypeScriptReact -->|uses| tailwind_config_JavaScript
-    root_layout_TypeScriptReact -->|uses| user_store_TypeScript
-    root_layout_TypeScriptReact -->|uses| gamification_store_TypeScript
-    dashboard_page_TypeScriptReact -->|uses| root_layout_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| layout_components_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| timeline_view_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| mission_center_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| insurance_checker_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| carebot_chat_TypeScriptReact
-    dashboard_page_TypeScriptReact -->|uses| audio_briefing_TypeScript
-    dashboard_page_TypeScriptReact -->|uses| firestore_service_TypeScript
-    
     classDef frontend fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
     classDef backend fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
     classDef shared fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
     classDef system fill:#E0E0E0,stroke:#616161,stroke-width:3px
     
-    class ui_primitives_TypeScriptReact,layout_components_TypeScriptReact,carebot_chat_TypeScriptReact,timeline_view_TypeScriptReact,mission_center_TypeScriptReact,insurance_checker_TypeScriptReact,root_layout_TypeScriptReact,dashboard_page_TypeScriptReact frontend
-    class firebase_config_TypeScript,firebase_auth_TypeScript,firestore_service_TypeScript,insurance_agent_TypeScript,audio_briefing_TypeScript backend
-    class schemas_TypeScript,tailwind_config_JavaScript,user_store_TypeScript,gamification_store_TypeScript shared
-    class PRD system</pre>
-    </div>
-</body>
-
-</html>
+    class navbar_branding_HTML frontend
+    class PRD system</pre></div>
+</body></html>

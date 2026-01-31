@@ -1,69 +1,28 @@
 # Dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# Testing
-coverage/
+# Environment variables
+.env
+.env.local
 
-# Next.js
-.next/
-out/
+# Build outputs
+dist/
 build/
 
-# Production
-dist/
-
-# Misc
+# OS files
 .DS_Store
-*.pem
+Thumbs.db
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
-.env
-.env*.local
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.idea/
+# IDE files
 .vscode/
+.idea/
 *.swp
 *.swo
 
-# Firebase
-.firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
-
-# PDD
-.pdd/
-*.prompt.tmp
+# Logs
+*.log
+npm-debug.log*
 
 # Cache
 .cache/
 *.sqlite
-*.sqlite-shm
-*.sqlite-wal
-litellm_cache.sqlite/
-
-# Logs
-logs/
-*.log
-
-# OS
-Thumbs.db

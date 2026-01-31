@@ -1,0 +1,59 @@
+<prompt>
+You are responsible for updating the navbar branding section in the index.html file. This component displays the application's logo, brand name, and subtitle in the topbar header. The task is to replace the existing Kaiser Permanente branding (logo mark "KP", title "Kaiser Permanente", and subtitle "Member Portal") with new CareLoop branding (logo mark "CL", title "CareLoop", and appropriate subtitle) while preserving all existing CSS styling, layout structure, and accessibility features.
+
+Requirements
+1. Update the logo-mark text content from "KP" to "CL" to reflect the CareLoop brand abbreviation
+2. Update the logo-title text content from "Kaiser Permanente" to "CareLoop"
+3. Update the page title in the <title> tag from "Member Portal | Kaiser Permanente" to "Member Portal | CareLoop"
+4. Preserve all existing CSS classes (.logo, .logo-mark, .logo-title, .logo-subtitle) and styling without modification
+5. Maintain the semantic HTML structure using proper nav elements and heading hierarchy
+6. Ensure the logo-subtitle remains as "Member Portal" or update if a different subtitle is specified
+7. Do not modify any other sections of the topbar (navigation links, profile section) or page content
+8. Maintain accessibility features including proper heading structure and semantic HTML elements
+9. Preserve all existing flexbox layout properties for logo alignment and spacing
+10. Ensure the branding update is complete and consistent across all relevant HTML elements
+
+Dependencies
+<mdn_documentation_for_semantic_html_nav_element_structure_and_accessibility>
+  <web>https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav</web>
+</mdn_documentation_for_semantic_html_nav_element_structure_and_accessibility>
+
+<flexbox_patterns_for_navbar_layout_and_alignment_of_logo_elements>
+  <web>https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Typical_use_cases_of_flexbox</web>
+</flexbox_patterns_for_navbar_layout_and_alignment_of_logo_elements>
+
+<best_practices_for_semantic_html_structure_in_navigation_components>
+  <web>https://web.dev/learn/html/semantic-html</web>
+</best_practices_for_semantic_html_structure_in_navigation_components>
+
+Instructions
+- Locate the topbar header section in index.html (lines 488-511 in the current file)
+- Within the .logo div container, find the .logo-mark element and change its text content from "KP" to "CL"
+- Find the .logo-title element and change its text content from "Kaiser Permanente" to "CareLoop"
+- Update the page <title> element in the <head> section to read "Member Portal | CareLoop"
+- Verify that the .logo-subtitle element contains "Member Portal" (or update if specified otherwise)
+- Ensure no CSS classes, attributes, or styling are modified - only the text content should change
+- Do not alter the navigation menu items, profile section, or any other topbar elements
+- Preserve the existing HTML structure with the logo-mark as a sibling to a div containing logo-title and logo-subtitle
+- Maintain all existing spacing, gap properties, and flexbox alignment defined in the CSS
+- Test that the visual layout remains identical except for the branding text changes
+- Ensure accessibility is maintained by keeping semantic HTML structure and proper element nesting
+
+Deliverable
+- Modified index.html file with updated branding in the topbar section
+- Logo mark changed from "KP" to "CL"
+- Logo title changed from "Kaiser Permanente" to "CareLoop"
+- Page title updated to "Member Portal | CareLoop"
+- All CSS styling and layout structure preserved exactly as before
+- No changes to navigation links, profile section, or page content outside the branding elements
+
+Implementation assumptions (explicit)
+- The logo-subtitle will remain "Member Portal" unless explicitly specified otherwise
+- All existing CSS classes and styling are production-ready and should not be modified
+- The color scheme defined in CSS custom properties (--accent, --surface, etc.) will work correctly with the new "CL" branding
+- The font families (Fraunces for logo-mark, Archivo for logo-title) are appropriate for CareLoop branding
+- No JavaScript or dynamic content affects the branding elements
+- The change is purely a text content update and does not require any structural HTML or CSS modifications
+
+Please produce production-ready HTML code that updates only the branding elements while preserving all other aspects of the topbar navigation component.
+</prompt>

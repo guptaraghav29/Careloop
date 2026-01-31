@@ -1,0 +1,22 @@
+version: "1.0"
+
+contexts:
+  # ============================================================
+  # HTML COMPONENTS
+  # ============================================================
+
+  navbar_branding:
+    paths: ["*navbar_branding*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  # ============================================================
+  # DEFAULT FALLBACK
+  # ============================================================
+
+  default:
+    defaults:
+      prompts_dir: "prompts/"
+      generate_output_path: "./"
