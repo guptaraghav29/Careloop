@@ -1,0 +1,94 @@
+<prompt>
+You are implementing an enhanced chat interface React component for a healthcare application that displays doctor-patient messaging with voice capabilities. This component integrates text and voice chat, shows conversation history with message bubbles, and provides real-time updates via Firebase.
+
+Requirements
+1. Create a React client component ('use client' directive) with TypeScript
+2. Accept props: `userId` (string, required), `doctorId` (string, required), `doctorName` (string, optional), `initialMessages` (ChatMessage[], optional)
+3. Display conversation history with message bubbles styled differently for user (right, blue) and doctor (left, teal)
+4. Integrate VoiceButton component for audio input
+5. Show typing indicators when doctor is composing a message
+6. Display audio playback status when message audio is playing
+7. Implement auto-scroll to latest message when new messages arrive
+8. Subscribe to real-time message updates via Firebase listeners
+9. Use responsive design with Tailwind CSS following Coastal Aesthetic theme
+10. Include loading states while fetching initial messages
+11. Implement error boundaries for graceful error handling
+12. Emit events: 'messageSent' when user sends a message, 'error' on failures
+13. Support both text input (textarea) and voice input (VoiceButton)
+14. Show message timestamps and delivery status indicators
+
+Dependencies
+
+<voice_button_component>
+  <include>src/voice_button_component_example.tsx</include>
+</voice_button_component>
+
+<message_service>
+  <include>src/message_service_example.ts</include>
+</message_service>
+
+<chat_store>
+  <include>src/chat_store_example.ts</include>
+</chat_store>
+
+<react_useeffect_for_firebase_listeners>
+  <web>https://react.dev/reference/react/useEffect</web>
+</react_useeffect_for_firebase_listeners>
+
+<react_useref_for_auto_scroll_implementation>
+  <web>https://react.dev/reference/react/useRef</web>
+</react_useref_for_auto_scroll_implementation>
+
+<tailwind_responsive_design>
+  <web>https://tailwindcss.com/docs/responsive-design</web>
+</tailwind_responsive_design>
+
+Prompt Dependencies:
+- voice_button_component_TypeScriptReact.prompt
+- message_service_TypeScript.prompt
+- chat_store_TypeScript.prompt
+
+Instructions
+- Add 'use client' directive at the top of the file
+- Import React hooks: useState, useEffect, useRef, useCallback
+- Import VoiceButton component from 'src/components/VoiceButton'
+- Import message service functions: sendMessage, subscribeToMessages, getConversationHistory
+- Import Zustand store: useChatStore
+- Define TypeScript interface for props: ChatInterfaceProps with userId, doctorId, doctorName?, initialMessages?
+- Initialize state: messages (ChatMessage[]), textInput (string), isLoading (boolean), isSending (boolean), error (string | null)
+- Create a messagesEndRef using useRef for auto-scroll functionality
+- Use useEffect to subscribe to real-time messages on mount, calling subscribeToMessages with conversationId, updating state when messages arrive, and returning the unsubscribe function in cleanup
+- Implement sendTextMessage function: validate input is not empty, call sendMessage service, clear input field, handle errors
+- Implement handleVoiceTranscript callback: receive transcript from VoiceButton, automatically send it as a message
+- Implement auto-scroll: use useEffect with messages dependency to scroll messagesEndRef into view
+- Render message bubbles: map over messages array, apply conditional styling based on senderId (user vs doctor), show timestamp, show delivery status icon
+- Render textarea for text input with Send button
+- Render VoiceButton component with onTranscript prop connected to handleVoiceTranscript
+- Style with Tailwind CSS: message bubbles with rounded corners, shadows, padding; user messages aligned right with blue background; doctor messages aligned left with teal background; responsive layout
+- Show loading spinner while isLoading is true
+- Display error alert if error state is set
+- Show typing indicator (animated dots) when doctor is typing (can be added later with typing events)
+- Use Coastal Aesthetic colors: ocean blues (#1e88e5, #0277bd), coastal teals (#00acc1, #00897b), soft whites (#f5f5f5)
+- Handle edge cases: empty message list, rapid message sending, component unmount during active subscription, very long messages
+
+Deliverable
+- A TypeScript React component at `src/components/ChatInterface.tsx`
+- Default export: `export default function ChatInterface(props: ChatInterfaceProps)`
+- Props interface fully typed
+- Real-time message updates via Firebase subscription
+- Integration with VoiceButton for voice input
+- Auto-scroll functionality
+- Responsive design with Coastal Aesthetic styling
+
+Implementation assumptions (explicit)
+- Firebase Realtime Database is configured and accessible via message service
+- Messages are ordered by timestamp (newest at bottom)
+- ConversationId is generated deterministically by the message service
+- ChatMessage interface includes: id, content, senderId, recipientId, timestamp, status
+- VoiceButton component is already implemented and available
+- Tailwind CSS is configured with the Coastal Aesthetic color palette
+- The component will be used in the /chat page
+- Error boundaries are handled by parent component or Next.js error.tsx
+
+Please produce production-ready code that implements the ChatInterface component consistent with the above requirements.
+</prompt>

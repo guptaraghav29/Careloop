@@ -1,0 +1,60 @@
+<prompt>
+You are implementing an HTML modification to the existing member portal index.html file to link the "Message your doctor" button to the new Next.js chat page. This update enables smooth navigation from the static HTML portal to the dynamic chat application.
+
+Requirements
+1. Locate the "Message your doctor" button in index.html (approximately line 524)
+2. Update the button to link to the /chat route
+3. Preserve existing button styling (secondary button class, Coastal Aesthetic)
+4. Choose implementation approach: convert to anchor tag (<a>) or add onclick handler
+5. Ensure smooth transition between static HTML page and Next.js app router
+6. Include data attributes for tracking and analytics (data-nav="chat")
+7. Maintain accessibility: proper ARIA labels, keyboard navigation
+8. Preserve the Coastal Aesthetic design consistency
+9. Test that clicking navigates to /chat page
+10. Ensure the link works in both development and production environments
+
+Dependencies
+
+No external dependencies for this HTML modification.
+
+Instructions
+- Open index.html and locate the "Message your doctor" button (search for the text or class name)
+- Identify the current button element (likely a <button> tag)
+- Choose one of two implementation approaches:
+
+  Approach 1 (Anchor tag):
+  - Replace <button> with <a href="/chat">
+  - Keep all existing CSS classes for styling
+  - Add role="button" for accessibility if needed
+  - Preserve the button appearance with display: inline-block
+
+  Approach 2 (JavaScript onclick):
+  - Keep the <button> element
+  - Add onclick="window.location.href='/chat'" attribute
+  - This approach preserves button semantics
+
+- Add a data attribute: data-nav="chat" for analytics tracking
+- Ensure the existing classes are preserved (likely includes classes like "btn", "btn-secondary", "coastal-blue", etc.)
+- Verify ARIA labels are present: aria-label="Navigate to chat with doctor"
+- Test accessibility: ensure Tab key navigation works, Enter/Space activate the link
+- Preserve surrounding HTML structure and sibling elements
+- Add a comment above the modified line: <!-- Updated to link to /chat page -->
+
+Deliverable
+- Modified index.html file with updated "Message your doctor" button
+- Button/link navigates to /chat route
+- Preserved styling and accessibility
+- Added tracking data attribute
+- Code comment documenting the change
+
+Implementation assumptions (explicit)
+- The "Message your doctor" button exists at approximately line 524 in index.html
+- The button uses secondary button styling from the Coastal Aesthetic theme
+- The /chat route is implemented in the Next.js App Router
+- The Next.js application is served from the same domain/origin as index.html
+- Navigation should use client-side routing (SPA-style) if Next.js is configured for it
+- The Coastal Aesthetic theme uses specific CSS classes that must be preserved
+- Analytics tracking is done via data attributes
+
+Please produce the HTML modification that updates the navigation button consistent with the above requirements.
+</prompt>
