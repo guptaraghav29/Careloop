@@ -1,597 +1,1019 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareLoop - HealthTrack AI</title>
-
-    <!-- Tailwind CSS -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareLoop Front-End 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/lucide-react@0.378.0/dist/umd/lucide-react.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        * {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    </style>
-</head>
-<body>
+  </head>
+  <body class="bg-slate-50">
     <div id="root"></div>
 
-    <!-- Lucide Icons as inline SVG components -->
     <script type="text/babel">
-        const { useState, useEffect } = React;
+      const { useState, useEffect } = React;
+      const {
+        Calendar,
+        Pill,
+        Shield,
+        Award,
+        TrendingUp,
+        Clock,
+        CheckCircle,
+        AlertCircle,
+        Phone,
+        MessageSquare,
+        Bell,
+        ChevronRight,
+        Sparkles,
+        Heart,
+        Activity,
+        Zap,
+        Star,
+        X,
+        Plus,
+        MapPin,
+        DollarSign,
+        FileText,
+        ChevronDown,
+        ChevronUp,
+        Building,
+        User,
+        CreditCard
+      } = lucideReact;
 
-        // Lucide Icon Components (simplified inline versions)
-        const Calendar = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-        );
+      const CareLoop = () => {
+        const [activeTab, setActiveTab] = useState('dashboard');
+        const [showNotification, setShowNotification] = useState(false);
+        const [animateIn, setAnimateIn] = useState(false);
+        const [expandedAppointment, setExpandedAppointment] = useState(null);
+        const [showAddMedication, setShowAddMedication] = useState(false);
+        const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
+        const [showReschedule, setShowReschedule] = useState(false);
+        const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
+        const [showFileClaim, setShowFileClaim] = useState(false);
+        const [showFindProviders, setShowFindProviders] = useState(false);
+        const [selectedAppointment, setSelectedAppointment] = useState(null);
+        const [medications, setMedications] = useState([
+          { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
+          { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
+          { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
+        ]);
+        const [appointments, setAppointments] = useState([
+          {
+            id: 1,
+            provider: "Dr. Sarah Chen",
+            specialty: "Endocrinology",
+            date: "Tomorrow",
+            time: "2:30 PM",
+            location: "Medical Center - Suite 402",
+            type: "Follow-up",
+            status: "upcoming",
+            notes: "Review blood glucose trends"
+          },
+          {
+            id: 2,
+            provider: "Dr. Michael Rodriguez",
+            specialty: "Primary Care",
+            date: "Jan 28",
+            time: "10:00 AM",
+            location: "Downtown Clinic",
+            type: "Annual Physical",
+            status: "completed",
+            notes: "Discussed lifestyle modifications"
+          },
+          {
+            id: 3,
+            provider: "Lisa Thompson",
+            specialty: "Nutritionist",
+            date: "Feb 5",
+            time: "11:00 AM",
+            location: "Virtual",
+            type: "Consultation",
+            status: "upcoming",
+            notes: "Meal planning session"
+          }
+        ]);
+        const [claims, setClaims] = useState([
+          { id: 1, service: "Lab Work", date: "Jan 10", amount: 245.0, status: "processed", covered: 196.0 },
+          { id: 2, service: "Specialist Visit", date: "Jan 15", amount: 350.0, status: "pending", covered: null },
+          { id: 3, service: "Prescription", date: "Jan 20", amount: 85.0, status: "approved", covered: 68.0 }
+        ]);
+        const [careTeam] = useState([
+          {
+            id: 1,
+            name: "Dr. Sarah Chen",
+            role: "Endocrinologist",
+            rating: 4.9,
+            nextAvailable: "Today",
+            experience: "12 yrs",
+            status: "online"
+          },
+          {
+            id: 2,
+            name: "Dr. Michael Rodriguez",
+            role: "Primary Care",
+            rating: 4.8,
+            nextAvailable: "Tomorrow",
+            experience: "8 yrs",
+            status: "busy"
+          },
+          {
+            id: 3,
+            name: "Lisa Thompson",
+            role: "Nutritionist",
+            rating: 4.9,
+            nextAvailable: "Feb 2",
+            experience: "6 yrs",
+            status: "online"
+          }
+        ]);
+        const [benefits] = useState([
+          {
+            id: 1,
+            type: "Primary Care",
+            copay: "$20",
+            deductible: "N/A",
+            coverage: "100%",
+            status: "active"
+          },
+          {
+            id: 2,
+            type: "Specialist",
+            copay: "$40",
+            deductible: "$200",
+            coverage: "80%",
+            status: "active"
+          },
+          {
+            id: 3,
+            type: "Prescription",
+            copay: "$10-$50",
+            deductible: "N/A",
+            coverage: "90%",
+            status: "active"
+          }
+        ]);
 
-        const Pill = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M10.5 20.5 20.5 10.5a7.07 7.07 0 1 0-10 10Z"></path>
-                <path d="m8 12 4 4"></path>
-            </svg>
-        );
+        useEffect(() => {
+          setTimeout(() => setAnimateIn(true), 100);
+          setTimeout(() => setShowNotification(true), 1000);
+        }, []);
 
-        const Shield = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
-            </svg>
-        );
-
-        const Award = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="6"></circle>
-                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
-            </svg>
-        );
-
-        const TrendingUp = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                <polyline points="17 6 23 6 23 12"></polyline>
-            </svg>
-        );
-
-        const Clock = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-        );
-
-        const CheckCircle = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-        );
-
-        const AlertCircle = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-        );
-
-        const Phone = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-        );
-
-        const MessageSquare = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-        );
-
-        const Bell = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-        );
-
-        const ChevronRight = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        );
-
-        const Sparkles = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.064a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"></path>
-                <path d="M20 3v4M22 5h-4M4 17v2M5 18H3"></path>
-            </svg>
-        );
-
-        const Heart = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-            </svg>
-        );
-
-        const Activity = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-            </svg>
-        );
-
-        const Zap = ({ className = "w-6 h-6", fill }) => (
-            <svg className={className} fill={fill || "none"} stroke="currentColor" viewBox="0 0 24 24">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-        );
-
-        const Star = ({ className = "w-6 h-6" }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-        );
-
-        // Main CareLoop Component
-        const CareLoop = () => {
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [showNotification, setShowNotification] = useState(false);
-            const [animateIn, setAnimateIn] = useState(false);
-
-            useEffect(() => {
-                setAnimateIn(true);
-                setTimeout(() => setShowNotification(true), 1500);
-            }, []);
-
-            // Mock user data
-            const userData = {
-                name: "Sarah Chen",
-                healthXP: 2840,
-                level: 7,
-                nextLevelXP: 3000,
-                streak: 12,
-                appointments: [
-                    { id: 1, type: "Endocrinologist", date: "Mar 15, 2026", time: "9:00 AM", doctor: "Dr. Jennifer Martinez", status: "verified", prep: "Fasting required - 8 hours" },
-                    { id: 2, type: "Annual Eye Exam", date: "Mar 22, 2026", time: "2:30 PM", doctor: "Dr. Robert Kim", status: "verified" },
-                    { id: 3, type: "Lab Work - HbA1c", date: "Mar 8, 2026", time: "7:00 AM", doctor: "Quest Diagnostics", status: "pending" }
-                ],
-                medications: [
-                    { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94 },
-                    { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98 },
-                    { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96 }
-                ],
-                missions: [
-                    { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: Shield },
-                    { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: Activity },
-                    { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: Zap }
-                ],
-                insights: [
-                    { type: "success", message: "Insurance verified for all upcoming appointments", icon: CheckCircle },
-                    { type: "action", message: "Prescription refill ready for pickup at CVS", icon: Pill },
-                    { type: "reminder", message: "Fasting required before tomorrow's lab work", icon: AlertCircle }
-                ]
-            };
-
-            const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
-                const radius = (size - strokeWidth) / 2;
-                const circumference = radius * 2 * Math.PI;
-                const offset = circumference - (progress / 100) * circumference;
-
-                return (
-                    <svg width={size} height={size} className="transform -rotate-90">
-                        <circle
-                            cx={size / 2}
-                            cy={size / 2}
-                            r={radius}
-                            stroke="rgba(134, 191, 157, 0.2)"
-                            strokeWidth={strokeWidth}
-                            fill="none"
-                        />
-                        <circle
-                            cx={size / 2}
-                            cy={size / 2}
-                            r={radius}
-                            stroke="url(#gradient)"
-                            strokeWidth={strokeWidth}
-                            fill="none"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={offset}
-                            strokeLinecap="round"
-                            style={{ transition: 'stroke-dashoffset 1s ease-out' }}
-                        />
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#86BF9D" />
-                                <stop offset="100%" stopColor="#5A9B73" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                );
-            };
-
-            const DashboardView = () => (
-                <div className="space-y-6">
-                    {/* Hero Section with Health Stats */}
-                    <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
-
-                        <div className="relative flex items-start justify-between">
-                            <div>
-                                <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome back, {userData.name.split(' ')[0]}! 👋</h2>
-                                <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
-                            </div>
-
-                            <div className="flex flex-col items-center">
-                                <div className="relative">
-                                    <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
-                                        <div className="text-xs text-gray-500 font-medium">Level</div>
-                                    </div>
-                                </div>
-                                <div className="mt-3 text-center">
-                                    <div className="text-sm font-semibold text-gray-700">{userData.healthXP} / {userData.nextLevelXP} XP</div>
-                                    <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Streak Counter */}
-                        <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
-                            <Zap className="w-6 h-6 text-amber-500" fill="currentColor" />
-                            <div>
-                                <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
-                                <div className="text-xs text-gray-600 font-medium">Current streak</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* AI Insights */}
-                    <div className="space-y-3">
-                        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-emerald-500" />
-                            AI Insights
-                        </h3>
-                        {userData.insights.map((insight, idx) => (
-                            <div
-                                key={idx}
-                                className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
-                                    insight.type === 'success' ? 'bg-emerald-50 border-emerald-200' :
-                                    insight.type === 'action' ? 'bg-blue-50 border-blue-200' :
-                                    'bg-amber-50 border-amber-200'
-                                }`}
-                            >
-                                <insight.icon className={`w-5 h-5 flex-shrink-0 ${
-                                    insight.type === 'success' ? 'text-emerald-600' :
-                                    insight.type === 'action' ? 'text-blue-600' :
-                                    'text-amber-600'
-                                }`} />
-                                <p className="text-gray-700 font-medium">{insight.message}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <button className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group">
-                            <MessageSquare className="w-8 h-8 mb-3 group-hover:rotate-12 transition-transform" />
-                            <div className="font-bold text-lg">Talk to Agent</div>
-                            <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
-                        </button>
-                        <button className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group">
-                            <Calendar className="w-8 h-8 mb-3 group-hover:rotate-12 transition-transform" />
-                            <div className="font-bold text-lg">Schedule Visit</div>
-                            <div className="text-blue-100 text-sm mt-1">Book appointment</div>
-                        </button>
-                    </div>
-
-                    {/* Active Missions */}
-                    <div className="space-y-3">
-                        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                            <Award className="w-5 h-5 text-amber-500" />
-                            Active Missions
-                        </h3>
-                        {userData.missions.map((mission) => (
-                            <div
-                                key={mission.id}
-                                className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
-                            >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-                                            <mission.icon className="w-5 h-5 text-emerald-600" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-gray-800">{mission.title}</h4>
-                                            <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
-                                        <div className="text-xs text-gray-500">{mission.deadline}</div>
-                                    </div>
-                                </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
-                                        style={{ width: `${mission.progress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-
-            const AppointmentsView = () => (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
-                        <button className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Schedule New
-                        </button>
-                    </div>
-
-                    {userData.appointments.map((apt) => (
-                        <div
-                            key={apt.id}
-                            className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg"
-                        >
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
-                                        {apt.status === 'verified' && (
-                                            <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                                <CheckCircle className="w-3 h-3" />
-                                                Insurance Verified
-                                            </span>
-                                        )}
-                                        {apt.status === 'pending' && (
-                                            <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                                <Clock className="w-3 h-3" />
-                                                Verifying
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1 text-gray-600">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4" />
-                                            <span>{apt.date} at {apt.time}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Activity className="w-4 h-4" />
-                                            <span>{apt.doctor}</span>
-                                        </div>
-                                        {apt.prep && (
-                                            <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                                                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                                                <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <button className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">Reschedule</button>
-                                    <button className="text-gray-500 hover:text-gray-600 font-semibold text-sm">Cancel</button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            );
-
-            const MedicationsView = () => (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
-                        <button className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2">
-                            <Pill className="w-4 h-4" />
-                            Add Medication
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4">
-                        {userData.medications.map((med) => (
-                            <div
-                                key={med.id}
-                                className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-emerald-200 transition-all"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-800 mb-1">{med.name}</h3>
-                                        <p className="text-gray-600">{med.dose} • {med.frequency}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
-                                        <div className="text-xs text-gray-500">Adherence</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Zap className="w-4 h-4 text-amber-500" fill="currentColor" />
-                                        <span className="font-semibold text-gray-700">{med.streak} day streak</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Clock className="w-4 h-4 text-blue-500" />
-                                        <span className="text-gray-600">Next: {med.nextDose}</span>
-                                    </div>
-                                </div>
-
-                                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
-                                        style={{ width: `${med.adherence}%` }}
-                                    ></div>
-                                </div>
-
-                                <div className="flex gap-2 mt-4">
-                                    <button className="flex-1 bg-emerald-50 text-emerald-700 py-2 rounded-xl font-semibold hover:bg-emerald-100 transition-colors">
-                                        Mark Taken
-                                    </button>
-                                    <button className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
-                                        Details
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Pharmacy Info */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
-                                <Pill className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
-                                <p className="text-gray-600 text-sm mb-3">Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.</p>
-                                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm">
-                                    Get Directions
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
-                    {/* Floating notification */}
-                    {showNotification && (
-                        <div
-                            className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm z-50"
-                            style={{
-                                animation: 'slideInRight 0.5s ease-out'
-                            }}
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                    <Sparkles className="w-5 h-5 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-gray-800">AI Agent Update</div>
-                                    <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
-                                </div>
-                                <button
-                                    onClick={() => setShowNotification(false)}
-                                    className="text-gray-400 hover:text-gray-600 ml-auto"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="max-w-7xl mx-auto p-6">
-                        {/* Header */}
-                        <header className="mb-8">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                                        <Heart className="w-8 h-8 text-white" />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                            CareLoop
-                                        </h1>
-                                        <p className="text-sm text-gray-500 font-medium">Your AI Healthcare Companion</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <button className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors">
-                                        <Bell className="w-6 h-6 text-gray-600" />
-                                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                                    </button>
-                                    <button className="p-3 hover:bg-gray-100 rounded-xl transition-colors">
-                                        <Phone className="w-6 h-6 text-gray-600" />
-                                    </button>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
-                                        SC
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* Navigation */}
-                        <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
-                            <div className="flex gap-2">
-                                {[
-                                    { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
-                                    { id: 'appointments', label: 'Appointments', icon: Calendar },
-                                    { id: 'medications', label: 'Medications', icon: Pill },
-                                    { id: 'insurance', label: 'Insurance', icon: Shield }
-                                ].map(tab => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
-                                            activeTab === tab.id
-                                                ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg'
-                                                : 'text-gray-600 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        <tab.icon className="w-5 h-5" />
-                                        <span>{tab.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </nav>
-
-                        {/* Main Content */}
-                        <main className={`transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                            {activeTab === 'dashboard' && <DashboardView />}
-                            {activeTab === 'appointments' && <AppointmentsView />}
-                            {activeTab === 'medications' && <MedicationsView />}
-                            {activeTab === 'insurance' && (
-                                <div className="bg-white rounded-2xl p-8 border-2 border-gray-100">
-                                    <div className="text-center py-12">
-                                        <Shield className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Insurance Dashboard</h2>
-                                        <p className="text-gray-600">All your coverage information, eligibility checks, and claims in one place.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </main>
-                    </div>
-                </div>
-            );
+        const markMedicationTaken = (id) => {
+          setMedications(prev => prev.map(med =>
+            med.id === id ? { ...med, taken: !med.taken } : med
+          ));
         };
 
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<CareLoop />);
+        const calculateAdherenceScore = () => {
+          const totalAdherence = medications.reduce((sum, med) => sum + med.adherence, 0);
+          return Math.round(totalAdherence / medications.length);
+        };
+
+        const MetricCard = ({ icon: Icon, label, value, trend, trendValue, color }) => (
+          <div className={`bg-gradient-to-br ${color} p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+              {trend && (
+                <div className="flex items-center text-white/80 text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                  +{trendValue}%
+                </div>
+              )}
+            </div>
+            <div className="text-white">
+              <div className="text-3xl font-bold mb-1">{value}</div>
+              <div className="text-white/80 text-sm">{label}</div>
+            </div>
+          </div>
+        );
+
+        const CircularProgress = ({ value, size = 120 }) => {
+          const circumference = 2 * Math.PI * 45;
+          const offset = circumference - (value / 100) * circumference;
+
+          return (
+            <div className="relative">
+              <svg width={size} height={size} className="transform -rotate-90">
+                <circle
+                  cx={size/2}
+                  cy={size/2}
+                  r="45"
+                  stroke="#e5e7eb"
+                  strokeWidth="10"
+                  fill="none"
+                />
+                <circle
+                  cx={size/2}
+                  cy={size/2}
+                  r="45"
+                  stroke="#10b981"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-800">{value}%</div>
+                  <div className="text-xs text-gray-500">Adherence</div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const QuickAction = ({ icon: Icon, label, onClick, color }) => (
+          <button
+            onClick={onClick}
+            className={`p-4 rounded-xl ${color} text-white hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl`}
+          >
+            <Icon className="w-6 h-6 mb-2" />
+            <div className="text-sm font-medium">{label}</div>
+          </button>
+        );
+
+        const MedicationCard = ({ medication }) => (
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-1">{medication.name}</h4>
+                <p className="text-sm text-gray-500">{medication.dose} • {medication.frequency}</p>
+              </div>
+              <button
+                onClick={() => markMedicationTaken(medication.id)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${medication.taken ? 'bg-emerald-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+              >
+                <CheckCircle className={`w-5 h-5 ${medication.taken ? 'text-white' : 'text-gray-500'}`} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Next dose</span>
+                <span className="text-sm font-medium text-gray-800">{medication.nextDose}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Adherence</span>
+                <span className="text-sm font-medium text-emerald-600">{medication.adherence}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Streak</span>
+                <div className="flex items-center">
+                  <Zap className="w-4 h-4 text-yellow-500 mr-1" />
+                  <span className="text-sm font-medium text-gray-800">{medication.streak} days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const AppointmentCard = ({ appointment }) => (
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-1">{appointment.provider}</h4>
+                <p className="text-sm text-gray-500">{appointment.specialty}</p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                appointment.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+              }`}>
+                {appointment.status}
+              </span>
+            </div>
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center text-sm text-gray-600">
+                <Calendar className="w-4 h-4 mr-2" />
+                {appointment.date} at {appointment.time}
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="w-4 h-4 mr-2" />
+                {appointment.location}
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <FileText className="w-4 h-4 mr-2" />
+                {appointment.type}
+              </div>
+            </div>
+            <button
+              onClick={() => setExpandedAppointment(expandedAppointment === appointment.id ? null : appointment.id)}
+              className="flex items-center text-emerald-600 text-sm font-medium hover:text-emerald-700"
+            >
+              {expandedAppointment === appointment.id ? 'Hide details' : 'View details'}
+              {expandedAppointment === appointment.id ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+            </button>
+            {expandedAppointment === appointment.id && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+                <p className="text-sm text-gray-600">{appointment.notes}</p>
+                {appointment.status === 'upcoming' && (
+                  <div className="flex space-x-2 mt-4">
+                    <button
+                      onClick={() => {
+                        setSelectedAppointment(appointment);
+                        setShowReschedule(true);
+                      }}
+                      className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                    >
+                      Reschedule
+                    </button>
+                    <button className="flex-1 py-2 px-4 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
+                      Join Visit
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+
+        const ClaimCard = ({ claim }) => (
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-1">{claim.service}</h4>
+                <p className="text-sm text-gray-500">{claim.date}</p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                claim.status === 'processed' ? 'bg-green-100 text-green-700' :
+                claim.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+              }`}>
+                {claim.status}
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Total amount</span>
+                <span className="text-sm font-medium text-gray-800">${claim.amount}</span>
+              </div>
+              {claim.covered && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Covered</span>
+                  <span className="text-sm font-medium text-emerald-600">${claim.covered}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+        const CareTeamCard = ({ member }) => (
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-1">{member.name}</h4>
+                <p className="text-sm text-gray-500">{member.role}</p>
+              </div>
+              <div className={`w-3 h-3 rounded-full ${member.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                {member.rating} rating
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="w-4 h-4 mr-2" />
+                Next available: {member.nextAvailable}
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Award className="w-4 h-4 mr-2" />
+                {member.experience} experience
+              </div>
+            </div>
+            <button className="mt-4 w-full py-2 px-4 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
+              Message
+            </button>
+          </div>
+        );
+
+        const BenefitsCard = ({ benefit }) => (
+          <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-1">{benefit.type}</h4>
+                <p className="text-sm text-gray-500">Copay: {benefit.copay}</p>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                {benefit.status}
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Deductible</span>
+                <span className="text-sm font-medium text-gray-800">{benefit.deductible}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Coverage</span>
+                <span className="text-sm font-medium text-emerald-600">{benefit.coverage}</span>
+              </div>
+            </div>
+          </div>
+        );
+
+        const ScheduleAppointmentModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Schedule New Appointment</h3>
+                <button
+                  onClick={() => setShowScheduleAppointment(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Appointment Type</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Primary Care</option>
+                    <option>Specialist</option>
+                    <option>Virtual Visit</option>
+                    <option>Lab Work</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Date</label>
+                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Time</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Morning (8AM - 12PM)</option>
+                    <option>Afternoon (12PM - 4PM)</option>
+                    <option>Evening (4PM - 7PM)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for Visit</label>
+                  <textarea rows="3" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="Brief description..."></textarea>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowScheduleAppointment(false)}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                  Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        const RescheduleModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
+                <button
+                  onClick={() => setShowReschedule(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-600 mb-2">Current appointment</p>
+                  <p className="font-medium text-gray-800">{selectedAppointment?.provider}</p>
+                  <p className="text-sm text-gray-600">{selectedAppointment?.date} at {selectedAppointment?.time}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
+                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>9:00 AM</option>
+                    <option>10:30 AM</option>
+                    <option>2:00 PM</option>
+                    <option>3:30 PM</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowReschedule(false)}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                  Reschedule
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        const VerifyCoverageModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Verify Coverage</h3>
+                <button
+                  onClick={() => setShowVerifyCoverage(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Specialist Visit</option>
+                    <option>Lab Tests</option>
+                    <option>Imaging</option>
+                    <option>Physical Therapy</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider</label>
+                  <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="Enter provider name" />
+                </div>
+                <div className="p-4 bg-emerald-50 rounded-xl">
+                  <p className="text-sm text-emerald-700">Estimated coverage: 80% after deductible</p>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowVerifyCoverage(false)}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
+                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                  Verify
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        const FileClaimModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">File New Claim</h3>
+                <button
+                  onClick={() => setShowFileClaim(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Date</label>
+                  <input type="date" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Office Visit</option>
+                    <option>Lab Work</option>
+                    <option>Prescription</option>
+                    <option>Emergency Care</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+                  <input type="number" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="$0.00" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Receipt</label>
+                  <input type="file" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowFileClaim(false)}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        const FindProvidersModal = () => (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Find Providers</h3>
+                <button
+                  onClick={() => setShowFindProviders(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Primary Care</option>
+                    <option>Endocrinology</option>
+                    <option>Cardiology</option>
+                    <option>Dermatology</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                  <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="ZIP or city" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Insurance</label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                    <option>Kaiser Permanente</option>
+                    <option>Blue Cross</option>
+                    <option>Aetna</option>
+                    <option>UnitedHealthcare</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowFindProviders(false)}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
+                <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        return (
+          <div className="min-h-screen bg-gray-50">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+              <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold mb-2">CareLoop</h1>
+                    <p className="text-emerald-100">Your personalized health companion</p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button className="relative p-2 hover:bg-white/20 rounded-full transition-colors">
+                      <Bell className="w-6 h-6" />
+                      {showNotification && (
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                      )}
+                    </button>
+                    <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                      <div className="w-8 h-8 bg-white/30 rounded-full mr-3 flex items-center justify-center">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Alex Johnson</div>
+                        <div className="text-xs text-emerald-100">Member ID: 45892</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 py-8">
+              <div className="flex flex-wrap gap-4 mb-8">
+                {[
+                  { id: 'dashboard', label: 'Dashboard', icon: Activity },
+                  { id: 'medications', label: 'Medications', icon: Pill },
+                  { id: 'appointments', label: 'Appointments', icon: Calendar },
+                  { id: 'claims', label: 'Claims', icon: FileText },
+                  { id: 'careteam', label: 'Care Team', icon: Heart },
+                  { id: 'benefits', label: 'Benefits', icon: Shield }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-emerald-600 text-white shadow-lg'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <tab.icon className="w-5 h-5 mr-2" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeTab === 'dashboard' && (
+                <div className={`space-y-8 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <MetricCard
+                      icon={Activity}
+                      label="Health Score"
+                      value="92"
+                      trend
+                      trendValue="5"
+                      color="from-emerald-500 to-teal-500"
+                    />
+                    <MetricCard
+                      icon={Pill}
+                      label="Adherence"
+                      value={`${calculateAdherenceScore()}%`}
+                      trend
+                      trendValue="3"
+                      color="from-blue-500 to-indigo-500"
+                    />
+                    <MetricCard
+                      icon={Calendar}
+                      label="Upcoming Visits"
+                      value="2"
+                      color="from-purple-500 to-pink-500"
+                    />
+                    <MetricCard
+                      icon={Award}
+                      label="Rewards"
+                      value="1,250"
+                      trend
+                      trendValue="12"
+                      color="from-orange-500 to-red-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-800">Today's Overview</h2>
+                        <button className="text-emerald-600 text-sm font-medium hover:text-emerald-700">View all</button>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center p-4 bg-emerald-50 rounded-xl">
+                          <div className="p-2 bg-emerald-100 rounded-lg mr-4">
+                            <Pill className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-800">Time for Metformin</p>
+                            <p className="text-sm text-gray-600">Due in 30 minutes</p>
+                          </div>
+                          <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
+                            Take now
+                          </button>
+                        </div>
+                        <div className="flex items-center p-4 bg-blue-50 rounded-xl">
+                          <div className="p-2 bg-blue-100 rounded-lg mr-4">
+                            <Calendar className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-800">Appointment Tomorrow</p>
+                            <p className="text-sm text-gray-600">Dr. Sarah Chen at 2:30 PM</p>
+                          </div>
+                          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Prepare
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                      <h2 className="text-xl font-bold text-gray-800 mb-6">Adherence Score</h2>
+                      <div className="flex flex-col items-center">
+                        <CircularProgress value={calculateAdherenceScore()} />
+                        <div className="mt-4 text-center">
+                          <p className="text-sm text-gray-600">You're doing great!</p>
+                          <p className="text-xs text-gray-500 mt-1">Keep it up for better outcomes</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-800">Quick Actions</h2>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <QuickAction
+                        icon={Calendar}
+                        label="Schedule"
+                        onClick={() => setShowScheduleAppointment(true)}
+                        color="bg-gradient-to-r from-emerald-500 to-teal-500"
+                      />
+                      <QuickAction
+                        icon={Pill}
+                        label="Add Med"
+                        onClick={() => setShowAddMedication(true)}
+                        color="bg-gradient-to-r from-blue-500 to-indigo-500"
+                      />
+                      <QuickAction
+                        icon={Shield}
+                        label="Coverage"
+                        onClick={() => setShowVerifyCoverage(true)}
+                        color="bg-gradient-to-r from-purple-500 to-pink-500"
+                      />
+                      <QuickAction
+                        icon={FileText}
+                        label="File Claim"
+                        onClick={() => setShowFileClaim(true)}
+                        color="bg-gradient-to-r from-orange-500 to-red-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'medications' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+                    <button
+                      onClick={() => setShowAddMedication(true)}
+                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Add Medication
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {medications.map(med => (
+                      <MedicationCard key={med.id} medication={med} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'appointments' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">Appointments</h2>
+                    <button
+                      onClick={() => setShowScheduleAppointment(true)}
+                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Schedule
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {appointments.map(appointment => (
+                      <AppointmentCard key={appointment.id} appointment={appointment} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'claims' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">Claims</h2>
+                    <button
+                      onClick={() => setShowFileClaim(true)}
+                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      File Claim
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {claims.map(claim => (
+                      <ClaimCard key={claim.id} claim={claim} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'careteam' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">Your Care Team</h2>
+                    <button
+                      onClick={() => setShowFindProviders(true)}
+                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      <MapPin className="w-5 h-5 mr-2" />
+                      Find Providers
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {careTeam.map(member => (
+                      <CareTeamCard key={member.id} member={member} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'benefits' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">Benefits Overview</h2>
+                    <button
+                      onClick={() => setShowVerifyCoverage(true)}
+                      className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      <CreditCard className="w-5 h-5 mr-2" />
+                      Verify Coverage
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {benefits.map(benefit => (
+                      <BenefitsCard key={benefit.id} benefit={benefit} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {showAddMedication && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800">Add Medication</h3>
+                    <button
+                      onClick={() => setShowAddMedication(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Medication Name</label>
+                      <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
+                      <input type="text" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors" placeholder="e.g. 500mg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
+                      <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                        <option>Once daily</option>
+                        <option>Twice daily</option>
+                        <option>Three times daily</option>
+                        <option>As needed</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex space-x-3 mt-6">
+                    <button
+                      onClick={() => setShowAddMedication(false)}
+                      className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showScheduleAppointment && <ScheduleAppointmentModal />}
+            {showReschedule && <RescheduleModal />}
+            {showVerifyCoverage && <VerifyCoverageModal />}
+            {showFileClaim && <FileClaimModal />}
+            {showFindProviders && <FindProvidersModal />}
+
+            <style>{`
+              @keyframes slideInRight {
+                from {
+                  transform: translateX(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+              }
+
+              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+              * {
+                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+              }
+
+              button {
+                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+              }
+            `}</style>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<CareLoop />);
     </script>
-</body>
+  </body>
 </html>
