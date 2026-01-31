@@ -545,7 +545,7 @@
     ],
     "priority": 12,
     "filename": "carebot_chat_TypeScriptReact.prompt",
-    "filepath": "components/features/CareBotChat.tsx",
+    "filepath": "src/components/ChatInterface.tsx",
     "tags": [
       "frontend",
       "chat",
@@ -757,7 +757,7 @@
     ],
     "priority": 16,
     "filename": "root_layout_TypeScriptReact.prompt",
-    "filepath": "app/layout.tsx",
+    "filepath": "src/app/layout.tsx",
     "tags": [
       "frontend",
       "layout",
@@ -797,7 +797,7 @@
     ],
     "priority": 17,
     "filename": "dashboard_page_TypeScriptReact.prompt",
-    "filepath": "app/dashboard/page.tsx",
+    "filepath": "src/app/page.tsx",
     "tags": [
       "frontend",
       "page",
