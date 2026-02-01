@@ -1,620 +1,1489 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareLoop (Single-File Demo)</title>
 
-    <!-- Tailwind (CDN) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareLoop (Single-File Demo)</title>
 
-    <!-- Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <style>
-      * {
-        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    * {
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
       }
-      @keyframes slideInRight {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
       }
-    </style>
-  </head>
+    }
 
-  <body class="min-h-screen">
-    <div id="root"></div>
+    .listening-ring {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
 
-    <!-- React (UMD) + Babel (for JSX in-browser) -->
-    <script
-      crossorigin
-      src="https://unpkg.com/react@18/umd/react.development.js"
-    ></script>
-    <script
-      crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
-    ></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    @keyframes pulse-ring {
 
-    <!-- Lucide (non-React) -->
-    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+      0%,
+      100% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
 
-    <script type="text/babel">
-      const { useEffect, useMemo, useState, useRef } = React;
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+      }
+    }
+  </style>
+</head>
 
-      // Simple icon wrapper: lucide will replace <i data-lucide="..."> with an <svg>
-      const Icon = ({ name, className = "" }) => (
-        <i data-lucide={name} className={className}></i>
+<body class="min-h-screen">
+  <div id="root"></div>
+
+  <!-- React (UMD) + Babel (for JSX in-browser) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide (non-React) -->
+  <script type="module">
+    import { Conversation } from 'https://esm.sh/@elevenlabs/client';
+    // Standardize the name for the React script to find
+    window.ElevenLabsConversation = Conversation;
+  </script>
+
+  <!-- Lucide (non-React) -->
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState, useRef } = React;
+
+    // Simplified Icon component that relies on lucide.createIcons or similar if needed,
+    // but in this case, we can just use the i tag and let the global useEffect handle it,
+    // OR deeper integration if we had the react-lucide library.
+    // However, the issue described (typing glitches) usually comes from re-renders destroying/recreating DOM nodes too aggressively.
+    // Let's try a lighter-weight approach that updates attributes instead of full DOM replacement if possible,
+    // or just memoize better.
+    //
+    // Actually, the previous implementation was doing manual DOM manipulation in useEffect which is fine, 
+    // but if parent components re-render on every keystroke (like with controlled inputs), 
+    // this Icon component might be getting unmounted/remounted or its ref cleared.
+    //
+    // Let's try `React.memo` to prevent re-renders if props haven't changed.
+    const Icon = React.memo(({ name, className = "" }) => {
+      const ref = useRef(null);
+
+      useEffect(() => {
+        if (ref.current && window.lucide) {
+          // We'll trust Lucide to handle the replacement or we can manually construct SVG strings if we had them.
+          // But since we are using the CDN script, we follow its pattern:
+
+          // Clean up
+          while (ref.current.firstChild) {
+            ref.current.removeChild(ref.current.firstChild);
+          }
+
+          const iconElement = document.createElement('i');
+          iconElement.setAttribute('data-lucide', name);
+          iconElement.setAttribute('class', className);
+          ref.current.appendChild(iconElement);
+
+          window.lucide.createIcons({
+            root: ref.current,
+            nameAttr: 'data-lucide',
+          });
+        }
+      }, [name, className]);
+
+      return <span ref={ref} style={{ display: 'inline-flex' }}></span>;
+    });
+
+    const AGENT_ID = "agent_9701kgb6m4kyfcetfhdrtq20x3ed";
+
+    const VoiceAgent = ({ onToggle, isConnected, isConnecting }) => (
+      <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4">
+        {isConnected && (
+          <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border-2 border-emerald-100 shadow-xl flex items-center gap-2 animate-bounce">
+            <div className="flex gap-1 h-3">
+              {[1, 2, 3].map(i => <div key={i} className="w-1 bg-emerald-500 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />)}
+            </div>
+            <span className="text-xs font-bold text-emerald-800 tracking-tight">Kai is listening...</span>
+          </div>
+        )}
+        <button
+          onClick={onToggle}
+          disabled={isConnecting}
+          className={`group flex items-center gap-3 px-6 py-4 rounded-3xl shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 ${isConnected
+            ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-200'
+            : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-emerald-200'
+            }`}
+        >
+          {isConnecting ? (
+            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : isConnected ? (
+            <Icon name="phone-off" className="w-6 h-6" />
+          ) : (
+            <Icon name="message-square" className="w-6 h-6" />
+          )}
+          <span className="font-bold">
+            {isConnecting ? 'Starting...' : isConnected ? 'End Chat' : 'Talk to Kai'}
+          </span>
+        </button>
+      </div>
+    );
+
+    const CareLoop = () => {
+      const [isConnected, setIsConnected] = useState(false);
+      const [isConnecting, setIsConnecting] = useState(false);
+      const conversationRef = useRef(null);
+
+      const [activeTab, setActiveTab] = useState("dashboard");
+      const [showNotification, setShowNotification] = useState(false);
+      const [animateIn, setAnimateIn] = useState(false);
+      const [expandedAppointment, setExpandedAppointment] = useState(null);
+      const [patientsData, setPatientsData] = useState([]);
+      const [activePatientId, setActivePatientId] = useState(null);
+      const [dataLoadError, setDataLoadError] = useState(null);
+
+      const [showAddMedication, setShowAddMedication] = useState(false);
+      const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
+      const [showReschedule, setShowReschedule] = useState(false);
+      const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
+      const [showFileClaim, setShowFileClaim] = useState(false);
+      const [showFindProviders, setShowFindProviders] = useState(false);
+      const [showChatInterface, setShowChatInterface] = useState(false);
+
+      const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+      const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
+      const [medications, setMedications] = useState([
+        { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
+        { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
+        { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
+      ]);
+
+      const [newMedication, setNewMedication] = useState({
+        name: "",
+        dose: "",
+        frequency: "Once daily",
+        time: "08:00"
+      });
+
+      const [newAppointment, setNewAppointment] = useState({
+        type: "",
+        doctor: "",
+        date: "",
+        time: "",
+        reason: ""
+      });
+
+      const [chatMessages, setChatMessages] = useState([
+        {
+          id: "1",
+          participantId: "assistant-1",
+          content: "Hello! I am Dr. AI. How can I assist you with your health today?",
+          timestamp: new Date(),
+          status: "delivered"
+        }
+      ]);
+      const [chatInput, setChatInput] = useState("");
+
+      const formatDate = (date) =>
+        date
+          ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+          : "TBD";
+
+      const formatTime = (date) =>
+        date
+          ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+          : "TBD";
+
+      const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+
+      useEffect(() => {
+        const loadPatients = async () => {
+          try {
+            // Use relative path for better compatibility
+            const response = await fetch("data/test-patients.json");
+            if (!response.ok) throw new Error("Failed to load patient data");
+            const data = await response.json();
+            const patients = Array.isArray(data.patients) ? data.patients : [];
+            setPatientsData(patients);
+            setActivePatientId(patients[0]?.patient_id || null);
+          } catch (err) {
+            console.error(err);
+            setDataLoadError("Unable to load patient data.");
+          }
+        };
+        loadPatients();
+      }, []);
+
+      const selectedPatient = useMemo(
+        () => patientsData.find((patient) => patient.patient_id === activePatientId) || patientsData[0] || null,
+        [patientsData, activePatientId]
       );
 
-      const CareLoop = () => {
-        const [activeTab, setActiveTab] = useState("dashboard");
-        const [showNotification, setShowNotification] = useState(false);
-        const [animateIn, setAnimateIn] = useState(false);
-        const [expandedAppointment, setExpandedAppointment] = useState(null);
-        const [patientsData, setPatientsData] = useState([]);
-        const [activePatientId, setActivePatientId] = useState(null);
-        const [dataLoadError, setDataLoadError] = useState(null);
+      useEffect(() => {
+        if (!selectedPatient) return;
+        const patientMeds = (selectedPatient.medications || []).map((med, idx) => ({
+          id: idx + 1,
+          name: med.name,
+          dose: med.dose,
+          frequency: med.frequency,
+          nextDose: "Today, 8:00 PM",
+          streak: 8 + idx * 3,
+          adherence: 90 + idx * 3,
+          taken: false
+        }));
+        if (patientMeds.length) {
+          setMedications(patientMeds);
+        }
+      }, [selectedPatient]);
 
-        const [showAddMedication, setShowAddMedication] = useState(false);
-        const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
-        const [showReschedule, setShowReschedule] = useState(false);
-        const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
-        const [showFileClaim, setShowFileClaim] = useState(false);
-        const [showFindProviders, setShowFindProviders] = useState(false);
-        const [showChatInterface, setShowChatInterface] = useState(false);
-
-        const [selectedAppointment, setSelectedAppointment] = useState(null);
-
-        const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
-        const [medications, setMedications] = useState([
-          { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
-          { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
-          { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
-        ]);
-
-        const [newMedication, setNewMedication] = useState({
-          name: "",
-          dose: "",
-          frequency: "Once daily",
-          time: "08:00"
-        });
-
-        const [newAppointment, setNewAppointment] = useState({
-          type: "",
-          doctor: "",
-          date: "",
-          time: "",
-          reason: ""
-        });
-
-        const [chatMessages, setChatMessages] = useState([
-          {
-            id: "1",
-            participantId: "assistant-1",
-            content: "Hello! I am Dr. AI. How can I assist you with your health today?",
-            timestamp: new Date(),
-            status: "delivered"
-          }
-        ]);
-        const [chatInput, setChatInput] = useState("");
-
-        const formatDate = (date) =>
-          date
-            ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-            : "TBD";
-
-        const formatTime = (date) =>
-          date
-            ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-            : "TBD";
-
-        const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-
-        useEffect(() => {
-          const loadPatients = async () => {
-            try {
-              const response = await fetch("/data/test-patients.json");
-              if (!response.ok) throw new Error("Failed to load patient data");
-              const data = await response.json();
-              const patients = Array.isArray(data.patients) ? data.patients : [];
-              setPatientsData(patients);
-              setActivePatientId(patients[0]?.patient_id || null);
-            } catch (err) {
-              console.error(err);
-              setDataLoadError("Unable to load patient data.");
+      const userData = useMemo(() => {
+        const baseData = {
+          name: "Grace Sun",
+          healthXP: 2840,
+          level: 7,
+          nextLevelXP: 3000,
+          streak: 12,
+          appointments: [],
+          missions: [
+            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
+            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
+            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
+          ],
+          insights: [],
+          insurance: {
+            provider: "Blue Cross Blue Shield PPO",
+            memberId: "BCB123456789",
+            groupNumber: "GRP-9876",
+            effectiveDate: "Jan 1, 2026",
+            deductible: { individual: 1500, met: 450, remaining: 1050 },
+            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
+            coverage: {
+              inNetwork: "80% after deductible",
+              outOfNetwork: "60% after deductible",
+              preventiveCare: "100% covered"
             }
-          };
-          loadPatients();
-        }, []);
-
-        const selectedPatient = useMemo(
-          () => patientsData.find((patient) => patient.patient_id === activePatientId) || patientsData[0] || null,
-          [patientsData, activePatientId]
-        );
-
-        useEffect(() => {
-          if (!selectedPatient) return;
-          const patientMeds = (selectedPatient.medications || []).map((med, idx) => ({
-            id: idx + 1,
-            name: med.name,
-            dose: med.dose,
-            frequency: med.frequency,
-            nextDose: "Today, 8:00 PM",
-            streak: 8 + idx * 3,
-            adherence: 90 + idx * 3,
-            taken: false
-          }));
-          if (patientMeds.length) {
-            setMedications(patientMeds);
           }
-        }, [selectedPatient]);
+        };
 
-        const userData = useMemo(() => {
-          const baseData = {
-            name: "Grace Sun",
-            healthXP: 2840,
-            level: 7,
-            nextLevelXP: 3000,
-            streak: 12,
-            appointments: [],
-            missions: [],
-            insights: [],
-            insurance: {
-              provider: "Blue Cross Blue Shield PPO",
-              memberId: "BCB123456789",
-              groupNumber: "GRP-9876",
-              effectiveDate: "Jan 1, 2026",
-              deductible: { individual: 1500, met: 450, remaining: 1050 },
-              outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
-              coverage: {
-                inNetwork: "80% after deductible",
-                outOfNetwork: "60% after deductible",
-                preventiveCare: "100% covered"
+        if (!selectedPatient) return baseData;
+
+        const fullName = `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim() || baseData.name;
+        const nextAppt = selectedPatient.care_plan?.next_appointment;
+        const nextApptDate = nextAppt?.scheduled_for ? new Date(nextAppt.scheduled_for) : null;
+        const labA1c = selectedPatient.labs?.a1c_percent?.recorded_at
+          ? new Date(selectedPatient.labs.a1c_percent.recorded_at)
+          : null;
+        const followUpDate = labA1c ? addDays(labA1c, 30) : nextApptDate ? addDays(nextApptDate, 14) : null;
+        const checkInDate = followUpDate ? addDays(followUpDate, 21) : nextApptDate ? addDays(nextApptDate, 21) : null;
+
+        const appointments = [
+          {
+            id: 1,
+            type: nextAppt?.type || "Care Plan Follow-up",
+            date: formatDate(nextApptDate),
+            time: formatTime(nextApptDate),
+            doctor: "CareLoop Care Team",
+            status: "verified",
+            prep: selectedPatient.conditions?.length ? `Review ${selectedPatient.conditions.join(", ")}` : "Bring questions for your care team",
+            location: "CareLoop Medical Center, 123 Health Ave, Suite 400",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$25",
+              coverage: "100% covered - In Network",
+              authRequired: false
+            },
+            notes: selectedPatient.care_plan?.goals?.join(". ") || "Follow up on your care plan goals.",
+            reason: "Care plan follow-up"
+          },
+          {
+            id: 2,
+            type: "Lab Review - A1c",
+            date: formatDate(followUpDate),
+            time: followUpDate ? "10:00 AM" : "TBD",
+            doctor: "Lab Review Team",
+            status: "pending",
+            location: "CareLoop Lab Center, 789 Lab Street",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$0",
+              coverage: "Verifying coverage...",
+              authRequired: false
+            },
+            notes: selectedPatient.labs?.a1c_percent?.value
+              ? `Most recent A1c: ${selectedPatient.labs.a1c_percent.value}%`
+              : "Review recent lab work.",
+            reason: "Discuss latest lab results"
+          },
+          {
+            id: 3,
+            type: "Primary Care Check-In",
+            date: formatDate(checkInDate),
+            time: checkInDate ? "1:30 PM" : "TBD",
+            doctor: "Primary Care Team",
+            status: "pending",
+            location: "CareLoop Primary Care, 456 Wellness Blvd",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$15",
+              coverage: "In Network",
+              authRequired: false
+            },
+            notes: "General wellness check-in and medication review.",
+            reason: "Routine follow-up visit"
+          }
+        ];
+
+        const missions = [
+          {
+            id: 1,
+            title: "Care Plan Goals",
+            description: selectedPatient.care_plan?.goals?.[0] || baseData.missions[0].description,
+            xp: 150,
+            deadline: "Next visit",
+            progress: 40,
+            icon: "target"
+          },
+          {
+            id: 2,
+            title: "Medication Master",
+            description: `Adhere to ${selectedPatient.medications?.length || 0} active medications`,
+            xp: 120,
+            deadline: "Ongoing",
+            progress: 60,
+            icon: "pill"
+          },
+          {
+            id: 3,
+            title: "Vitals Check",
+            description: selectedPatient.vitals?.blood_pressure_mmHg
+              ? `Monitor BP: ${selectedPatient.vitals.blood_pressure_mmHg.systolic}/${selectedPatient.vitals.blood_pressure_mmHg.diastolic}`
+              : "Log your vitals this week",
+            xp: 100,
+            deadline: "This week",
+            progress: 30,
+            icon: "activity"
+          }
+        ];
+
+        const insights = [
+          {
+            type: "success",
+            message: `Loaded care plan for ${fullName}`,
+            icon: "check-circle"
+          },
+          {
+            type: "action",
+            message: selectedPatient.allergies?.length
+              ? `Allergy alert: ${selectedPatient.allergies[0].substance}`
+              : "No allergy alerts on file",
+            icon: "alert-circle"
+          },
+          {
+            type: "reminder",
+            message: nextAppt?.scheduled_for
+              ? `Next visit: ${formatDate(nextApptDate)} at ${formatTime(nextApptDate)}`
+              : "Next appointment needs scheduling",
+            icon: "calendar"
+          }
+        ];
+
+        return {
+          ...baseData,
+          name: fullName,
+          appointments,
+          missions,
+          insights
+        };
+      }, [selectedPatient]);
+
+      const userInitials = useMemo(() => {
+        const parts = userData.name.split(" ").filter(Boolean);
+        const first = parts[0]?.[0] || "S";
+        const second = parts[1]?.[0] || "C";
+        return `${first}${second}`.toUpperCase();
+      }, [userData.name]);
+
+      useEffect(() => {
+        setAnimateIn(true);
+        const t = setTimeout(() => setShowNotification(true), 1500);
+        return () => clearTimeout(t);
+      }, []);
+
+      const toggleConversation = async () => {
+        // Safety check: Prevent white screen if SDK is missing
+        if (!window.ElevenLabsConversation) {
+          alert("Kai is still waking up. Please try again in 2 seconds.");
+          return;
+        }
+
+        // If already connected, end it
+        if (isConnected || conversationRef.current) {
+          try {
+            await conversationRef.current.endSession();
+          } catch (e) {
+            console.error("Error ending session:", e);
+          }
+          conversationRef.current = null;
+          setIsConnected(false);
+          setIsConnecting(false);
+          return;
+        }
+
+        try {
+          setIsConnecting(true);
+
+          // Ensure Mic Permission
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Microphone access is not available in this browser context (likely unsafe origin like file://). Please serve this file over localhost or HTTPS.");
+            setIsConnecting(false);
+            return;
+          }
+
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          // Start session
+          const conversation = await window.ElevenLabsConversation.startSession({
+            agentId: AGENT_ID,
+            onConnect: () => {
+              setIsConnected(true);
+              setIsConnecting(false);
+              console.log("Connected to Kai");
+            },
+            onDisconnect: () => {
+              setIsConnected(false);
+              setIsConnecting(false);
+              conversationRef.current = null;
+              console.log("Disconnected from Kai");
+            },
+            onError: (err) => {
+              console.error("Kai Error:", err);
+              setIsConnecting(false);
+              setIsConnected(false);
+            },
+            clientTools: {
+              switch_tab: ({ tab_name }) => {
+                const validTabs = ['dashboard', 'appointments', 'medications', 'insurance'];
+                if (validTabs.includes(tab_name.toLowerCase())) {
+                  setActiveTab(tab_name.toLowerCase());
+                  return `Switched to ${tab_name}`;
+                }
+                return "Tab not found.";
               }
             }
+          });
+
+          conversationRef.current = conversation;
+
+        } catch (err) {
+          console.error("Connection failed:", err);
+          setIsConnecting(false);
+          alert("Mic access is required to talk to Kai.");
+        }
+      };
+
+      const handleMarkTaken = (medId) => {
+        setMedications(prev => prev.map(med =>
+          med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
+        ));
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 3000);
+      };
+
+      const handleAddMedication = () => {
+        if (newMedication.name && newMedication.dose) {
+          const newMed = {
+            id: medications.length + 1,
+            name: newMedication.name,
+            dose: newMedication.dose,
+            frequency: newMedication.frequency,
+            nextDose: `Today, ${newMedication.time}`,
+            streak: 0,
+            adherence: 0,
+            taken: false
           };
+          setMedications([...medications, newMed]);
+          setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
+          setShowAddMedication(false);
+        }
+      };
 
-          if (!selectedPatient) return baseData;
+      const handleScheduleAppointment = () => {
+        if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
+          setShowScheduleAppointment(false);
+          setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
+          alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
+        }
+      };
 
-          const fullName = `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim() || baseData.name;
-          const nextAppt = selectedPatient.care_plan?.next_appointment;
-          const nextApptDate = nextAppt?.scheduled_for ? new Date(nextAppt.scheduled_for) : null;
-          const labA1c = selectedPatient.labs?.a1c_percent?.recorded_at
-            ? new Date(selectedPatient.labs.a1c_percent.recorded_at)
-            : null;
-          const followUpDate = labA1c ? addDays(labA1c, 30) : nextApptDate ? addDays(nextApptDate, 14) : null;
-          const checkInDate = followUpDate ? addDays(followUpDate, 21) : nextApptDate ? addDays(nextApptDate, 21) : null;
+      const handleReschedule = (appointment) => {
+        setSelectedAppointment(appointment);
+        setSelectedRescheduleSlot(null);
+        setShowReschedule(true);
+      };
 
-          const appointments = [
-            {
-              id: 1,
-              type: nextAppt?.type || "Care Plan Follow-up",
-              date: formatDate(nextApptDate),
-              time: formatTime(nextApptDate),
-              doctor: "CareLoop Care Team",
-              status: "verified",
-              prep: selectedPatient.conditions?.length ? `Review ${selectedPatient.conditions.join(", ")}` : "Bring questions for your care team",
-              location: "CareLoop Medical Center, 123 Health Ave, Suite 400",
-              insuranceDetails: {
-                provider: baseData.insurance.provider,
-                copay: "$25",
-                coverage: "100% covered - In Network",
-                authRequired: false
-              },
-              notes: selectedPatient.care_plan?.goals?.join(". ") || "Follow up on your care plan goals.",
-              reason: "Care plan follow-up"
-            },
-            {
-              id: 2,
-              type: "Lab Review - A1c",
-              date: formatDate(followUpDate),
-              time: followUpDate ? "10:00 AM" : "TBD",
-              doctor: "Lab Review Team",
-              status: "pending",
-              location: "CareLoop Lab Center, 789 Lab Street",
-              insuranceDetails: {
-                provider: baseData.insurance.provider,
-                copay: "$0",
-                coverage: "Verifying coverage...",
-                authRequired: false
-              },
-              notes: selectedPatient.labs?.a1c_percent?.value
-                ? `Most recent A1c: ${selectedPatient.labs.a1c_percent.value}%`
-                : "Review recent lab work.",
-              reason: "Discuss latest lab results"
-            },
-            {
-              id: 3,
-              type: "Primary Care Check-In",
-              date: formatDate(checkInDate),
-              time: checkInDate ? "1:30 PM" : "TBD",
-              doctor: "Primary Care Team",
-              status: "pending",
-              location: "CareLoop Primary Care, 456 Wellness Blvd",
-              insuranceDetails: {
-                provider: baseData.insurance.provider,
-                copay: "$15",
-                coverage: "In Network",
-                authRequired: false
-              },
-              notes: "General wellness check-in and medication review.",
-              reason: "Routine follow-up visit"
-            }
-          ];
+      const handleAddToCalendar = (appointment) => {
+        alert(
+          `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
+        );
+      };
 
-          const missions = [
-            {
-              id: 1,
-              title: "Care Plan Goals",
-              description: selectedPatient.care_plan?.goals?.[0] || "Stay on track with your care plan",
-              xp: 150,
-              deadline: "Next visit",
-              progress: 40,
-              icon: "target"
-            },
-            {
-              id: 2,
-              title: "Medication Master",
-              description: `Adhere to ${selectedPatient.medications?.length || 0} active medications`,
-              xp: 120,
-              deadline: "Ongoing",
-              progress: 60,
-              icon: "pill"
-            },
-            {
-              id: 3,
-              title: "Vitals Check",
-              description: selectedPatient.vitals?.blood_pressure_mmHg
-                ? `Monitor BP: ${selectedPatient.vitals.blood_pressure_mmHg.systolic}/${selectedPatient.vitals.blood_pressure_mmHg.diastolic}`
-                : "Log your vitals this week",
-              xp: 100,
-              deadline: "This week",
-              progress: 30,
-              icon: "activity"
-            }
-          ];
+      const handleCancelAppointment = (appointment) => {
+        if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
+          alert(`Appointment cancelled. Your provider has been notified.`);
+        }
+      };
 
-          const insights = [
-            {
-              type: "success",
-              message: `Loaded care plan for ${fullName}`,
-              icon: "check-circle"
-            },
-            {
-              type: "action",
-              message: selectedPatient.allergies?.length
-                ? `Allergy alert: ${selectedPatient.allergies[0].substance}`
-                : "No allergy alerts on file",
-              icon: "alert-circle"
-            },
-            {
-              type: "reminder",
-              message: nextAppt?.scheduled_for
-                ? `Next visit: ${formatDate(nextApptDate)} at ${formatTime(nextApptDate)}`
-                : "Next appointment needs scheduling",
-              icon: "calendar"
-            }
-          ];
+      const handleGetDirections = (location) => {
+        alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
+      };
 
-          return {
-            ...baseData,
-            name: fullName,
-            appointments,
-            missions,
-            insights
-          };
-        }, [selectedPatient]);
+      const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
+        const radius = (size - strokeWidth) / 2;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (progress / 100) * circumference;
 
-        const userInitials = useMemo(() => {
-          const parts = userData.name.split(" ").filter(Boolean);
-          const first = parts[0]?.[0] || "S";
-          const second = parts[1]?.[0] || "C";
-          return `${first}${second}`.toUpperCase();
-        }, [userData.name]);
+        return (
+          <svg width={size} height={size} className="transform -rotate-90">
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="rgba(134, 191, 157, 0.2)"
+              strokeWidth={strokeWidth}
+              fill="none"
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="url(#gradient)"
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              style={{ transition: "stroke-dashoffset 1s ease-out" }}
+            />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#86BF9D" />
+                <stop offset="100%" stopColor="#5A9B73" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      };
 
-        useEffect(() => {
-          setAnimateIn(true);
-          const t = setTimeout(() => setShowNotification(true), 1500);
-          return () => clearTimeout(t);
-        }, []);
+      const ScheduleAppointmentModal = () => (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Schedule New Appointment</h3>
+              <button
+                onClick={() => setShowScheduleAppointment(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
 
-        // After every render, (re)create lucide icons (since lucide works by DOM replacement)
-        useEffect(() => {
-          if (window.lucide && window.lucide.createIcons) {
-            window.lucide.createIcons();
-          }
-        });
-
-        const handleMarkTaken = (medId) => {
-          setMedications(prev => prev.map(med =>
-            med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
-          ));
-          setShowNotification(true);
-          setTimeout(() => setShowNotification(false), 3000);
-        };
-
-        const handleAddMedication = () => {
-          if (newMedication.name && newMedication.dose) {
-            const newMed = {
-              id: medications.length + 1,
-              name: newMedication.name,
-              dose: newMedication.dose,
-              frequency: newMedication.frequency,
-              nextDose: `Today, ${newMedication.time}`,
-              streak: 0,
-              adherence: 0,
-              taken: false
-            };
-            setMedications([...medications, newMed]);
-            setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
-            setShowAddMedication(false);
-          }
-        };
-
-        const handleScheduleAppointment = () => {
-          if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
-            setShowScheduleAppointment(false);
-            setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
-            alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
-          }
-        };
-
-        const handleReschedule = (appointment) => {
-          setSelectedAppointment(appointment);
-          setSelectedRescheduleSlot(null);
-          setShowReschedule(true);
-        };
-
-        const handleAddToCalendar = (appointment) => {
-          alert(
-            `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
-          );
-        };
-
-        const handleCancelAppointment = (appointment) => {
-          if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
-            alert(`Appointment cancelled. Your provider has been notified.`);
-          }
-        };
-
-        const handleGetDirections = (location) => {
-          alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
-        };
-
-        const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
-          const radius = (size - strokeWidth) / 2;
-          const circumference = radius * 2 * Math.PI;
-          const offset = circumference - (progress / 100) * circumference;
-
-          return (
-            <svg width={size} height={size} className="transform -rotate-90">
-              <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="rgba(134, 191, 157, 0.2)"
-                strokeWidth={strokeWidth}
-                fill="none"
-              />
-              <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="url(#gradient)"
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                strokeLinecap="round"
-                style={{ transition: "stroke-dashoffset 1s ease-out" }}
-              />
-              <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#86BF9D" />
-                  <stop offset="100%" stopColor="#5A9B73" />
-                </linearGradient>
-              </defs>
-            </svg>
-          );
-        };
-
-        const ScheduleAppointmentModal = () => (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Schedule New Appointment</h3>
-                <button
-                  onClick={() => setShowScheduleAppointment(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Appointment Type</label>
+                <select
+                  value={newAppointment.type}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, type: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 >
-                  <Icon name="x" className="w-5 h-5 text-gray-500" />
-                </button>
+                  <option value="">Select type...</option>
+                  <option>Primary Care Visit</option>
+                  <option>Specialist Consultation</option>
+                  <option>Lab Work</option>
+                  <option>Physical Therapy</option>
+                  <option>Annual Physical</option>
+                  <option>Follow-up Visit</option>
+                  <option>Urgent Care</option>
+                </select>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Appointment Type</label>
-                  <select
-                    value={newAppointment.type}
-                    onChange={(e) => setNewAppointment({ ...newAppointment, type: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  >
-                    <option value="">Select type...</option>
-                    <option>Primary Care Visit</option>
-                    <option>Specialist Consultation</option>
-                    <option>Lab Work</option>
-                    <option>Physical Therapy</option>
-                    <option>Annual Physical</option>
-                    <option>Follow-up Visit</option>
-                    <option>Urgent Care</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Provider/Doctor</label>
+                <input
+                  type="text"
+                  value={newAppointment.doctor}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, doctor: e.target.value })}
+                  placeholder="e.g., Dr. Smith or City Medical Center"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
 
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider/Doctor</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
                   <input
-                    type="text"
-                    value={newAppointment.doctor}
-                    onChange={(e) => setNewAppointment({ ...newAppointment, doctor: e.target.value })}
-                    placeholder="e.g., Dr. Smith or City Medical Center"
+                    type="date"
+                    value={newAppointment.date}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Time</label>
+                  <input
+                    type="time"
+                    value={newAppointment.time}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for Visit</label>
+                <textarea
+                  value={newAppointment.reason}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, reason: e.target.value })}
+                  placeholder="Brief description of why you're scheduling this appointment"
+                  rows="3"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                />
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <div className="font-semibold mb-1">AI Agent will help you:</div>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Verify your insurance coverage automatically</li>
+                      <li>• Send you prep instructions if needed</li>
+                      <li>• Add reminders to your calendar</li>
+                      <li>• Check for in-network providers</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={handleScheduleAppointment}
+                  className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                >
+                  Schedule Appointment
+                </button>
+                <button
+                  onClick={() => setShowScheduleAppointment(false)}
+                  className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const RescheduleModal = () => (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
+              <button
+                onClick={() => setShowReschedule(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {selectedAppointment && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
+                  <div className="text-sm text-gray-600 mb-1">Current Appointment</div>
+                  <div className="font-bold text-gray-800">{selectedAppointment.type}</div>
+                  <div className="text-gray-600">
+                    {selectedAppointment.date} at {selectedAppointment.time}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
                     <input
                       type="date"
-                      value={newAppointment.date}
-                      onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Time</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
                     <input
                       type="time"
-                      value={newAppointment.time}
-                      onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for Visit</label>
-                  <textarea
-                    value={newAppointment.reason}
-                    onChange={(e) => setNewAppointment({ ...newAppointment, reason: e.target.value })}
-                    placeholder="Brief description of why you're scheduling this appointment"
-                    rows="3"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
                   <div className="flex items-start gap-3">
-                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                      <div className="font-semibold mb-1">AI Agent will help you:</div>
-                      <ul className="space-y-1 text-xs">
-                        <li>• Verify your insurance coverage automatically</li>
-                        <li>• Send you prep instructions if needed</li>
-                        <li>• Add reminders to your calendar</li>
-                        <li>• Check for in-network providers</li>
-                      </ul>
+                    <Icon name="check-circle" className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-emerald-800">
+                      <div className="font-semibold mb-1">Available Time Slots</div>
+                      <div className="space-y-2 mt-2">
+                        {[
+                          "March 18, 2026 - 10:00 AM",
+                          "March 19, 2026 - 2:30 PM",
+                          "March 22, 2026 - 9:15 AM"
+                        ].map((slot) => (
+                          <button
+                            key={slot}
+                            onClick={() => setSelectedRescheduleSlot(slot)}
+                            className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-emerald-100 transition-colors font-medium"
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">
                   <button
-                    onClick={handleScheduleAppointment}
+                    onClick={() => {
+                      setShowReschedule(false);
+                      alert(`Appointment rescheduled for ${selectedRescheduleSlot || "your chosen time"}. Confirmation sent to your email.`);
+                    }}
                     className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                   >
-                    Schedule Appointment
+                    Confirm Reschedule
                   </button>
                   <button
-                    onClick={() => setShowScheduleAppointment(false)}
+                    onClick={() => setShowReschedule(false)}
                     className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      );
+
+      const VerifyCoverageModal = () => (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Verify Insurance Coverage</h3>
+              <button
+                onClick={() => setShowVerifyCoverage(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Dr. Jennifer Martinez"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Procedure/Service</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Annual Physical, MRI, Lab Work"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Facility</label>
+                <input
+                  type="text"
+                  placeholder="e.g., City Medical Center"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <div className="font-semibold mb-1">AI will verify:</div>
+                    <ul className="space-y-1 text-xs">
+                      <li>✓ Provider network status (in/out of network)</li>
+                      <li>✓ Procedure coverage and copay amount</li>
+                      <li>✓ Prior authorization requirements</li>
+                      <li>✓ Estimated out-of-pocket costs</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowVerifyCoverage(false);
+                    alert("Verification in progress! You'll receive results within 2-3 minutes.");
+                  }}
+                  className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                >
+                  Verify Coverage
+                </button>
+                <button
+                  onClick={() => setShowVerifyCoverage(false)}
+                  className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const FileClaimModal = () => (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">File Insurance Claim</h3>
+              <button
+                onClick={() => setShowFileClaim(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Service</label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
+                <input
+                  type="text"
+                  placeholder="Doctor or facility name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Service Description</label>
+                <textarea
+                  placeholder="Describe the medical service received"
+                  rows="3"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Total Charge</label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Amount Paid</label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Receipt/Invoice</label>
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-colors cursor-pointer"
+                  onClick={() => alert("Demo: file picker would open here.")}
+                >
+                  <Icon name="file-text" className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <div className="text-gray-600 font-medium">Click to upload or drag and drop</div>
+                  <div className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 10MB</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowFileClaim(false);
+                    alert("Claim submitted! You'll receive updates on its status via email.");
+                  }}
+                  className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                >
+                  Submit Claim
+                </button>
+                <button
+                  onClick={() => setShowFileClaim(false)}
+                  className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const handleSendChatMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+
+        const newMessage = {
+          id: Date.now().toString(),
+          participantId: "user-1",
+          content: chatInput,
+          timestamp: new Date(),
+          status: "sending"
+        };
+
+        setChatMessages(prev => [...prev, newMessage]);
+        setChatInput("");
+
+        // Simulate assistant response
+        setTimeout(() => {
+          const patientName = selectedPatient
+            ? `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim()
+            : "your patient";
+          const conditions = selectedPatient?.conditions?.length
+            ? selectedPatient.conditions.join(", ")
+            : "your health profile";
+          const medCount = selectedPatient?.medications?.length || 0;
+          const responseMessage = {
+            id: (Date.now() + 1).toString(),
+            participantId: "assistant-1",
+            content: `Thanks! I pulled up ${patientName}'s chart. Key conditions: ${conditions}. Active meds: ${medCount}. Let me know what you'd like to review.`,
+            timestamp: new Date(),
+            status: "delivered"
+          };
+          setChatMessages(prev => [...prev, responseMessage]);
+        }, 1500);
+      };
+
+      const ChatInterfaceModal = () => {
+        const messagesEndRef = useRef(null);
+
+        useEffect(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+          }
+        }, [chatMessages]);
+
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
+              {/* Header */}
+              <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Icon name="sparkles" className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">CareLoop Assistant</h3>
+                    <p className="text-sm text-emerald-100 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
+                      Online
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowChatInterface(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <Icon name="x" className="w-6 h-6" />
+                </button>
+              </header>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-emerald-50/50 to-white">
+                {chatMessages.map((msg) => {
+                  const isUser = msg.participantId === "user-1";
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isUser
+                          ? "bg-emerald-600 text-white"
+                          : "bg-teal-100 text-teal-700"
+                          }`}
+                      >
+                        <Icon name={isUser ? "user" : "sparkles"} className="w-5 h-5" />
+                      </div>
+                      <div
+                        className={`max-w-[75%] p-4 rounded-2xl shadow-sm ${isUser
+                          ? "bg-emerald-500 text-white rounded-tr-sm"
+                          : "bg-white border-2 border-emerald-100 text-gray-800 rounded-tl-sm"
+                          }`}
+                      >
+                        <p className="leading-relaxed">{msg.content}</p>
+                        <span
+                          className={`text-xs block mt-2 ${isUser ? "text-emerald-100" : "text-gray-500"
+                            }`}
+                        >
+                          {msg.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Area */}
+              <div className="p-6 bg-white border-t-2 border-gray-100">
+                <form onSubmit={handleSendChatMessage} className="flex gap-3">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 px-4 py-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors text-gray-800 placeholder:text-gray-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!chatInput.trim()}
+                    className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    <Icon name="arrow-right" className="w-5 h-5" />
+                    Send
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         );
+      };
 
-        const RescheduleModal = () => (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
-                <button
-                  onClick={() => setShowReschedule(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Icon name="x" className="w-5 h-5 text-gray-500" />
-                </button>
+      const FindProvidersModal = () => (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Find In-Network Providers</h3>
+              <button
+                onClick={() => setShowFindProviders(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option value="">Select specialty...</option>
+                  <option>Primary Care</option>
+                  <option>Cardiology</option>
+                  <option>Dermatology</option>
+                  <option>Endocrinology</option>
+                  <option>Orthopedics</option>
+                  <option>Ophthalmology</option>
+                  <option>Mental Health</option>
+                </select>
               </div>
 
-              {selectedAppointment && (
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
-                    <div className="text-sm text-gray-600 mb-1">Current Appointment</div>
-                    <div className="font-bold text-gray-800">{selectedAppointment.type}</div>
-                    <div className="text-gray-600">
-                      {selectedAppointment.date} at {selectedAppointment.time}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                <input
+                  type="text"
+                  placeholder="City, ZIP code, or address"
+                  defaultValue="Fremont, CA"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Distance</label>
+                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option>Within 5 miles</option>
+                  <option>Within 10 miles</option>
+                  <option>Within 25 miles</option>
+                  <option>Within 50 miles</option>
+                </select>
+              </div>
+
+              <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 space-y-3">
+                <div className="font-semibold text-emerald-800 mb-2">In-Network Providers Found</div>
+
+                <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="font-bold text-gray-800">Dr. Sarah Johnson</div>
+                      <div className="text-sm text-gray-600">Endocrinology • 2.3 miles away</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <span className="text-xs text-gray-600 ml-1">(247 reviews)</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => alert("Demo: booking flow would start here.")}
+                      className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                    >
+                      Book
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600">City Medical Center • Accepting new patients</div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border border-emerald-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="font-bold text-gray-800">Dr. Michael Chen</div>
+                      <div className="text-sm text-gray-600">Endocrinology • 4.1 miles away</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-amber-500" />
+                        <Icon name="star" className="w-4 h-4 text-gray-300" />
+                        <span className="text-xs text-gray-600 ml-1">(183 reviews)</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => alert("Demo: booking flow would start here.")}
+                      className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
+                    >
+                      Book
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600">Health Partners Clinic • Accepting new patients</div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowFindProviders(false)}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const DashboardView = () => (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
+
+            <div className="relative flex items-start justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                  Welcome back, {userData.name.split(" ")[0]}!
+                </h2>
+                <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
+                    <div className="text-xs text-gray-500 font-medium">Level</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-center">
+                  <div className="text-sm font-semibold text-gray-700">
+                    {userData.healthXP} / {userData.nextLevelXP} XP
+                  </div>
+                  <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
+              <Icon name="zap" className="w-6 h-6 text-amber-500" />
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
+                <div className="text-xs text-gray-600 font-medium">Current streak</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Icon name="sparkles" className="w-5 h-5 text-emerald-500" />
+              AI Insights
+            </h3>
+
+            {userData.insights.map((insight, idx) => (
+              <div
+                key={idx}
+                className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${insight.type === "success"
+                  ? "bg-emerald-50 border-emerald-200"
+                  : insight.type === "action"
+                    ? "bg-blue-50 border-blue-200"
+                    : "bg-amber-50 border-amber-200"
+                  }`}
+              >
+                <Icon
+                  name={insight.icon}
+                  className={`w-5 h-5 flex-shrink-0 ${insight.type === "success"
+                    ? "text-emerald-600"
+                    : insight.type === "action"
+                      ? "text-blue-600"
+                      : "text-amber-600"
+                    }`}
+                />
+                <p className="text-gray-700 font-medium">{insight.message}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => {
+                console.log("Talk to Agent clicked");
+                setShowChatInterface(true);
+              }}
+              className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+            >
+              <Icon name="message-square" className="w-8 h-8 mb-3" />
+              <div className="font-bold text-lg">Talk to Agent</div>
+              <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("appointments")}
+              className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+            >
+              <Icon name="calendar" className="w-8 h-8 mb-3" />
+              <div className="font-bold text-lg">Schedule Visit</div>
+              <div className="text-blue-100 text-sm mt-1">Book appointment</div>
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Icon name="award" className="w-5 h-5 text-amber-500" />
+              Active Missions
+            </h3>
+
+            {userData.missions.map((mission) => (
+              <div
+                key={mission.id}
+                className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                      <Icon name={mission.icon} className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800">{mission.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
-                      <input
-                        type="date"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
-                      <input
-                        type="time"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      />
-                    </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
+                    <div className="text-xs text-gray-500">{mission.deadline}</div>
                   </div>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                    style={{ width: `${mission.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
 
-                  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <Icon name="check-circle" className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <div className="text-sm text-emerald-800">
-                        <div className="font-semibold mb-1">Available Time Slots</div>
-                        <div className="space-y-2 mt-2">
-                          {[
-                            "March 18, 2026 - 10:00 AM",
-                            "March 19, 2026 - 2:30 PM",
-                            "March 22, 2026 - 9:15 AM"
-                          ].map((slot) => (
-                            <button
-                              key={slot}
-                              onClick={() => setSelectedRescheduleSlot(slot)}
-                              className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-emerald-100 transition-colors font-medium"
-                            >
-                              {slot}
-                            </button>
-                          ))}
+      const AppointmentsView = () => (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
+            <button
+              onClick={() => setShowScheduleAppointment(true)}
+              className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            >
+              <Icon name="calendar" className="w-4 h-4" />
+              Schedule New
+            </button>
+          </div>
+
+          {userData.appointments.map((apt) => (
+            <div
+              key={apt.id}
+              className="bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg overflow-hidden"
+            >
+              <div
+                className="p-6 cursor-pointer"
+                onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
+
+                      {apt.status === "verified" && (
+                        <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+                          <Icon name="check-circle" className="w-3 h-3" />
+                          Insurance Verified
+                        </span>
+                      )}
+                      {apt.status === "pending" && (
+                        <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
+                          <Icon name="clock" className="w-3 h-3" />
+                          Verifying
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1 text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Icon name="calendar" className="w-4 h-4" />
+                        <span>{apt.date} at {apt.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="user" className="w-4 h-4" />
+                        <span>{apt.doctor}</span>
+                      </div>
+
+                      {apt.prep && !expandedAppointment && (
+                        <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                          <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
                         </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    {expandedAppointment === apt.id ? (
+                      <Icon name="chevron-up" className="w-5 h-5 text-gray-600" />
+                    ) : (
+                      <Icon name="chevron-down" className="w-5 h-5 text-gray-600" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {expandedAppointment === apt.id && (
+                <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-50 pt-4">
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-1">Reason for Visit</div>
+                    <div className="text-gray-800 font-medium">{apt.reason}</div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Location</div>
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <Icon name="map-pin" className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-1" />
+                      <div className="flex-1">
+                        <div className="text-gray-800 font-medium">{apt.location}</div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleGetDirections(apt.location); }}
+                          className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm mt-1"
+                        >
+                          Get Directions →
+                        </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4">
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Insurance & Cost</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <div className="text-xs text-emerald-700 font-semibold mb-1">Provider</div>
+                        <div className="text-gray-800 font-bold">{apt.insuranceDetails.provider}</div>
+                      </div>
+                      <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+                        <div className="text-xs text-blue-700 font-semibold mb-1">Copay</div>
+                        <div className="text-gray-800 font-bold text-xl">{apt.insuranceDetails.copay}</div>
+                      </div>
+                      <div className="col-span-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <div className="text-xs text-emerald-700 font-semibold mb-1">Coverage Status</div>
+                        <div className="text-gray-800 font-medium">{apt.insuranceDetails.coverage}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {apt.prep && (
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Preparation Required</div>
+                      <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {apt.notes && (
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Notes</div>
+                      <div className="p-3 bg-gray-50 rounded-xl">
+                        <div className="text-gray-700 text-sm">{apt.notes}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
                     <button
-                      onClick={() => {
-                        setShowReschedule(false);
-                        alert(`Appointment rescheduled for ${selectedRescheduleSlot || "your chosen time"}. Confirmation sent to your email.`);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); handleReschedule(apt); }}
                       className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                     >
-                      Confirm Reschedule
+                      Reschedule
                     </button>
                     <button
-                      onClick={() => setShowReschedule(false)}
+                      onClick={(e) => { e.stopPropagation(); handleAddToCalendar(apt); }}
+                      className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                    >
+                      Add to Calendar
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCancelAppointment(apt); }}
                       className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                     >
                       Cancel
@@ -623,1225 +1492,513 @@
                 </div>
               )}
             </div>
+          ))}
+        </div>
+      );
+
+      const MedicationsView = () => (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+            <button
+              onClick={() => setShowAddMedication(true)}
+              className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            >
+              <Icon name="plus" className="w-4 h-4" />
+              Add Medication
+            </button>
           </div>
-        );
 
-        const VerifyCoverageModal = () => (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Verify Insurance Coverage</h3>
-                <button
-                  onClick={() => setShowVerifyCoverage(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Icon name="x" className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Dr. Jennifer Martinez"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Procedure/Service</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Annual Physical, MRI, Lab Work"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Facility</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., City Medical Center"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <Icon name="sparkles" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                      <div className="font-semibold mb-1">AI will verify:</div>
-                      <ul className="space-y-1 text-xs">
-                        <li>✓ Provider network status (in/out of network)</li>
-                        <li>✓ Procedure coverage and copay amount</li>
-                        <li>✓ Prior authorization requirements</li>
-                        <li>✓ Estimated out-of-pocket costs</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      setShowVerifyCoverage(false);
-                      alert("Verification in progress! You'll receive results within 2-3 minutes.");
-                    }}
-                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
-                  >
-                    Verify Coverage
-                  </button>
-                  <button
-                    onClick={() => setShowVerifyCoverage(false)}
-                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-        const FileClaimModal = () => (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">File Insurance Claim</h3>
-                <button
-                  onClick={() => setShowFileClaim(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Icon name="x" className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Service</label>
-                  <input
-                    type="date"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Provider Name</label>
-                  <input
-                    type="text"
-                    placeholder="Doctor or facility name"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Service Description</label>
-                  <textarea
-                    placeholder="Describe the medical service received"
-                    rows="3"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Total Charge</label>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Amount Paid</label>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Receipt/Invoice</label>
-                  <div
-                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-colors cursor-pointer"
-                    onClick={() => alert("Demo: file picker would open here.")}
-                  >
-                    <Icon name="file-text" className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <div className="text-gray-600 font-medium">Click to upload or drag and drop</div>
-                    <div className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 10MB</div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      setShowFileClaim(false);
-                      alert("Claim submitted! You'll receive updates on its status via email.");
-                    }}
-                    className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
-                  >
-                    Submit Claim
-                  </button>
-                  <button
-                    onClick={() => setShowFileClaim(false)}
-                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-        const handleSendChatMessage = (e) => {
-          e.preventDefault();
-          if (!chatInput.trim()) return;
-
-          const newMessage = {
-            id: Date.now().toString(),
-            participantId: "user-1",
-            content: chatInput,
-            timestamp: new Date(),
-            status: "sending"
-          };
-
-          setChatMessages(prev => [...prev, newMessage]);
-          setChatInput("");
-
-          // Simulate assistant response
-          setTimeout(() => {
-            const patientName = selectedPatient
-              ? `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim()
-              : "your patient";
-            const conditions = selectedPatient?.conditions?.length
-              ? selectedPatient.conditions.join(", ")
-              : "your health profile";
-            const medCount = selectedPatient?.medications?.length || 0;
-            const responseMessage = {
-              id: (Date.now() + 1).toString(),
-              participantId: "assistant-1",
-              content: `Thanks! I pulled up ${patientName}'s chart. Key conditions: ${conditions}. Active meds: ${medCount}. Let me know what you'd like to review.`,
-              timestamp: new Date(),
-              status: "delivered"
-            };
-            setChatMessages(prev => [...prev, responseMessage]);
-          }, 1500);
-        };
-
-        const ChatInterfaceModal = () => {
-          const messagesEndRef = useRef(null);
-
-          useEffect(() => {
-            if (messagesEndRef.current) {
-              messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, [chatMessages]);
-
-          return (
+          {showAddMedication && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
-                {/* Header */}
-                <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Icon name="sparkles" className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold">CareLoop Assistant</h3>
-                      <p className="text-sm text-emerald-100 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
-                        Online
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowChatInterface(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <Icon name="x" className="w-6 h-6" />
+              <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800">Add New Medication</h3>
+                  <button onClick={() => setShowAddMedication(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Icon name="x" className="w-5 h-5 text-gray-500" />
                   </button>
-                </header>
-
-                {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-emerald-50/50 to-white">
-                  {chatMessages.map((msg) => {
-                    const isUser = msg.participantId === "user-1";
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}
-                      >
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                            isUser
-                              ? "bg-emerald-600 text-white"
-                              : "bg-teal-100 text-teal-700"
-                          }`}
-                        >
-                          <Icon name={isUser ? "user" : "sparkles"} className="w-5 h-5" />
-                        </div>
-                        <div
-                          className={`max-w-[75%] p-4 rounded-2xl shadow-sm ${
-                            isUser
-                              ? "bg-emerald-500 text-white rounded-tr-sm"
-                              : "bg-white border-2 border-emerald-100 text-gray-800 rounded-tl-sm"
-                          }`}
-                        >
-                          <p className="leading-relaxed">{msg.content}</p>
-                          <span
-                            className={`text-xs block mt-2 ${
-                              isUser ? "text-emerald-100" : "text-gray-500"
-                            }`}
-                          >
-                            {msg.timestamp.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit"
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input Area */}
-                <div className="p-6 bg-white border-t-2 border-gray-100">
-                  <form onSubmit={handleSendChatMessage} className="flex gap-3">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Medication Name</label>
                     <input
                       type="text"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 px-4 py-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors text-gray-800 placeholder:text-gray-400"
+                      value={newMedication.name}
+                      onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
+                      placeholder="e.g., Aspirin"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     />
-                    <button
-                      type="submit"
-                      disabled={!chatInput.trim()}
-                      className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl"
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
+                    <input
+                      type="text"
+                      value={newMedication.dose}
+                      onChange={(e) => setNewMedication({ ...newMedication, dose: e.target.value })}
+                      placeholder="e.g., 100mg"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
+                    <select
+                      value={newMedication.frequency}
+                      onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     >
-                      <Icon name="arrow-right" className="w-5 h-5" />
-                      Send
+                      <option>Once daily</option>
+                      <option>Twice daily</option>
+                      <option>Three times daily</option>
+                      <option>Four times daily</option>
+                      <option>As needed</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Reminder Time</label>
+                    <input
+                      type="time"
+                      value={newMedication.time}
+                      onChange={(e) => setNewMedication({ ...newMedication, time: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={handleAddMedication}
+                      className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                    >
+                      Add Medication
                     </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          );
-        };
-
-        const FindProvidersModal = () => (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Find In-Network Providers</h3>
-                <button
-                  onClick={() => setShowFindProviders(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Icon name="x" className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option value="">Select specialty...</option>
-                    <option>Primary Care</option>
-                    <option>Cardiology</option>
-                    <option>Dermatology</option>
-                    <option>Endocrinology</option>
-                    <option>Orthopedics</option>
-                    <option>Ophthalmology</option>
-                    <option>Mental Health</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                  <input
-                    type="text"
-                    placeholder="City, ZIP code, or address"
-                    defaultValue="Fremont, CA"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Distance</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                    <option>Within 5 miles</option>
-                    <option>Within 10 miles</option>
-                    <option>Within 25 miles</option>
-                    <option>Within 50 miles</option>
-                  </select>
-                </div>
-
-                <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 space-y-3">
-                  <div className="font-semibold text-emerald-800 mb-2">In-Network Providers Found</div>
-
-                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-gray-800">Dr. Sarah Johnson</div>
-                        <div className="text-sm text-gray-600">Endocrinology • 2.3 miles away</div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <span className="text-xs text-gray-600 ml-1">(247 reviews)</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => alert("Demo: booking flow would start here.")}
-                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
-                      >
-                        Book
-                      </button>
-                    </div>
-                    <div className="text-xs text-gray-600">City Medical Center • Accepting new patients</div>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-4 border border-emerald-200">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-gray-800">Dr. Michael Chen</div>
-                        <div className="text-sm text-gray-600">Endocrinology • 4.1 miles away</div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-amber-500" />
-                          <Icon name="star" className="w-4 h-4 text-gray-300" />
-                          <span className="text-xs text-gray-600 ml-1">(183 reviews)</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => alert("Demo: booking flow would start here.")}
-                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-600"
-                      >
-                        Book
-                      </button>
-                    </div>
-                    <div className="text-xs text-gray-600">Health Partners Clinic • Accepting new patients</div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setShowFindProviders(false)}
-                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-        const DashboardView = () => (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/30 to-transparent rounded-full blur-3xl"></div>
-
-              <div className="relative flex items-start justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                    Welcome back, {userData.name.split(" ")[0]}! 
-                  </h2>
-                  <p className="text-gray-600 text-lg">You're doing great. Let's keep your health on track.</p>
-                </div>
-
-                <div className="flex flex-col items-center">
-                  <div className="relative">
-                    <ProgressRing progress={(userData.healthXP / userData.nextLevelXP) * 100} />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold text-emerald-600">{userData.level}</div>
-                      <div className="text-xs text-gray-500 font-medium">Level</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-center">
-                    <div className="text-sm font-semibold text-gray-700">
-                      {userData.healthXP} / {userData.nextLevelXP} XP
-                    </div>
-                    <div className="text-xs text-gray-500">160 XP to Level {userData.level + 1}</div>
+                    <button
+                      onClick={() => setShowAddMedication(false)}
+                      className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               </div>
-
-              <div className="mt-6 inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
-                <Icon name="zap" className="w-6 h-6 text-amber-500" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-800">{userData.streak} days</div>
-                  <div className="text-xs text-gray-600 font-medium">Current streak</div>
-                </div>
-              </div>
             </div>
+          )}
 
-            <div className="space-y-3">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <Icon name="sparkles" className="w-5 h-5 text-emerald-500" />
-                AI Insights
-              </h3>
-
-              {userData.insights.map((insight, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
-                    insight.type === "success"
-                      ? "bg-emerald-50 border-emerald-200"
-                      : insight.type === "action"
-                      ? "bg-blue-50 border-blue-200"
-                      : "bg-amber-50 border-amber-200"
-                  }`}
-                >
-                  <Icon
-                    name={insight.icon}
-                    className={`w-5 h-5 flex-shrink-0 ${
-                      insight.type === "success"
-                        ? "text-emerald-600"
-                        : insight.type === "action"
-                        ? "text-blue-600"
-                        : "text-amber-600"
-                    }`}
-                  />
-                  <p className="text-gray-700 font-medium">{insight.message}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  console.log("Talk to Agent clicked");
-                  setShowChatInterface(true);
-                }}
-                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
-              >
-                <Icon name="message-square" className="w-8 h-8 mb-3" />
-                <div className="font-bold text-lg">Talk to Agent</div>
-                <div className="text-emerald-100 text-sm mt-1">Ask anything</div>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("appointments")}
-                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
-              >
-                <Icon name="calendar" className="w-8 h-8 mb-3" />
-                <div className="font-bold text-lg">Schedule Visit</div>
-                <div className="text-blue-100 text-sm mt-1">Book appointment</div>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <Icon name="award" className="w-5 h-5 text-amber-500" />
-                Active Missions
-              </h3>
-
-              {userData.missions.map((mission) => (
-                <div
-                  key={mission.id}
-                  className="bg-white rounded-2xl p-5 border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-                        <Icon name={mission.icon} className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-800">{mission.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{mission.description}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-emerald-600">+{mission.xp} XP</div>
-                      <div className="text-xs text-gray-500">{mission.deadline}</div>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
-                      style={{ width: `${mission.progress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-        const AppointmentsView = () => (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
-              <button
-                onClick={() => setShowScheduleAppointment(true)}
-                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-              >
-                <Icon name="calendar" className="w-4 h-4" />
-                Schedule New
-              </button>
-            </div>
-
-            {userData.appointments.map((apt) => (
+          <div className="grid grid-cols-1 gap-4">
+            {medications.map((med) => (
               <div
-                key={apt.id}
-                className="bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-200 transition-all hover:shadow-lg overflow-hidden"
+                key={med.id}
+                className={`bg-white rounded-2xl p-6 border-2 transition-all ${med.taken ? "border-emerald-300 bg-emerald-50/50" : "border-gray-100 hover:border-emerald-200"
+                  }`}
               >
-                <div
-                  className="p-6 cursor-pointer"
-                  onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800">{apt.type}</h3>
-
-                        {apt.status === "verified" && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <Icon name="check-circle" className="w-3 h-3" />
-                            Insurance Verified
-                          </span>
-                        )}
-                        {apt.status === "pending" && (
-                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <Icon name="clock" className="w-3 h-3" />
-                            Verifying
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="space-y-1 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Icon name="calendar" className="w-4 h-4" />
-                          <span>{apt.date} at {apt.time}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Icon name="user" className="w-4 h-4" />
-                          <span>{apt.doctor}</span>
-                        </div>
-
-                        {apt.prep && !expandedAppointment && (
-                          <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                            <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
-                          </div>
-                        )}
-                      </div>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">{med.name}</h3>
+                      {med.taken && <Icon name="check-circle" className="w-5 h-5 text-emerald-600" />}
                     </div>
-
-                    <button
-                      onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      {expandedAppointment === apt.id ? (
-                        <Icon name="chevron-up" className="w-5 h-5 text-gray-600" />
-                      ) : (
-                        <Icon name="chevron-down" className="w-5 h-5 text-gray-600" />
-                      )}
-                    </button>
+                    <p className="text-gray-600 mt-1">{med.dose} • {med.frequency}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
+                    <div className="text-xs text-gray-500">Adherence</div>
                   </div>
                 </div>
 
-                {expandedAppointment === apt.id && (
-                  <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-50 pt-4">
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Reason for Visit</div>
-                      <div className="text-gray-800 font-medium">{apt.reason}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Location</div>
-                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                        <Icon name="map-pin" className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-1" />
-                        <div className="flex-1">
-                          <div className="text-gray-800 font-medium">{apt.location}</div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleGetDirections(apt.location); }}
-                            className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm mt-1"
-                          >
-                            Get Directions →
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase mb-2">Insurance & Cost</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                          <div className="text-xs text-emerald-700 font-semibold mb-1">Provider</div>
-                          <div className="text-gray-800 font-bold">{apt.insuranceDetails.provider}</div>
-                        </div>
-                        <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-                          <div className="text-xs text-blue-700 font-semibold mb-1">Copay</div>
-                          <div className="text-gray-800 font-bold text-xl">{apt.insuranceDetails.copay}</div>
-                        </div>
-                        <div className="col-span-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                          <div className="text-xs text-emerald-700 font-semibold mb-1">Coverage Status</div>
-                          <div className="text-gray-800 font-medium">{apt.insuranceDetails.coverage}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {apt.prep && (
-                      <div>
-                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Preparation Required</div>
-                        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                          <Icon name="alert-circle" className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm font-medium text-amber-800">{apt.prep}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {apt.notes && (
-                      <div>
-                        <div className="text-xs font-bold text-gray-500 uppercase mb-2">Notes</div>
-                        <div className="p-3 bg-gray-50 rounded-xl">
-                          <div className="text-gray-700 text-sm">{apt.notes}</div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleReschedule(apt); }}
-                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
-                      >
-                        Reschedule
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCalendar(apt); }}
-                        className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
-                      >
-                        Add to Calendar
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleCancelAppointment(apt); }}
-                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Icon name="zap" className="w-4 h-4 text-amber-500" />
+                    <span className="font-semibold text-gray-700">{med.streak} day streak</span>
                   </div>
-                )}
+                  <div className="flex items-center gap-2 text-sm">
+                    <Icon name="clock" className="w-4 h-4 text-blue-500" />
+                    <span className="text-gray-600">Next: {med.nextDose}</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                    style={{ width: `${med.adherence}%` }}
+                  ></div>
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => handleMarkTaken(med.id)}
+                    disabled={med.taken}
+                    className={`flex-1 py-2 rounded-xl font-semibold transition-colors ${med.taken
+                      ? "bg-emerald-200 text-emerald-800 cursor-not-allowed"
+                      : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      }`}
+                  >
+                    {med.taken ? "✓ Taken Today" : "Mark Taken"}
+                  </button>
+                  <button
+                    onClick={() => alert(`View details for ${med.name}`)}
+                    className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Details
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        );
 
-        const MedicationsView = () => (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
-              <button
-                onClick={() => setShowAddMedication(true)}
-                className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-              >
-                <Icon name="plus" className="w-4 h-4" />
-                Add Medication
-              </button>
-            </div>
-
-            {showAddMedication && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold text-gray-800">Add New Medication</h3>
-                    <button onClick={() => setShowAddMedication(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Icon name="x" className="w-5 h-5 text-gray-500" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Medication Name</label>
-                      <input
-                        type="text"
-                        value={newMedication.name}
-                        onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
-                        placeholder="e.g., Aspirin"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Dosage</label>
-                      <input
-                        type="text"
-                        value={newMedication.dose}
-                        onChange={(e) => setNewMedication({ ...newMedication, dose: e.target.value })}
-                        placeholder="e.g., 100mg"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
-                      <select
-                        value={newMedication.frequency}
-                        onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      >
-                        <option>Once daily</option>
-                        <option>Twice daily</option>
-                        <option>Three times daily</option>
-                        <option>Four times daily</option>
-                        <option>As needed</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Reminder Time</label>
-                      <input
-                        type="time"
-                        value={newMedication.time}
-                        onChange={(e) => setNewMedication({ ...newMedication, time: e.target.value })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        onClick={handleAddMedication}
-                        className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
-                      >
-                        Add Medication
-                      </button>
-                      <button
-                        onClick={() => setShowAddMedication(false)}
-                        className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+                <Icon name="pill" className="w-6 h-6 text-white" />
               </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-4">
-              {medications.map((med) => (
-                <div
-                  key={med.id}
-                  className={`bg-white rounded-2xl p-6 border-2 transition-all ${
-                    med.taken ? "border-emerald-300 bg-emerald-50/50" : "border-gray-100 hover:border-emerald-200"
-                  }`}
+              <div className="flex-1">
+                <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
+                <p className="text-gray-600 text-sm mb-3">
+                  Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.
+                </p>
+                <button
+                  onClick={() => handleGetDirections("CVS Pharmacy, 123 Main Street, Fremont, CA")}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-gray-800">{med.name}</h3>
-                        {med.taken && <Icon name="check-circle" className="w-5 h-5 text-emerald-600" />}
-                      </div>
-                      <p className="text-gray-600 mt-1">{med.dose} • {med.frequency}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-emerald-600">{med.adherence}%</div>
-                      <div className="text-xs text-gray-500">Adherence</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Icon name="zap" className="w-4 h-4 text-amber-500" />
-                      <span className="font-semibold text-gray-700">{med.streak} day streak</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Icon name="clock" className="w-4 h-4 text-blue-500" />
-                      <span className="text-gray-600">Next: {med.nextDose}</span>
-                    </div>
-                  </div>
-
-                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
-                      style={{ width: `${med.adherence}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => handleMarkTaken(med.id)}
-                      disabled={med.taken}
-                      className={`flex-1 py-2 rounded-xl font-semibold transition-colors ${
-                        med.taken
-                          ? "bg-emerald-200 text-emerald-800 cursor-not-allowed"
-                          : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                      }`}
-                    >
-                      {med.taken ? "✓ Taken Today" : "Mark Taken"}
-                    </button>
-                    <button
-                      onClick={() => alert(`View details for ${med.name}`)}
-                      className="px-4 bg-gray-50 text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
-                    >
-                      Details
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-100">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
-                  <Icon name="pill" className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-800 mb-1">Refills Ready</h3>
-                  <p className="text-gray-600 text-sm mb-3">
-                    Your Metformin refill is ready for pickup at CVS Pharmacy on Main St.
-                  </p>
-                  <button
-                    onClick={() => handleGetDirections("CVS Pharmacy, 123 Main Street, Fremont, CA")}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
-                  >
-                    Get Directions
-                  </button>
-                </div>
+                  Get Directions
+                </button>
               </div>
             </div>
           </div>
-        );
+        </div>
+      );
 
-        const InsuranceView = () => (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Insurance Dashboard</h2>
+      const InsuranceView = () => (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Insurance Dashboard</h2>
 
-            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
 
-              <div className="relative">
-                <div className="flex items-start justify-between mb-8">
-                  <div>
-                    <div className="text-sm opacity-80 mb-1">Health Insurance</div>
-                    <div className="text-2xl font-bold">{userData.insurance.provider}</div>
-                  </div>
-                  <Icon name="shield" className="w-12 h-12 opacity-80" />
+            <div className="relative">
+              <div className="flex items-start justify-between mb-8">
+                <div>
+                  <div className="text-sm opacity-80 mb-1">Health Insurance</div>
+                  <div className="text-2xl font-bold">{userData.insurance.provider}</div>
                 </div>
+                <Icon name="shield" className="w-12 h-12 opacity-80" />
+              </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <div className="text-xs opacity-70 mb-1">Member ID</div>
-                    <div className="font-mono text-lg font-semibold">{userData.insurance.memberId}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs opacity-70 mb-1">Group Number</div>
-                    <div className="font-mono text-lg font-semibold">{userData.insurance.groupNumber}</div>
-                  </div>
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="text-xs opacity-70 mb-1">Member ID</div>
+                  <div className="font-mono text-lg font-semibold">{userData.insurance.memberId}</div>
                 </div>
+                <div>
+                  <div className="text-xs opacity-70 mb-1">Group Number</div>
+                  <div className="font-mono text-lg font-semibold">{userData.insurance.groupNumber}</div>
+                </div>
+              </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-xs opacity-70">Effective Date</div>
-                    <div className="font-semibold">{userData.insurance.effectiveDate}</div>
-                  </div>
-                  <button
-                    onClick={() => alert("Downloading insurance card...")}
-                    className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm"
-                  >
-                    Download Card
-                  </button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs opacity-70">Effective Date</div>
+                  <div className="font-semibold">{userData.insurance.effectiveDate}</div>
                 </div>
+                <button
+                  onClick={() => alert("Downloading insurance card...")}
+                  className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm"
+                >
+                  Download Card
+                </button>
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-800">Annual Deductible</h3>
-                  <Icon name="dollar-sign" className="w-5 h-5 text-emerald-600" />
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">Annual Deductible</h3>
+                <Icon name="dollar-sign" className="w-5 h-5 text-emerald-600" />
+              </div>
 
-                <div className="mb-4">
-                  <div className="flex items-end justify-between mb-2">
-                    <div>
-                      <div className="text-3xl font-bold text-emerald-600">
-                        ${userData.insurance.deductible.met.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        of ${userData.insurance.deductible.individual.toLocaleString()}
-                      </div>
+              <div className="mb-4">
+                <div className="flex items-end justify-between mb-2">
+                  <div>
+                    <div className="text-3xl font-bold text-emerald-600">
+                      ${userData.insurance.deductible.met.toLocaleString()}
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-gray-800">
-                        {Math.round((userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100)}%
-                      </div>
-                      <div className="text-xs text-gray-500">Met</div>
+                    <div className="text-sm text-gray-500">
+                      of ${userData.insurance.deductible.individual.toLocaleString()}
                     </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
-                      style={{
-                        width: `${(userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100}%`
-                      }}
-                    ></div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-800">
+                      {Math.round((userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100)}%
+                    </div>
+                    <div className="text-xs text-gray-500">Met</div>
                   </div>
                 </div>
-
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold">${userData.insurance.deductible.remaining.toLocaleString()}</span> remaining
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${(userData.insurance.deductible.met / userData.insurance.deductible.individual) * 100}%`
+                    }}
+                  ></div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-800">Out-of-Pocket Max</h3>
-                  <Icon name="credit-card" className="w-5 h-5 text-blue-600" />
-                </div>
-
-                <div className="mb-4">
-                  <div className="flex items-end justify-between mb-2">
-                    <div>
-                      <div className="text-3xl font-bold text-blue-600">
-                        ${userData.insurance.outOfPocketMax.met.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        of ${userData.insurance.outOfPocketMax.individual.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-gray-800">
-                        {Math.round((userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100)}%
-                      </div>
-                      <div className="text-xs text-gray-500">Met</div>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full transition-all duration-1000"
-                      style={{
-                        width: `${(userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100}%`
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold">${userData.insurance.outOfPocketMax.remaining.toLocaleString()}</span> remaining
-                </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">${userData.insurance.deductible.remaining.toLocaleString()}</span> remaining
               </div>
             </div>
 
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Icon name="file-text" className="w-5 h-5 text-emerald-600" />
-                Coverage Details
-              </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <div className="text-xs text-emerald-700 font-semibold mb-1">In-Network</div>
-                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.inNetwork}</div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">Out-of-Pocket Max</h3>
+                <Icon name="credit-card" className="w-5 h-5 text-blue-600" />
+              </div>
+
+              <div className="mb-4">
+                <div className="flex items-end justify-between mb-2">
+                  <div>
+                    <div className="text-3xl font-bold text-blue-600">
+                      ${userData.insurance.outOfPocketMax.met.toLocaleString()}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      of ${userData.insurance.outOfPocketMax.individual.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-800">
+                      {Math.round((userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100)}%
+                    </div>
+                    <div className="text-xs text-gray-500">Met</div>
+                  </div>
                 </div>
-                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <div className="text-xs text-amber-700 font-semibold mb-1">Out-of-Network</div>
-                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.outOfNetwork}</div>
-                </div>
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="text-xs text-blue-700 font-semibold mb-1">Preventive Care</div>
-                  <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.preventiveCare}</div>
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${(userData.insurance.outOfPocketMax.met / userData.insurance.outOfPocketMax.individual) * 100}%`
+                    }}
+                  ></div>
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4">Recent Claims</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                    <div>
-                      <div className="font-semibold text-gray-800 text-sm">Lab Work - Jan 15</div>
-                      <div className="text-xs text-gray-600">Quest Diagnostics</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-emerald-700 font-bold">Approved</div>
-                      <div className="text-xs text-gray-600">$0 due</div>
-                    </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">${userData.insurance.outOfPocketMax.remaining.toLocaleString()}</span> remaining
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Icon name="file-text" className="w-5 h-5 text-emerald-600" />
+              Coverage Details
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                <div className="text-xs text-emerald-700 font-semibold mb-1">In-Network</div>
+                <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.inNetwork}</div>
+              </div>
+              <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="text-xs text-amber-700 font-semibold mb-1">Out-of-Network</div>
+                <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.outOfNetwork}</div>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <div className="text-xs text-blue-700 font-semibold mb-1">Preventive Care</div>
+                <div className="text-lg font-bold text-gray-800">{userData.insurance.coverage.preventiveCare}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4">Recent Claims</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div>
+                    <div className="font-semibold text-gray-800 text-sm">Lab Work - Jan 15</div>
+                    <div className="text-xs text-gray-600">Quest Diagnostics</div>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                    <div>
-                      <div className="font-semibold text-gray-800 text-sm">Office Visit - Jan 8</div>
-                      <div className="text-xs text-gray-600">Dr. Martinez</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-emerald-700 font-bold">Approved</div>
-                      <div className="text-xs text-gray-600">$25 copay</div>
-                    </div>
+                  <div className="text-right">
+                    <div className="text-emerald-700 font-bold">Approved</div>
+                    <div className="text-xs text-gray-600">$0 due</div>
                   </div>
                 </div>
-                <button
-                  onClick={() => alert("View all claims history...")}
-                  className="w-full mt-4 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
-                >
-                  View All Claims →
+                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div>
+                    <div className="font-semibold text-gray-800 text-sm">Office Visit - Jan 8</div>
+                    <div className="text-xs text-gray-600">Dr. Martinez</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-emerald-700 font-bold">Approved</div>
+                    <div className="text-xs text-gray-600">$25 copay</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => alert("View all claims history...")}
+                className="w-full mt-4 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+              >
+                View All Claims →
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4">Prior Authorizations</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                  <div>
+                    <div className="font-semibold text-gray-800 text-sm">MRI Scan</div>
+                    <div className="text-xs text-gray-600">City Imaging Center</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-amber-700 font-bold">Pending</div>
+                    <div className="text-xs text-gray-600">2-3 days</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200 text-sm text-blue-800">
+                <div className="font-semibold mb-1">AI Agent is tracking this</div>
+                <div className="text-xs">You'll be notified as soon as it's approved</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <button
+              onClick={() => setShowVerifyCoverage(true)}
+              className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+            >
+              <Icon name="check-circle" className="w-8 h-8 mb-3" />
+              <div className="font-bold text-lg">Verify Coverage</div>
+              <div className="text-emerald-100 text-sm mt-1">Check eligibility</div>
+            </button>
+
+            <button
+              onClick={() => setShowFileClaim(true)}
+              className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+            >
+              <Icon name="file-text" className="w-8 h-8 mb-3" />
+              <div className="font-bold text-lg">File Claim</div>
+              <div className="text-blue-100 text-sm mt-1">Submit manually</div>
+            </button>
+
+            <button
+              onClick={() => setShowFindProviders(true)}
+              className="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
+            >
+              <Icon name="building" className="w-8 h-8 mb-3" />
+              <div className="font-bold text-lg">Find Providers</div>
+              <div className="text-purple-100 text-sm mt-1">In-network search</div>
+            </button>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
+          <VoiceAgent onToggle={toggleConversation} isConnected={isConnected} isConnecting={isConnecting} />
+          {showNotification && (
+            <div
+              className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm z-50"
+              style={{ animation: "slideInRight 0.5s ease-out" }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <Icon name="sparkles" className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-800">AI Agent Update</div>
+                  <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
+                </div>
+                <button onClick={() => setShowNotification(false)} className="text-gray-400 hover:text-gray-600 ml-auto">
+                  ✕
                 </button>
               </div>
-
-              <div className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4">Prior Authorizations</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
-                    <div>
-                      <div className="font-semibold text-gray-800 text-sm">MRI Scan</div>
-                      <div className="text-xs text-gray-600">City Imaging Center</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-amber-700 font-bold">Pending</div>
-                      <div className="text-xs text-gray-600">2-3 days</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200 text-sm text-blue-800">
-                  <div className="font-semibold mb-1">AI Agent is tracking this</div>
-                  <div className="text-xs">You'll be notified as soon as it's approved</div>
-                </div>
-              </div>
             </div>
+          )}
 
-            <div className="grid grid-cols-3 gap-4">
-              <button
-                onClick={() => setShowVerifyCoverage(true)}
-                className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
-              >
-                <Icon name="check-circle" className="w-8 h-8 mb-3" />
-                <div className="font-bold text-lg">Verify Coverage</div>
-                <div className="text-emerald-100 text-sm mt-1">Check eligibility</div>
-              </button>
-
-              <button
-                onClick={() => setShowFileClaim(true)}
-                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
-              >
-                <Icon name="file-text" className="w-8 h-8 mb-3" />
-                <div className="font-bold text-lg">File Claim</div>
-                <div className="text-blue-100 text-sm mt-1">Submit manually</div>
-              </button>
-
-              <button
-                onClick={() => setShowFindProviders(true)}
-                className="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
-              >
-                <Icon name="building" className="w-8 h-8 mb-3" />
-                <div className="font-bold text-lg">Find Providers</div>
-                <div className="text-purple-100 text-sm mt-1">In-network search</div>
-              </button>
-            </div>
-          </div>
-        );
-
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
-            {showNotification && (
-              <div
-                className="fixed top-6 right-6 bg-white rounded-2xl shadow-2xl p-4 border-2 border-emerald-200 max-w-sm z-50"
-                style={{ animation: "slideInRight 0.5s ease-out" }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                    <Icon name="sparkles" className="w-5 h-5 text-emerald-600" />
+          <div className="max-w-7xl mx-auto p-6">
+            <header className="mb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                    <Icon name="heart" className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-800">AI Agent Update</div>
-                    <div className="text-sm text-gray-600 mt-1">Insurance verified for your March 15th appointment ✓</div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                      CareLoop
+                    </h1>
+                    <p className="text-sm text-gray-500 font-medium">Your Digital Health Manager</p>
                   </div>
-                  <button onClick={() => setShowNotification(false)} className="text-gray-400 hover:text-gray-600 ml-auto">
-                    ✕
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setShowNotification(true)}
+                    className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <Icon name="bell" className="w-6 h-6 text-gray-600" />
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                   </button>
+                  <button
+                    onClick={() => alert("Demo: calling your care team now.")}
+                    className="p-3 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <Icon name="phone" className="w-6 h-6 text-gray-600" />
+                  </button>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
+                    {userInitials}
+                  </div>
                 </div>
               </div>
-            )}
+            </header>
 
-            <div className="max-w-7xl mx-auto p-6">
-              <header className="mb-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                      <Icon name="heart" className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                        CareLoop
-                      </h1>
-                      <p className="text-sm text-gray-500 font-medium">Your Digital Health Manager</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setShowNotification(true)}
-                      className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                      <Icon name="bell" className="w-6 h-6 text-gray-600" />
-                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button
-                      onClick={() => alert("Demo: calling your care team now.")}
-                      className="p-3 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                      <Icon name="phone" className="w-6 h-6 text-gray-600" />
-                    </button>
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
-                      {userInitials}
-                    </div>
-                  </div>
-                </div>
-              </header>
-
-              <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
-                <div className="flex gap-2">
-                  {[
-                    { id: "dashboard", label: "Dashboard", icon: "trending-up" },
-                    { id: "appointments", label: "Appointments", icon: "calendar" },
-                    { id: "medications", label: "Medications", icon: "pill" },
-                    { id: "insurance", label: "Insurance", icon: "shield" }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
-                        activeTab === tab.id
-                          ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg"
-                          : "text-gray-600 hover:bg-gray-50"
+            <nav className="mb-8 bg-white rounded-2xl p-2 shadow-lg border-2 border-gray-100">
+              <div className="flex gap-2">
+                {[
+                  { id: "dashboard", label: "Dashboard", icon: "trending-up" },
+                  { id: "appointments", label: "Appointments", icon: "calendar" },
+                  { id: "medications", label: "Medications", icon: "pill" },
+                  { id: "insurance", label: "Insurance", icon: "shield" }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${activeTab === tab.id
+                      ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg"
+                      : "text-gray-600 hover:bg-gray-50"
                       }`}
-                    >
-                      <Icon name={tab.icon} className="w-5 h-5" />
-                      <span>{tab.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </nav>
+                  >
+                    <Icon name={tab.icon} className="w-5 h-5" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </nav>
 
-              <main className={`transition-all duration-500 ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                {activeTab === "dashboard" && <DashboardView />}
-                {activeTab === "appointments" && <AppointmentsView />}
-                {activeTab === "medications" && <MedicationsView />}
-                {activeTab === "insurance" && <InsuranceView />}
-              </main>
-            </div>
-
-            {showScheduleAppointment && <ScheduleAppointmentModal />}
-            {showReschedule && <RescheduleModal />}
-            {showVerifyCoverage && <VerifyCoverageModal />}
-            {showFileClaim && <FileClaimModal />}
-            {showFindProviders && <FindProvidersModal />}
-            {showChatInterface && <ChatInterfaceModal />}
+            <main className={`transition-all duration-500 ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+              {activeTab === "dashboard" && <DashboardView />}
+              {activeTab === "appointments" && <AppointmentsView />}
+              {activeTab === "medications" && <MedicationsView />}
+              {activeTab === "insurance" && <InsuranceView />}
+            </main>
           </div>
-        );
-      };
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<CareLoop />);
-    </script>
-  </body>
+          {showScheduleAppointment && <ScheduleAppointmentModal />}
+          {showReschedule && <RescheduleModal />}
+          {showVerifyCoverage && <VerifyCoverageModal />}
+          {showFileClaim && <FileClaimModal />}
+          {showFindProviders && <FindProvidersModal />}
+          {showChatInterface && <ChatInterfaceModal />}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<CareLoop />);
+  </script>
+</body>
+
 </html>
