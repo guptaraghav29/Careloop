@@ -108,7 +108,7 @@
 
         // Mock user data
         const userData = useMemo(() => ({
-          name: "Sarah Chen",
+          name: "Grace Sun",
           healthXP: 2840,
           level: 7,
           nextLevelXP: 3000,
@@ -978,7 +978,10 @@
 
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setShowChatInterface(true)}
+                onClick={() => {
+                  console.log("Talk to Agent clicked");
+                  setShowChatInterface(true);
+                }}
                 className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
               >
                 <Icon name="message-square" className="w-8 h-8 mb-3" />
