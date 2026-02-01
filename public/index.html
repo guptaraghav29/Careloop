@@ -63,6 +63,9 @@
         const [showNotification, setShowNotification] = useState(false);
         const [animateIn, setAnimateIn] = useState(false);
         const [expandedAppointment, setExpandedAppointment] = useState(null);
+        const [patientsData, setPatientsData] = useState([]);
+        const [activePatientId, setActivePatientId] = useState(null);
+        const [dataLoadError, setDataLoadError] = useState(null);
 
         const [showAddMedication, setShowAddMedication] = useState(false);
         const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
@@ -74,6 +77,7 @@
 
         const [selectedAppointment, setSelectedAppointment] = useState(null);
 
+        const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
         const [medications, setMedications] = useState([
           { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
           { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
@@ -106,91 +110,219 @@
         ]);
         const [chatInput, setChatInput] = useState("");
 
-        // Mock user data
-        const userData = useMemo(() => ({
-          name: "Grace Sun",
-          healthXP: 2840,
-          level: 7,
-          nextLevelXP: 3000,
-          streak: 12,
-          appointments: [
+        const formatDate = (date) =>
+          date
+            ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+            : "TBD";
+
+        const formatTime = (date) =>
+          date
+            ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : "TBD";
+
+        const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+
+        useEffect(() => {
+          const loadPatients = async () => {
+            try {
+              const response = await fetch("/data/test-patients.json");
+              if (!response.ok) throw new Error("Failed to load patient data");
+              const data = await response.json();
+              const patients = Array.isArray(data.patients) ? data.patients : [];
+              setPatientsData(patients);
+              setActivePatientId(patients[0]?.patient_id || null);
+            } catch (err) {
+              console.error(err);
+              setDataLoadError("Unable to load patient data.");
+            }
+          };
+          loadPatients();
+        }, []);
+
+        const selectedPatient = useMemo(
+          () => patientsData.find((patient) => patient.patient_id === activePatientId) || patientsData[0] || null,
+          [patientsData, activePatientId]
+        );
+
+        useEffect(() => {
+          if (!selectedPatient) return;
+          const patientMeds = (selectedPatient.medications || []).map((med, idx) => ({
+            id: idx + 1,
+            name: med.name,
+            dose: med.dose,
+            frequency: med.frequency,
+            nextDose: "Today, 8:00 PM",
+            streak: 8 + idx * 3,
+            adherence: 90 + idx * 3,
+            taken: false
+          }));
+          if (patientMeds.length) {
+            setMedications(patientMeds);
+          }
+        }, [selectedPatient]);
+
+        const userData = useMemo(() => {
+          const baseData = {
+            name: "Grace Sun",
+            healthXP: 2840,
+            level: 7,
+            nextLevelXP: 3000,
+            streak: 12,
+            appointments: [],
+            missions: [],
+            insights: [],
+            insurance: {
+              provider: "Blue Cross Blue Shield PPO",
+              memberId: "BCB123456789",
+              groupNumber: "GRP-9876",
+              effectiveDate: "Jan 1, 2026",
+              deductible: { individual: 1500, met: 450, remaining: 1050 },
+              outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
+              coverage: {
+                inNetwork: "80% after deductible",
+                outOfNetwork: "60% after deductible",
+                preventiveCare: "100% covered"
+              }
+            }
+          };
+
+          if (!selectedPatient) return baseData;
+
+          const fullName = `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim() || baseData.name;
+          const nextAppt = selectedPatient.care_plan?.next_appointment;
+          const nextApptDate = nextAppt?.scheduled_for ? new Date(nextAppt.scheduled_for) : null;
+          const labA1c = selectedPatient.labs?.a1c_percent?.recorded_at
+            ? new Date(selectedPatient.labs.a1c_percent.recorded_at)
+            : null;
+          const followUpDate = labA1c ? addDays(labA1c, 30) : nextApptDate ? addDays(nextApptDate, 14) : null;
+          const checkInDate = followUpDate ? addDays(followUpDate, 21) : nextApptDate ? addDays(nextApptDate, 21) : null;
+
+          const appointments = [
             {
               id: 1,
-              type: "Endocrinologist",
-              date: "Mar 15, 2026",
-              time: "9:00 AM",
-              doctor: "Dr. Jennifer Martinez",
+              type: nextAppt?.type || "Care Plan Follow-up",
+              date: formatDate(nextApptDate),
+              time: formatTime(nextApptDate),
+              doctor: "CareLoop Care Team",
               status: "verified",
-              prep: "Fasting required - 8 hours",
-              location: "City Medical Center, 123 Health Ave, Suite 400",
+              prep: selectedPatient.conditions?.length ? `Review ${selectedPatient.conditions.join(", ")}` : "Bring questions for your care team",
+              location: "CareLoop Medical Center, 123 Health Ave, Suite 400",
               insuranceDetails: {
-                provider: "Blue Cross Blue Shield",
+                provider: baseData.insurance.provider,
                 copay: "$25",
                 coverage: "100% covered - In Network",
                 authRequired: false
               },
-              notes: "Bring recent glucose logs. Discuss HbA1c results from March 8th lab work.",
-              reason: "Quarterly diabetes management check-up"
+              notes: selectedPatient.care_plan?.goals?.join(". ") || "Follow up on your care plan goals.",
+              reason: "Care plan follow-up"
             },
             {
               id: 2,
-              type: "Annual Eye Exam",
-              date: "Mar 22, 2026",
-              time: "2:30 PM",
-              doctor: "Dr. Robert Kim",
-              status: "verified",
-              location: "Vision Care Specialists, 456 Optical Blvd",
-              insuranceDetails: {
-                provider: "Blue Cross Blue Shield",
-                copay: "$0",
-                coverage: "100% covered - Preventive Care",
-                authRequired: false
-              },
-              notes: "Diabetic retinopathy screening included.",
-              reason: "Annual diabetic eye exam (required)"
-            },
-            {
-              id: 3,
-              type: "Lab Work - HbA1c",
-              date: "Mar 8, 2026",
-              time: "7:00 AM",
-              doctor: "Quest Diagnostics",
+              type: "Lab Review - A1c",
+              date: formatDate(followUpDate),
+              time: followUpDate ? "10:00 AM" : "TBD",
+              doctor: "Lab Review Team",
               status: "pending",
-              location: "Quest Diagnostics - Downtown, 789 Lab Street",
+              location: "CareLoop Lab Center, 789 Lab Street",
               insuranceDetails: {
-                provider: "Blue Cross Blue Shield",
+                provider: baseData.insurance.provider,
                 copay: "$0",
                 coverage: "Verifying coverage...",
                 authRequired: false
               },
-              notes: "Fasting required - 8-12 hours. Water is okay.",
-              reason: "Quarterly diabetes monitoring"
+              notes: selectedPatient.labs?.a1c_percent?.value
+                ? `Most recent A1c: ${selectedPatient.labs.a1c_percent.value}%`
+                : "Review recent lab work.",
+              reason: "Discuss latest lab results"
+            },
+            {
+              id: 3,
+              type: "Primary Care Check-In",
+              date: formatDate(checkInDate),
+              time: checkInDate ? "1:30 PM" : "TBD",
+              doctor: "Primary Care Team",
+              status: "pending",
+              location: "CareLoop Primary Care, 456 Wellness Blvd",
+              insuranceDetails: {
+                provider: baseData.insurance.provider,
+                copay: "$15",
+                coverage: "In Network",
+                authRequired: false
+              },
+              notes: "General wellness check-in and medication review.",
+              reason: "Routine follow-up visit"
             }
-          ],
-          missions: [
-            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
-            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
-            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
-          ],
-          insights: [
-            { type: "success", message: "Insurance verified for all upcoming appointments", icon: "check-circle" },
-            { type: "action", message: "Prescription refill ready for pickup at CVS", icon: "pill" },
-            { type: "reminder", message: "Fasting required before tomorrow's lab work", icon: "alert-circle" }
-          ],
-          insurance: {
-            provider: "Blue Cross Blue Shield PPO",
-            memberId: "BCB123456789",
-            groupNumber: "GRP-9876",
-            effectiveDate: "Jan 1, 2026",
-            deductible: { individual: 1500, met: 450, remaining: 1050 },
-            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
-            coverage: {
-              inNetwork: "80% after deductible",
-              outOfNetwork: "60% after deductible",
-              preventiveCare: "100% covered"
+          ];
+
+          const missions = [
+            {
+              id: 1,
+              title: "Care Plan Goals",
+              description: selectedPatient.care_plan?.goals?.[0] || "Stay on track with your care plan",
+              xp: 150,
+              deadline: "Next visit",
+              progress: 40,
+              icon: "target"
+            },
+            {
+              id: 2,
+              title: "Medication Master",
+              description: `Adhere to ${selectedPatient.medications?.length || 0} active medications`,
+              xp: 120,
+              deadline: "Ongoing",
+              progress: 60,
+              icon: "pill"
+            },
+            {
+              id: 3,
+              title: "Vitals Check",
+              description: selectedPatient.vitals?.blood_pressure_mmHg
+                ? `Monitor BP: ${selectedPatient.vitals.blood_pressure_mmHg.systolic}/${selectedPatient.vitals.blood_pressure_mmHg.diastolic}`
+                : "Log your vitals this week",
+              xp: 100,
+              deadline: "This week",
+              progress: 30,
+              icon: "activity"
             }
-          }
-        }), []);
+          ];
+
+          const insights = [
+            {
+              type: "success",
+              message: `Loaded care plan for ${fullName}`,
+              icon: "check-circle"
+            },
+            {
+              type: "action",
+              message: selectedPatient.allergies?.length
+                ? `Allergy alert: ${selectedPatient.allergies[0].substance}`
+                : "No allergy alerts on file",
+              icon: "alert-circle"
+            },
+            {
+              type: "reminder",
+              message: nextAppt?.scheduled_for
+                ? `Next visit: ${formatDate(nextApptDate)} at ${formatTime(nextApptDate)}`
+                : "Next appointment needs scheduling",
+              icon: "calendar"
+            }
+          ];
+
+          return {
+            ...baseData,
+            name: fullName,
+            appointments,
+            missions,
+            insights
+          };
+        }, [selectedPatient]);
+
+        const userInitials = useMemo(() => {
+          const parts = userData.name.split(" ").filter(Boolean);
+          const first = parts[0]?.[0] || "S";
+          const second = parts[1]?.[0] || "C";
+          return `${first}${second}`.toUpperCase();
+        }, [userData.name]);
 
         useEffect(() => {
           setAnimateIn(true);
@@ -241,6 +373,7 @@
 
         const handleReschedule = (appointment) => {
           setSelectedAppointment(appointment);
+          setSelectedRescheduleSlot(null);
           setShowReschedule(true);
         };
 
@@ -459,6 +592,7 @@
                           ].map((slot) => (
                             <button
                               key={slot}
+                              onClick={() => setSelectedRescheduleSlot(slot)}
                               className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-emerald-100 transition-colors font-medium"
                             >
                               {slot}
@@ -473,7 +607,7 @@
                     <button
                       onClick={() => {
                         setShowReschedule(false);
-                        alert("Appointment rescheduled! Confirmation sent to your email.");
+                        alert(`Appointment rescheduled for ${selectedRescheduleSlot || "your chosen time"}. Confirmation sent to your email.`);
                       }}
                       className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                     >
@@ -680,10 +814,17 @@
 
           // Simulate assistant response
           setTimeout(() => {
+            const patientName = selectedPatient
+              ? `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim()
+              : "your patient";
+            const conditions = selectedPatient?.conditions?.length
+              ? selectedPatient.conditions.join(", ")
+              : "your health profile";
+            const medCount = selectedPatient?.medications?.length || 0;
             const responseMessage = {
               id: (Date.now() + 1).toString(),
               participantId: "assistant-1",
-              content: "I'm processing your request. This is a demo response. In a full implementation, this would connect to your AI agent backend.",
+              content: `Thanks! I pulled up ${patientName}'s chart. Key conditions: ${conditions}. Active meds: ${medCount}. Let me know what you'd like to review.`,
               timestamp: new Date(),
               status: "delivered"
             };
@@ -1097,7 +1238,10 @@
                       </div>
                     </div>
 
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button
+                      onClick={() => setExpandedAppointment(expandedAppointment === apt.id ? null : apt.id)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
                       {expandedAppointment === apt.id ? (
                         <Icon name="chevron-up" className="w-5 h-5 text-gray-600" />
                       ) : (
@@ -1629,20 +1773,26 @@
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                         CareLoop
                       </h1>
-                      <p className="text-sm text-gray-500 font-medium">Your AI Healthcare Companion</p>
+                      <p className="text-sm text-gray-500 font-medium">Your Digital Health Manager</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <button className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                    <button
+                      onClick={() => setShowNotification(true)}
+                      className="relative p-3 hover:bg-gray-100 rounded-xl transition-colors"
+                    >
                       <Icon name="bell" className="w-6 h-6 text-gray-600" />
                       <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
-                    <button className="p-3 hover:bg-gray-100 rounded-xl transition-colors">
+                    <button
+                      onClick={() => alert("Demo: calling your care team now.")}
+                      className="p-3 hover:bg-gray-100 rounded-xl transition-colors"
+                    >
                       <Icon name="phone" className="w-6 h-6 text-gray-600" />
                     </button>
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
-                      SC
+                      {userInitials}
                     </div>
                   </div>
                 </div>
