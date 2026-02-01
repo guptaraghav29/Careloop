@@ -168,9 +168,27 @@
       const [showFindProviders, setShowFindProviders] = useState(false);
       const [showChatInterface, setShowChatInterface] = useState(false);
 
-      const [selectedAppointment, setSelectedAppointment] = useState(null);
+        const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-      const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
+        const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
+        const [rescheduleForm, setRescheduleForm] = useState({ date: "", time: "" });
+        const [verifyCoverageForm, setVerifyCoverageForm] = useState({
+          provider: "",
+          procedure: "",
+          facility: ""
+        });
+        const [fileClaimForm, setFileClaimForm] = useState({
+          dateOfService: "",
+          provider: "",
+          description: "",
+          totalCharge: "",
+          amountPaid: ""
+        });
+        const [findProvidersForm, setFindProvidersForm] = useState({
+          specialty: "",
+          location: "Fremont, CA",
+          distance: "Within 10 miles"
+        });
       const [medications, setMedications] = useState([
         { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
         { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
@@ -534,11 +552,12 @@
         }
       };
 
-      const handleReschedule = (appointment) => {
-        setSelectedAppointment(appointment);
-        setSelectedRescheduleSlot(null);
-        setShowReschedule(true);
-      };
+        const handleReschedule = (appointment) => {
+          setSelectedAppointment(appointment);
+          setSelectedRescheduleSlot(null);
+          setRescheduleForm({ date: "", time: "" });
+          setShowReschedule(true);
+        };
 
       const handleAddToCalendar = (appointment) => {
         alert(
@@ -730,6 +749,8 @@
                     <label className="block text-sm font-semibold text-gray-700 mb-2">New Date</label>
                     <input
                       type="date"
+                      value={rescheduleForm.date}
+                      onChange={(e) => setRescheduleForm((prev) => ({ ...prev, date: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     />
                   </div>
@@ -737,6 +758,8 @@
                     <label className="block text-sm font-semibold text-gray-700 mb-2">New Time</label>
                     <input
                       type="time"
+                      value={rescheduleForm.time}
+                      onChange={(e) => setRescheduleForm((prev) => ({ ...prev, time: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     />
                   </div>
@@ -808,6 +831,8 @@
                 <input
                   type="text"
                   placeholder="e.g., Dr. Jennifer Martinez"
+                  value={verifyCoverageForm.provider}
+                  onChange={(e) => setVerifyCoverageForm((prev) => ({ ...prev, provider: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -817,6 +842,8 @@
                 <input
                   type="text"
                   placeholder="e.g., Annual Physical, MRI, Lab Work"
+                  value={verifyCoverageForm.procedure}
+                  onChange={(e) => setVerifyCoverageForm((prev) => ({ ...prev, procedure: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -826,6 +853,8 @@
                 <input
                   type="text"
                   placeholder="e.g., City Medical Center"
+                  value={verifyCoverageForm.facility}
+                  onChange={(e) => setVerifyCoverageForm((prev) => ({ ...prev, facility: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -885,6 +914,8 @@
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Service</label>
                 <input
                   type="date"
+                  value={fileClaimForm.dateOfService}
+                  onChange={(e) => setFileClaimForm((prev) => ({ ...prev, dateOfService: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -894,6 +925,8 @@
                 <input
                   type="text"
                   placeholder="Doctor or facility name"
+                  value={fileClaimForm.provider}
+                  onChange={(e) => setFileClaimForm((prev) => ({ ...prev, provider: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -903,6 +936,8 @@
                 <textarea
                   placeholder="Describe the medical service received"
                   rows="3"
+                  value={fileClaimForm.description}
+                  onChange={(e) => setFileClaimForm((prev) => ({ ...prev, description: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
                 />
               </div>
@@ -913,6 +948,8 @@
                   <input
                     type="number"
                     placeholder="0.00"
+                    value={fileClaimForm.totalCharge}
+                    onChange={(e) => setFileClaimForm((prev) => ({ ...prev, totalCharge: e.target.value }))}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
                 </div>
@@ -921,6 +958,8 @@
                   <input
                     type="number"
                     placeholder="0.00"
+                    value={fileClaimForm.amountPaid}
+                    onChange={(e) => setFileClaimForm((prev) => ({ ...prev, amountPaid: e.target.value }))}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
                 </div>
@@ -1110,7 +1149,11 @@
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Specialty</label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                <select
+                  value={findProvidersForm.specialty}
+                  onChange={(e) => setFindProvidersForm((prev) => ({ ...prev, specialty: e.target.value }))}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                >
                   <option value="">Select specialty...</option>
                   <option>Primary Care</option>
                   <option>Cardiology</option>
@@ -1127,14 +1170,19 @@
                 <input
                   type="text"
                   placeholder="City, ZIP code, or address"
-                  defaultValue="Fremont, CA"
+                  value={findProvidersForm.location}
+                  onChange={(e) => setFindProvidersForm((prev) => ({ ...prev, location: e.target.value }))}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Distance</label>
-                <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                <select
+                  value={findProvidersForm.distance}
+                  onChange={(e) => setFindProvidersForm((prev) => ({ ...prev, distance: e.target.value }))}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                >
                   <option>Within 5 miles</option>
                   <option>Within 10 miles</option>
                   <option>Within 25 miles</option>
