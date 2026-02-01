@@ -6,10 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CareLoop (Single-File Demo)</title>
 
-  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -55,49 +53,43 @@
 <body class="min-h-screen">
   <div id="root"></div>
 
-  <!-- React (UMD) + Babel (for JSX in-browser) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Lucide (non-React) -->
   <script type="module">
     import { Conversation } from 'https://esm.sh/@elevenlabs/client';
-    // Standardize the name for the React script to find
     window.ElevenLabsConversation = Conversation;
   </script>
 
-  <!-- Lucide (non-React) -->
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 
   <script type="text/babel">
     const { useEffect, useMemo, useState, useRef } = React;
 
-    // Simplified Icon component that relies on lucide.createIcons or similar if needed,
-    // but in this case, we can just use the i tag and let the global useEffect handle it,
-    // OR deeper integration if we had the react-lucide library.
-    // However, the issue described (typing glitches) usually comes from re-renders destroying/recreating DOM nodes too aggressively.
-    // Let's try a lighter-weight approach that updates attributes instead of full DOM replacement if possible,
-    // or just memoize better.
-    //
-    // Actually, the previous implementation was doing manual DOM manipulation in useEffect which is fine, 
-    // but if parent components re-render on every keystroke (like with controlled inputs), 
-    // this Icon component might be getting unmounted/remounted or its ref cleared.
-    //
-    // Let's try `React.memo` to prevent re-renders if props haven't changed.
+    // --- UTILS ---
+    const formatDate = (date) =>
+      date
+        ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "TBD";
+
+    const formatTime = (date) =>
+      date
+        ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        : "TBD";
+
+    const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+
+    // --- COMPONENTS ---
+
     const Icon = React.memo(({ name, className = "" }) => {
       const ref = useRef(null);
 
       useEffect(() => {
         if (ref.current && window.lucide) {
-          // We'll trust Lucide to handle the replacement or we can manually construct SVG strings if we had them.
-          // But since we are using the CDN script, we follow its pattern:
-
-          // Clean up
           while (ref.current.firstChild) {
             ref.current.removeChild(ref.current.firstChild);
           }
-
           const iconElement = document.createElement('i');
           iconElement.setAttribute('data-lucide', name);
           iconElement.setAttribute('class', className);
@@ -112,6 +104,43 @@
 
       return <span ref={ref} style={{ display: 'inline-flex' }}></span>;
     });
+
+    const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
+        const radius = (size - strokeWidth) / 2;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (progress / 100) * circumference;
+
+        return (
+          <svg width={size} height={size} className="transform -rotate-90">
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="rgba(134, 191, 157, 0.2)"
+              strokeWidth={strokeWidth}
+              fill="none"
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="url(#gradient)"
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              style={{ transition: "stroke-dashoffset 1s ease-out" }}
+            />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#86BF9D" />
+                <stop offset="100%" stopColor="#5A9B73" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+    };
 
     const AGENT_ID = "agent_9701kgb6m4kyfcetfhdrtq20x3ed";
 
@@ -147,480 +176,16 @@
       </div>
     );
 
-    const CareLoop = () => {
-      const [isConnected, setIsConnected] = useState(false);
-      const [isConnecting, setIsConnecting] = useState(false);
-      const conversationRef = useRef(null);
+    // --- MODALS (Moved OUTSIDE CareLoop) ---
 
-      const [activeTab, setActiveTab] = useState("dashboard");
-      const [showNotification, setShowNotification] = useState(false);
-      const [animateIn, setAnimateIn] = useState(false);
-      const [expandedAppointment, setExpandedAppointment] = useState(null);
-      const [patientsData, setPatientsData] = useState([]);
-      const [activePatientId, setActivePatientId] = useState(null);
-      const [dataLoadError, setDataLoadError] = useState(null);
-
-      const [showAddMedication, setShowAddMedication] = useState(false);
-      const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
-      const [showReschedule, setShowReschedule] = useState(false);
-      const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
-      const [showFileClaim, setShowFileClaim] = useState(false);
-      const [showFindProviders, setShowFindProviders] = useState(false);
-      const [showChatInterface, setShowChatInterface] = useState(false);
-
-        const [selectedAppointment, setSelectedAppointment] = useState(null);
-
-        const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
-        const [rescheduleForm, setRescheduleForm] = useState({ date: "", time: "" });
-        const [verifyCoverageForm, setVerifyCoverageForm] = useState({
-          provider: "",
-          procedure: "",
-          facility: ""
-        });
-        const [fileClaimForm, setFileClaimForm] = useState({
-          dateOfService: "",
-          provider: "",
-          description: "",
-          totalCharge: "",
-          amountPaid: ""
-        });
-        const [findProvidersForm, setFindProvidersForm] = useState({
-          specialty: "",
-          location: "Fremont, CA",
-          distance: "Within 10 miles"
-        });
-      const [medications, setMedications] = useState([
-        { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
-        { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
-        { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
-      ]);
-
-      const [newMedication, setNewMedication] = useState({
-        name: "",
-        dose: "",
-        frequency: "Once daily",
-        time: "08:00"
-      });
-
-      const [newAppointment, setNewAppointment] = useState({
-        type: "",
-        doctor: "",
-        date: "",
-        time: "",
-        reason: ""
-      });
-
-      const [chatMessages, setChatMessages] = useState([
-        {
-          id: "1",
-          participantId: "assistant-1",
-          content: "Hello! I am Dr. AI. How can I assist you with your health today?",
-          timestamp: new Date(),
-          status: "delivered"
-        }
-      ]);
-      const [chatInput, setChatInput] = useState("");
-
-      const formatDate = (date) =>
-        date
-          ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-          : "TBD";
-
-      const formatTime = (date) =>
-        date
-          ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-          : "TBD";
-
-      const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-
-      useEffect(() => {
-        const loadPatients = async () => {
-          try {
-            // Use relative path for better compatibility
-            const response = await fetch("data/test-patients.json");
-            if (!response.ok) throw new Error("Failed to load patient data");
-            const data = await response.json();
-            const patients = Array.isArray(data.patients) ? data.patients : [];
-            setPatientsData(patients);
-            setActivePatientId(patients[0]?.patient_id || null);
-          } catch (err) {
-            console.error(err);
-            setDataLoadError("Unable to load patient data.");
-          }
-        };
-        loadPatients();
-      }, []);
-
-      const selectedPatient = useMemo(
-        () => patientsData.find((patient) => patient.patient_id === activePatientId) || patientsData[0] || null,
-        [patientsData, activePatientId]
-      );
-
-      useEffect(() => {
-        if (!selectedPatient) return;
-        const patientMeds = (selectedPatient.medications || []).map((med, idx) => ({
-          id: idx + 1,
-          name: med.name,
-          dose: med.dose,
-          frequency: med.frequency,
-          nextDose: "Today, 8:00 PM",
-          streak: 8 + idx * 3,
-          adherence: 90 + idx * 3,
-          taken: false
-        }));
-        if (patientMeds.length) {
-          setMedications(patientMeds);
-        }
-      }, [selectedPatient]);
-
-      const userData = useMemo(() => {
-        const baseData = {
-          name: "Grace Sun",
-          healthXP: 2840,
-          level: 7,
-          nextLevelXP: 3000,
-          streak: 12,
-          appointments: [],
-          missions: [
-            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
-            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
-            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
-          ],
-          insights: [],
-          insurance: {
-            provider: "Blue Cross Blue Shield PPO",
-            memberId: "BCB123456789",
-            groupNumber: "GRP-9876",
-            effectiveDate: "Jan 1, 2026",
-            deductible: { individual: 1500, met: 450, remaining: 1050 },
-            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
-            coverage: {
-              inNetwork: "80% after deductible",
-              outOfNetwork: "60% after deductible",
-              preventiveCare: "100% covered"
-            }
-          }
-        };
-
-        if (!selectedPatient) return baseData;
-
-        const fullName = `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim() || baseData.name;
-        const nextAppt = selectedPatient.care_plan?.next_appointment;
-        const nextApptDate = nextAppt?.scheduled_for ? new Date(nextAppt.scheduled_for) : null;
-        const labA1c = selectedPatient.labs?.a1c_percent?.recorded_at
-          ? new Date(selectedPatient.labs.a1c_percent.recorded_at)
-          : null;
-        const followUpDate = labA1c ? addDays(labA1c, 30) : nextApptDate ? addDays(nextApptDate, 14) : null;
-        const checkInDate = followUpDate ? addDays(followUpDate, 21) : nextApptDate ? addDays(nextApptDate, 21) : null;
-
-        const appointments = [
-          {
-            id: 1,
-            type: nextAppt?.type || "Care Plan Follow-up",
-            date: formatDate(nextApptDate),
-            time: formatTime(nextApptDate),
-            doctor: "CareLoop Care Team",
-            status: "verified",
-            prep: selectedPatient.conditions?.length ? `Review ${selectedPatient.conditions.join(", ")}` : "Bring questions for your care team",
-            location: "CareLoop Medical Center, 123 Health Ave, Suite 400",
-            insuranceDetails: {
-              provider: baseData.insurance.provider,
-              copay: "$25",
-              coverage: "100% covered - In Network",
-              authRequired: false
-            },
-            notes: selectedPatient.care_plan?.goals?.join(". ") || "Follow up on your care plan goals.",
-            reason: "Care plan follow-up"
-          },
-          {
-            id: 2,
-            type: "Lab Review - A1c",
-            date: formatDate(followUpDate),
-            time: followUpDate ? "10:00 AM" : "TBD",
-            doctor: "Lab Review Team",
-            status: "pending",
-            location: "CareLoop Lab Center, 789 Lab Street",
-            insuranceDetails: {
-              provider: baseData.insurance.provider,
-              copay: "$0",
-              coverage: "Verifying coverage...",
-              authRequired: false
-            },
-            notes: selectedPatient.labs?.a1c_percent?.value
-              ? `Most recent A1c: ${selectedPatient.labs.a1c_percent.value}%`
-              : "Review recent lab work.",
-            reason: "Discuss latest lab results"
-          },
-          {
-            id: 3,
-            type: "Primary Care Check-In",
-            date: formatDate(checkInDate),
-            time: checkInDate ? "1:30 PM" : "TBD",
-            doctor: "Primary Care Team",
-            status: "pending",
-            location: "CareLoop Primary Care, 456 Wellness Blvd",
-            insuranceDetails: {
-              provider: baseData.insurance.provider,
-              copay: "$15",
-              coverage: "In Network",
-              authRequired: false
-            },
-            notes: "General wellness check-in and medication review.",
-            reason: "Routine follow-up visit"
-          }
-        ];
-
-        const missions = [
-          {
-            id: 1,
-            title: "Care Plan Goals",
-            description: selectedPatient.care_plan?.goals?.[0] || baseData.missions[0].description,
-            xp: 150,
-            deadline: "Next visit",
-            progress: 40,
-            icon: "target"
-          },
-          {
-            id: 2,
-            title: "Medication Master",
-            description: `Adhere to ${selectedPatient.medications?.length || 0} active medications`,
-            xp: 120,
-            deadline: "Ongoing",
-            progress: 60,
-            icon: "pill"
-          },
-          {
-            id: 3,
-            title: "Vitals Check",
-            description: selectedPatient.vitals?.blood_pressure_mmHg
-              ? `Monitor BP: ${selectedPatient.vitals.blood_pressure_mmHg.systolic}/${selectedPatient.vitals.blood_pressure_mmHg.diastolic}`
-              : "Log your vitals this week",
-            xp: 100,
-            deadline: "This week",
-            progress: 30,
-            icon: "activity"
-          }
-        ];
-
-        const insights = [
-          {
-            type: "success",
-            message: `Loaded care plan for ${fullName}`,
-            icon: "check-circle"
-          },
-          {
-            type: "action",
-            message: selectedPatient.allergies?.length
-              ? `Allergy alert: ${selectedPatient.allergies[0].substance}`
-              : "No allergy alerts on file",
-            icon: "alert-circle"
-          },
-          {
-            type: "reminder",
-            message: nextAppt?.scheduled_for
-              ? `Next visit: ${formatDate(nextApptDate)} at ${formatTime(nextApptDate)}`
-              : "Next appointment needs scheduling",
-            icon: "calendar"
-          }
-        ];
-
-        return {
-          ...baseData,
-          name: fullName,
-          appointments,
-          missions,
-          insights
-        };
-      }, [selectedPatient]);
-
-      const userInitials = useMemo(() => {
-        const parts = userData.name.split(" ").filter(Boolean);
-        const first = parts[0]?.[0] || "S";
-        const second = parts[1]?.[0] || "C";
-        return `${first}${second}`.toUpperCase();
-      }, [userData.name]);
-
-      useEffect(() => {
-        setAnimateIn(true);
-        const t = setTimeout(() => setShowNotification(true), 1500);
-        return () => clearTimeout(t);
-      }, []);
-
-      const toggleConversation = async () => {
-        // Safety check: Prevent white screen if SDK is missing
-        if (!window.ElevenLabsConversation) {
-          alert("Kai is still waking up. Please try again in 2 seconds.");
-          return;
-        }
-
-        // If already connected, end it
-        if (isConnected || conversationRef.current) {
-          try {
-            await conversationRef.current.endSession();
-          } catch (e) {
-            console.error("Error ending session:", e);
-          }
-          conversationRef.current = null;
-          setIsConnected(false);
-          setIsConnecting(false);
-          return;
-        }
-
-        try {
-          setIsConnecting(true);
-
-          // Ensure Mic Permission
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert("Microphone access is not available in this browser context (likely unsafe origin like file://). Please serve this file over localhost or HTTPS.");
-            setIsConnecting(false);
-            return;
-          }
-
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-
-          // Start session
-          const conversation = await window.ElevenLabsConversation.startSession({
-            agentId: AGENT_ID,
-            onConnect: () => {
-              setIsConnected(true);
-              setIsConnecting(false);
-              console.log("Connected to Kai");
-            },
-            onDisconnect: () => {
-              setIsConnected(false);
-              setIsConnecting(false);
-              conversationRef.current = null;
-              console.log("Disconnected from Kai");
-            },
-            onError: (err) => {
-              console.error("Kai Error:", err);
-              setIsConnecting(false);
-              setIsConnected(false);
-            },
-            clientTools: {
-              switch_tab: ({ tab_name }) => {
-                const validTabs = ['dashboard', 'appointments', 'medications', 'insurance'];
-                if (validTabs.includes(tab_name.toLowerCase())) {
-                  setActiveTab(tab_name.toLowerCase());
-                  return `Switched to ${tab_name}`;
-                }
-                return "Tab not found.";
-              }
-            }
-          });
-
-          conversationRef.current = conversation;
-
-        } catch (err) {
-          console.error("Connection failed:", err);
-          setIsConnecting(false);
-          alert("Mic access is required to talk to Kai.");
-        }
-      };
-
-      const handleMarkTaken = (medId) => {
-        setMedications(prev => prev.map(med =>
-          med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
-        ));
-        setShowNotification(true);
-        setTimeout(() => setShowNotification(false), 3000);
-      };
-
-      const handleAddMedication = () => {
-        if (newMedication.name && newMedication.dose) {
-          const newMed = {
-            id: medications.length + 1,
-            name: newMedication.name,
-            dose: newMedication.dose,
-            frequency: newMedication.frequency,
-            nextDose: `Today, ${newMedication.time}`,
-            streak: 0,
-            adherence: 0,
-            taken: false
-          };
-          setMedications([...medications, newMed]);
-          setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
-          setShowAddMedication(false);
-        }
-      };
-
-      const handleScheduleAppointment = () => {
-        if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
-          setShowScheduleAppointment(false);
-          setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
-          alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
-        }
-      };
-
-        const handleReschedule = (appointment) => {
-          setSelectedAppointment(appointment);
-          setSelectedRescheduleSlot(null);
-          setRescheduleForm({ date: "", time: "" });
-          setShowReschedule(true);
-        };
-
-      const handleAddToCalendar = (appointment) => {
-        alert(
-          `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
-        );
-      };
-
-      const handleCancelAppointment = (appointment) => {
-        if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
-          alert(`Appointment cancelled. Your provider has been notified.`);
-        }
-      };
-
-      const handleGetDirections = (location) => {
-        alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
-      };
-
-      const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }) => {
-        const radius = (size - strokeWidth) / 2;
-        const circumference = radius * 2 * Math.PI;
-        const offset = circumference - (progress / 100) * circumference;
-
+    const ScheduleAppointmentModal = ({ show, onClose, newAppointment, setNewAppointment, onSchedule }) => {
+        if (!show) return null;
         return (
-          <svg width={size} height={size} className="transform -rotate-90">
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke="rgba(134, 191, 157, 0.2)"
-              strokeWidth={strokeWidth}
-              fill="none"
-            />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke="url(#gradient)"
-              strokeWidth={strokeWidth}
-              fill="none"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              strokeLinecap="round"
-              style={{ transition: "stroke-dashoffset 1s ease-out" }}
-            />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#86BF9D" />
-                <stop offset="100%" stopColor="#5A9B73" />
-              </linearGradient>
-            </defs>
-          </svg>
-        );
-      };
-
-      const ScheduleAppointmentModal = () => (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-800">Schedule New Appointment</h3>
-              <button
-                onClick={() => setShowScheduleAppointment(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Icon name="x" className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -704,13 +269,13 @@
 
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={handleScheduleAppointment}
+                  onClick={onSchedule}
                   className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
                   Schedule Appointment
                 </button>
                 <button
-                  onClick={() => setShowScheduleAppointment(false)}
+                  onClick={onClose}
                   className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
                   Cancel
@@ -720,16 +285,16 @@
           </div>
         </div>
       );
+    };
 
-      const RescheduleModal = () => (
+    const RescheduleModal = ({ show, onClose, selectedAppointment, rescheduleForm, setRescheduleForm, selectedRescheduleSlot, setSelectedRescheduleSlot }) => {
+        if (!show) return null;
+        return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-800">Reschedule Appointment</h3>
-              <button
-                onClick={() => setShowReschedule(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Icon name="x" className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -792,7 +357,7 @@
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => {
-                      setShowReschedule(false);
+                      onClose();
                       alert(`Appointment rescheduled for ${selectedRescheduleSlot || "your chosen time"}. Confirmation sent to your email.`);
                     }}
                     className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
@@ -800,7 +365,7 @@
                     Confirm Reschedule
                   </button>
                   <button
-                    onClick={() => setShowReschedule(false)}
+                    onClick={onClose}
                     className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                   >
                     Cancel
@@ -811,16 +376,16 @@
           </div>
         </div>
       );
+    };
 
-      const VerifyCoverageModal = () => (
+    const VerifyCoverageModal = ({ show, onClose, verifyCoverageForm, setVerifyCoverageForm }) => {
+        if (!show) return null;
+        return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-800">Verify Insurance Coverage</h3>
-              <button
-                onClick={() => setShowVerifyCoverage(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Icon name="x" className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -877,7 +442,7 @@
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => {
-                    setShowVerifyCoverage(false);
+                    onClose();
                     alert("Verification in progress! You'll receive results within 2-3 minutes.");
                   }}
                   className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
@@ -885,7 +450,7 @@
                   Verify Coverage
                 </button>
                 <button
-                  onClick={() => setShowVerifyCoverage(false)}
+                  onClick={onClose}
                   className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
                   Cancel
@@ -895,16 +460,16 @@
           </div>
         </div>
       );
+    };
 
-      const FileClaimModal = () => (
+    const FileClaimModal = ({ show, onClose, fileClaimForm, setFileClaimForm }) => {
+        if (!show) return null;
+        return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-800">File Insurance Claim</h3>
-              <button
-                onClick={() => setShowFileClaim(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Icon name="x" className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -980,7 +545,7 @@
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => {
-                    setShowFileClaim(false);
+                    onClose();
                     alert("Claim submitted! You'll receive updates on its status via email.");
                   }}
                   className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
@@ -988,7 +553,7 @@
                   Submit Claim
                 </button>
                 <button
-                  onClick={() => setShowFileClaim(false)}
+                  onClick={onClose}
                   className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
                   Cancel
@@ -998,50 +563,18 @@
           </div>
         </div>
       );
+    };
 
-      const handleSendChatMessage = (e) => {
-        e.preventDefault();
-        if (!chatInput.trim()) return;
-
-        const newMessage = {
-          id: Date.now().toString(),
-          participantId: "user-1",
-          content: chatInput,
-          timestamp: new Date(),
-          status: "sending"
-        };
-
-        setChatMessages(prev => [...prev, newMessage]);
-        setChatInput("");
-
-        // Simulate assistant response
-        setTimeout(() => {
-          const patientName = selectedPatient
-            ? `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim()
-            : "your patient";
-          const conditions = selectedPatient?.conditions?.length
-            ? selectedPatient.conditions.join(", ")
-            : "your health profile";
-          const medCount = selectedPatient?.medications?.length || 0;
-          const responseMessage = {
-            id: (Date.now() + 1).toString(),
-            participantId: "assistant-1",
-            content: `Thanks! I pulled up ${patientName}'s chart. Key conditions: ${conditions}. Active meds: ${medCount}. Let me know what you'd like to review.`,
-            timestamp: new Date(),
-            status: "delivered"
-          };
-          setChatMessages(prev => [...prev, responseMessage]);
-        }, 1500);
-      };
-
-      const ChatInterfaceModal = () => {
+    const ChatInterfaceModal = ({ show, onClose, chatMessages, chatInput, setChatInput, handleSendChatMessage }) => {
         const messagesEndRef = useRef(null);
-
+        
         useEffect(() => {
-          if (messagesEndRef.current) {
+          if (show && messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
           }
-        }, [chatMessages]);
+        }, [chatMessages, show]);
+
+        if (!show) return null;
 
         return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1061,7 +594,7 @@
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowChatInterface(false)}
+                  onClick={onClose}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 >
                   <Icon name="x" className="w-6 h-6" />
@@ -1131,17 +664,16 @@
             </div>
           </div>
         );
-      };
+    };
 
-      const FindProvidersModal = () => (
+    const FindProvidersModal = ({ show, onClose, findProvidersForm, setFindProvidersForm }) => {
+        if (!show) return null;
+        return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-800">Find In-Network Providers</h3>
-              <button
-                onClick={() => setShowFindProviders(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Icon name="x" className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -1243,7 +775,7 @@
               </div>
 
               <button
-                onClick={() => setShowFindProviders(false)}
+                onClick={onClose}
                 className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
               >
                 Close
@@ -1252,8 +784,11 @@
           </div>
         </div>
       );
+    };
 
-      const DashboardView = () => (
+    // --- VIEW COMPONENTS (Moved OUTSIDE CareLoop) ---
+
+    const DashboardView = ({ userData, setShowChatInterface, setActiveTab }) => (
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
@@ -1326,7 +861,6 @@
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => {
-                console.log("Talk to Agent clicked");
                 setShowChatInterface(true);
               }}
               className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-left hover:shadow-xl transition-all hover:scale-105 group"
@@ -1384,7 +918,7 @@
         </div>
       );
 
-      const AppointmentsView = () => (
+    const AppointmentsView = ({ userData, setShowScheduleAppointment, setExpandedAppointment, expandedAppointment, handleGetDirections, handleReschedule, handleAddToCalendar, handleCancelAppointment }) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Upcoming Appointments</h2>
@@ -1544,7 +1078,7 @@
         </div>
       );
 
-      const MedicationsView = () => (
+    const MedicationsView = ({ medications, showAddMedication, setShowAddMedication, newMedication, setNewMedication, handleAddMedication, handleMarkTaken, handleGetDirections }) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
@@ -1717,7 +1251,7 @@
         </div>
       );
 
-      const InsuranceView = () => (
+    const InsuranceView = ({ userData, setShowVerifyCoverage, setShowFileClaim, setShowFindProviders }) => (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Insurance Dashboard</h2>
 
@@ -1944,6 +1478,447 @@
         </div>
       );
 
+
+    const CareLoop = () => {
+      const [isConnected, setIsConnected] = useState(false);
+      const [isConnecting, setIsConnecting] = useState(false);
+      const conversationRef = useRef(null);
+
+      const [activeTab, setActiveTab] = useState("dashboard");
+      const [showNotification, setShowNotification] = useState(false);
+      const [animateIn, setAnimateIn] = useState(false);
+      const [expandedAppointment, setExpandedAppointment] = useState(null);
+      const [patientsData, setPatientsData] = useState([]);
+      const [activePatientId, setActivePatientId] = useState(null);
+      const [dataLoadError, setDataLoadError] = useState(null);
+
+      const [showAddMedication, setShowAddMedication] = useState(false);
+      const [showScheduleAppointment, setShowScheduleAppointment] = useState(false);
+      const [showReschedule, setShowReschedule] = useState(false);
+      const [showVerifyCoverage, setShowVerifyCoverage] = useState(false);
+      const [showFileClaim, setShowFileClaim] = useState(false);
+      const [showFindProviders, setShowFindProviders] = useState(false);
+      const [showChatInterface, setShowChatInterface] = useState(false);
+
+      const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+      const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState(null);
+      const [rescheduleForm, setRescheduleForm] = useState({ date: "", time: "" });
+      const [verifyCoverageForm, setVerifyCoverageForm] = useState({
+        provider: "",
+        procedure: "",
+        facility: ""
+      });
+      const [fileClaimForm, setFileClaimForm] = useState({
+        dateOfService: "",
+        provider: "",
+        description: "",
+        totalCharge: "",
+        amountPaid: ""
+      });
+      const [findProvidersForm, setFindProvidersForm] = useState({
+        specialty: "",
+        location: "Fremont, CA",
+        distance: "Within 10 miles"
+      });
+      const [medications, setMedications] = useState([
+        { id: 1, name: "Metformin", dose: "500mg", frequency: "Twice daily", nextDose: "Today, 8:00 PM", streak: 12, adherence: 94, taken: false },
+        { id: 2, name: "Lisinopril", dose: "10mg", frequency: "Once daily", nextDose: "Tomorrow, 8:00 AM", streak: 28, adherence: 98, taken: false },
+        { id: 3, name: "Atorvastatin", dose: "20mg", frequency: "Once daily", nextDose: "Today, 9:00 PM", streak: 28, adherence: 96, taken: false }
+      ]);
+
+      const [newMedication, setNewMedication] = useState({
+        name: "",
+        dose: "",
+        frequency: "Once daily",
+        time: "08:00"
+      });
+
+      const [newAppointment, setNewAppointment] = useState({
+        type: "",
+        doctor: "",
+        date: "",
+        time: "",
+        reason: ""
+      });
+
+      const [chatMessages, setChatMessages] = useState([
+        {
+          id: "1",
+          participantId: "assistant-1",
+          content: "Hello! I am Dr. AI. How can I assist you with your health today?",
+          timestamp: new Date(),
+          status: "delivered"
+        }
+      ]);
+      const [chatInput, setChatInput] = useState("");
+
+      useEffect(() => {
+        const loadPatients = async () => {
+          try {
+            const response = await fetch("data/test-patients.json");
+            if (!response.ok) throw new Error("Failed to load patient data");
+            const data = await response.json();
+            const patients = Array.isArray(data.patients) ? data.patients : [];
+            setPatientsData(patients);
+            setActivePatientId(patients[0]?.patient_id || null);
+          } catch (err) {
+            console.error(err);
+            setDataLoadError("Unable to load patient data.");
+          }
+        };
+        loadPatients();
+      }, []);
+
+      const selectedPatient = useMemo(
+        () => patientsData.find((patient) => patient.patient_id === activePatientId) || patientsData[0] || null,
+        [patientsData, activePatientId]
+      );
+
+      useEffect(() => {
+        if (!selectedPatient) return;
+        const patientMeds = (selectedPatient.medications || []).map((med, idx) => ({
+          id: idx + 1,
+          name: med.name,
+          dose: med.dose,
+          frequency: med.frequency,
+          nextDose: "Today, 8:00 PM",
+          streak: 8 + idx * 3,
+          adherence: 90 + idx * 3,
+          taken: false
+        }));
+        if (patientMeds.length) {
+          setMedications(patientMeds);
+        }
+      }, [selectedPatient]);
+
+      const userData = useMemo(() => {
+        const baseData = {
+          name: "Grace Sun",
+          healthXP: 2840,
+          level: 7,
+          nextLevelXP: 3000,
+          streak: 12,
+          appointments: [],
+          missions: [
+            { id: 1, title: "Flu Fighter", description: "Get your flu shot this month", xp: 150, deadline: "March 31", progress: 0, icon: "shield" },
+            { id: 2, title: "Lab Legend", description: "Complete HbA1c test", xp: 100, deadline: "March 8", progress: 50, icon: "activity" },
+            { id: 3, title: "Consistency Champion", description: "30-day medication streak", xp: 200, deadline: "Ongoing", progress: 40, icon: "zap" }
+          ],
+          insights: [],
+          insurance: {
+            provider: "Blue Cross Blue Shield PPO",
+            memberId: "BCB123456789",
+            groupNumber: "GRP-9876",
+            effectiveDate: "Jan 1, 2026",
+            deductible: { individual: 1500, met: 450, remaining: 1050 },
+            outOfPocketMax: { individual: 6000, met: 890, remaining: 5110 },
+            coverage: {
+              inNetwork: "80% after deductible",
+              outOfNetwork: "60% after deductible",
+              preventiveCare: "100% covered"
+            }
+          }
+        };
+
+        if (!selectedPatient) return baseData;
+
+        const fullName = `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim() || baseData.name;
+        const nextAppt = selectedPatient.care_plan?.next_appointment;
+        const nextApptDate = nextAppt?.scheduled_for ? new Date(nextAppt.scheduled_for) : null;
+        const labA1c = selectedPatient.labs?.a1c_percent?.recorded_at
+          ? new Date(selectedPatient.labs.a1c_percent.recorded_at)
+          : null;
+        const followUpDate = labA1c ? addDays(labA1c, 30) : nextApptDate ? addDays(nextApptDate, 14) : null;
+        const checkInDate = followUpDate ? addDays(followUpDate, 21) : nextApptDate ? addDays(nextApptDate, 21) : null;
+
+        const appointments = [
+          {
+            id: 1,
+            type: nextAppt?.type || "Care Plan Follow-up",
+            date: formatDate(nextApptDate),
+            time: formatTime(nextApptDate),
+            doctor: "CareLoop Care Team",
+            status: "verified",
+            prep: selectedPatient.conditions?.length ? `Review ${selectedPatient.conditions.join(", ")}` : "Bring questions for your care team",
+            location: "CareLoop Medical Center, 123 Health Ave, Suite 400",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$25",
+              coverage: "100% covered - In Network",
+              authRequired: false
+            },
+            notes: selectedPatient.care_plan?.goals?.join(". ") || "Follow up on your care plan goals.",
+            reason: "Care plan follow-up"
+          },
+          {
+            id: 2,
+            type: "Lab Review - A1c",
+            date: formatDate(followUpDate),
+            time: followUpDate ? "10:00 AM" : "TBD",
+            doctor: "Lab Review Team",
+            status: "pending",
+            location: "CareLoop Lab Center, 789 Lab Street",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$0",
+              coverage: "Verifying coverage...",
+              authRequired: false
+            },
+            notes: selectedPatient.labs?.a1c_percent?.value
+              ? `Most recent A1c: ${selectedPatient.labs.a1c_percent.value}%`
+              : "Review recent lab work.",
+            reason: "Discuss latest lab results"
+          },
+          {
+            id: 3,
+            type: "Primary Care Check-In",
+            date: formatDate(checkInDate),
+            time: checkInDate ? "1:30 PM" : "TBD",
+            doctor: "Primary Care Team",
+            status: "pending",
+            location: "CareLoop Primary Care, 456 Wellness Blvd",
+            insuranceDetails: {
+              provider: baseData.insurance.provider,
+              copay: "$15",
+              coverage: "In Network",
+              authRequired: false
+            },
+            notes: "General wellness check-in and medication review.",
+            reason: "Routine follow-up visit"
+          }
+        ];
+
+        const missions = [
+          {
+            id: 1,
+            title: "Care Plan Goals",
+            description: selectedPatient.care_plan?.goals?.[0] || baseData.missions[0].description,
+            xp: 150,
+            deadline: "Next visit",
+            progress: 40,
+            icon: "target"
+          },
+          {
+            id: 2,
+            title: "Medication Master",
+            description: `Adhere to ${selectedPatient.medications?.length || 0} active medications`,
+            xp: 120,
+            deadline: "Ongoing",
+            progress: 60,
+            icon: "pill"
+          },
+          {
+            id: 3,
+            title: "Vitals Check",
+            description: selectedPatient.vitals?.blood_pressure_mmHg
+              ? `Monitor BP: ${selectedPatient.vitals.blood_pressure_mmHg.systolic}/${selectedPatient.vitals.blood_pressure_mmHg.diastolic}`
+              : "Log your vitals this week",
+            xp: 100,
+            deadline: "This week",
+            progress: 30,
+            icon: "activity"
+          }
+        ];
+
+        const insights = [
+          {
+            type: "success",
+            message: `Loaded care plan for ${fullName}`,
+            icon: "check-circle"
+          },
+          {
+            type: "action",
+            message: selectedPatient.allergies?.length
+              ? `Allergy alert: ${selectedPatient.allergies[0].substance}`
+              : "No allergy alerts on file",
+            icon: "alert-circle"
+          },
+          {
+            type: "reminder",
+            message: nextAppt?.scheduled_for
+              ? `Next visit: ${formatDate(nextApptDate)} at ${formatTime(nextApptDate)}`
+              : "Next appointment needs scheduling",
+            icon: "calendar"
+          }
+        ];
+
+        return {
+          ...baseData,
+          name: fullName,
+          appointments,
+          missions,
+          insights
+        };
+      }, [selectedPatient]);
+
+      const userInitials = useMemo(() => {
+        const parts = userData.name.split(" ").filter(Boolean);
+        const first = parts[0]?.[0] || "S";
+        const second = parts[1]?.[0] || "C";
+        return `${first}${second}`.toUpperCase();
+      }, [userData.name]);
+
+      useEffect(() => {
+        setAnimateIn(true);
+        const t = setTimeout(() => setShowNotification(true), 1500);
+        return () => clearTimeout(t);
+      }, []);
+
+      const toggleConversation = async () => {
+        if (!window.ElevenLabsConversation) {
+          alert("Kai is still waking up. Please try again in 2 seconds.");
+          return;
+        }
+
+        if (isConnected || conversationRef.current) {
+          try {
+            await conversationRef.current.endSession();
+          } catch (e) {
+            console.error("Error ending session:", e);
+          }
+          conversationRef.current = null;
+          setIsConnected(false);
+          setIsConnecting(false);
+          return;
+        }
+
+        try {
+          setIsConnecting(true);
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Microphone access is not available in this browser context.");
+            setIsConnecting(false);
+            return;
+          }
+
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          const conversation = await window.ElevenLabsConversation.startSession({
+            agentId: AGENT_ID,
+            onConnect: () => {
+              setIsConnected(true);
+              setIsConnecting(false);
+            },
+            onDisconnect: () => {
+              setIsConnected(false);
+              setIsConnecting(false);
+              conversationRef.current = null;
+            },
+            onError: (err) => {
+              console.error("Kai Error:", err);
+              setIsConnecting(false);
+              setIsConnected(false);
+            },
+            clientTools: {
+              switch_tab: ({ tab_name }) => {
+                const validTabs = ['dashboard', 'appointments', 'medications', 'insurance'];
+                if (validTabs.includes(tab_name.toLowerCase())) {
+                  setActiveTab(tab_name.toLowerCase());
+                  return `Switched to ${tab_name}`;
+                }
+                return "Tab not found.";
+              }
+            }
+          });
+          conversationRef.current = conversation;
+        } catch (err) {
+          console.error("Connection failed:", err);
+          setIsConnecting(false);
+          alert("Mic access is required to talk to Kai.");
+        }
+      };
+
+      const handleMarkTaken = (medId) => {
+        setMedications(prev => prev.map(med =>
+          med.id === medId ? { ...med, taken: true, streak: med.streak + 1 } : med
+        ));
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 3000);
+      };
+
+      const handleAddMedication = () => {
+        if (newMedication.name && newMedication.dose) {
+          const newMed = {
+            id: medications.length + 1,
+            name: newMedication.name,
+            dose: newMedication.dose,
+            frequency: newMedication.frequency,
+            nextDose: `Today, ${newMedication.time}`,
+            streak: 0,
+            adherence: 0,
+            taken: false
+          };
+          setMedications([...medications, newMed]);
+          setNewMedication({ name: "", dose: "", frequency: "Once daily", time: "08:00" });
+          setShowAddMedication(false);
+        }
+      };
+
+      const handleScheduleAppointment = () => {
+        if (newAppointment.type && newAppointment.doctor && newAppointment.date) {
+          setShowScheduleAppointment(false);
+          setNewAppointment({ type: "", doctor: "", date: "", time: "", reason: "" });
+          alert(`Appointment scheduled! You'll receive a confirmation email shortly.`);
+        }
+      };
+
+      const handleReschedule = (appointment) => {
+        setSelectedAppointment(appointment);
+        setSelectedRescheduleSlot(null);
+        setRescheduleForm({ date: "", time: "" });
+        setShowReschedule(true);
+      };
+
+      const handleAddToCalendar = (appointment) => {
+        alert(
+          `Adding to calendar:\n${appointment.type}\n${appointment.date} at ${appointment.time}\n\nIn a real app, this would integrate with Google Calendar, Outlook, or Apple Calendar.`
+        );
+      };
+
+      const handleCancelAppointment = (appointment) => {
+        if (confirm(`Are you sure you want to cancel your ${appointment.type} appointment on ${appointment.date}?`)) {
+          alert(`Appointment cancelled. Your provider has been notified.`);
+        }
+      };
+
+      const handleGetDirections = (location) => {
+        alert(`Opening map directions to:\n${location}\n\nIn a real app, this would open Google Maps or Apple Maps.`);
+      };
+
+      const handleSendChatMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+
+        const newMessage = {
+          id: Date.now().toString(),
+          participantId: "user-1",
+          content: chatInput,
+          timestamp: new Date(),
+          status: "sending"
+        };
+
+        setChatMessages(prev => [...prev, newMessage]);
+        setChatInput("");
+
+        setTimeout(() => {
+          const patientName = selectedPatient
+            ? `${selectedPatient.name?.first || ""} ${selectedPatient.name?.last || ""}`.trim()
+            : "your patient";
+          const conditions = selectedPatient?.conditions?.length
+            ? selectedPatient.conditions.join(", ")
+            : "your health profile";
+          const medCount = selectedPatient?.medications?.length || 0;
+          const responseMessage = {
+            id: (Date.now() + 1).toString(),
+            participantId: "assistant-1",
+            content: `Thanks! I pulled up ${patientName}'s chart. Key conditions: ${conditions}. Active meds: ${medCount}. Let me know what you'd like to review.`,
+            timestamp: new Date(),
+            status: "delivered"
+          };
+          setChatMessages(prev => [...prev, responseMessage]);
+        }, 1500);
+      };
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30">
           <VoiceAgent onToggle={toggleConversation} isConnected={isConnected} isConnecting={isConnecting} />
@@ -2027,19 +2002,90 @@
             </nav>
 
             <main className={`transition-all duration-500 ${animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-              {activeTab === "dashboard" && <DashboardView />}
-              {activeTab === "appointments" && <AppointmentsView />}
-              {activeTab === "medications" && <MedicationsView />}
-              {activeTab === "insurance" && <InsuranceView />}
+              {activeTab === "dashboard" && (
+                <DashboardView
+                    userData={userData}
+                    setShowChatInterface={setShowChatInterface}
+                    setActiveTab={setActiveTab}
+                />
+              )}
+              {activeTab === "appointments" && (
+                <AppointmentsView
+                    userData={userData}
+                    setShowScheduleAppointment={setShowScheduleAppointment}
+                    setExpandedAppointment={setExpandedAppointment}
+                    expandedAppointment={expandedAppointment}
+                    handleGetDirections={handleGetDirections}
+                    handleReschedule={handleReschedule}
+                    handleAddToCalendar={handleAddToCalendar}
+                    handleCancelAppointment={handleCancelAppointment}
+                />
+              )}
+              {activeTab === "medications" && (
+                <MedicationsView
+                    medications={medications}
+                    showAddMedication={showAddMedication}
+                    setShowAddMedication={setShowAddMedication}
+                    newMedication={newMedication}
+                    setNewMedication={setNewMedication}
+                    handleAddMedication={handleAddMedication}
+                    handleMarkTaken={handleMarkTaken}
+                    handleGetDirections={handleGetDirections}
+                />
+              )}
+              {activeTab === "insurance" && (
+                <InsuranceView
+                    userData={userData}
+                    setShowVerifyCoverage={setShowVerifyCoverage}
+                    setShowFileClaim={setShowFileClaim}
+                    setShowFindProviders={setShowFindProviders}
+                />
+              )}
             </main>
           </div>
 
-          {showScheduleAppointment && <ScheduleAppointmentModal />}
-          {showReschedule && <RescheduleModal />}
-          {showVerifyCoverage && <VerifyCoverageModal />}
-          {showFileClaim && <FileClaimModal />}
-          {showFindProviders && <FindProvidersModal />}
-          {showChatInterface && <ChatInterfaceModal />}
+          <ScheduleAppointmentModal
+            show={showScheduleAppointment}
+            onClose={() => setShowScheduleAppointment(false)}
+            newAppointment={newAppointment}
+            setNewAppointment={setNewAppointment}
+            onSchedule={handleScheduleAppointment}
+          />
+          <RescheduleModal
+            show={showReschedule}
+            onClose={() => setShowReschedule(false)}
+            selectedAppointment={selectedAppointment}
+            rescheduleForm={rescheduleForm}
+            setRescheduleForm={setRescheduleForm}
+            selectedRescheduleSlot={selectedRescheduleSlot}
+            setSelectedRescheduleSlot={setSelectedRescheduleSlot}
+          />
+          <VerifyCoverageModal
+            show={showVerifyCoverage}
+            onClose={() => setShowVerifyCoverage(false)}
+            verifyCoverageForm={verifyCoverageForm}
+            setVerifyCoverageForm={setVerifyCoverageForm}
+          />
+          <FileClaimModal
+            show={showFileClaim}
+            onClose={() => setShowFileClaim(false)}
+            fileClaimForm={fileClaimForm}
+            setFileClaimForm={setFileClaimForm}
+          />
+          <FindProvidersModal
+            show={showFindProviders}
+            onClose={() => setShowFindProviders(false)}
+            findProvidersForm={findProvidersForm}
+            setFindProvidersForm={setFindProvidersForm}
+          />
+          <ChatInterfaceModal
+            show={showChatInterface}
+            onClose={() => setShowChatInterface(false)}
+            chatMessages={chatMessages}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            handleSendChatMessage={handleSendChatMessage}
+          />
         </div>
       );
     };
