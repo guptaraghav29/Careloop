@@ -1,0 +1,268 @@
+{
+  "dataset_name": "careloop_synthetic_patient_samples",
+  "created_at": "2025-02-01",
+  "notes": "Synthetic, non-identifiable test data intended for QA and demo use.",
+  "patients": [
+    {
+      "patient_id": "pt-0001",
+      "name": {
+        "first": "Avery",
+        "last": "Nguyen"
+      },
+      "age": 42,
+      "sex_at_birth": "female",
+      "preferred_pronouns": "she/her",
+      "contact": {
+        "email": "avery.nguyen@example.test",
+        "phone": "+1-555-0101"
+      },
+      "conditions": [
+        "Type 2 diabetes",
+        "Hypertension"
+      ],
+      "allergies": [
+        {
+          "substance": "Penicillin",
+          "reaction": "Rash",
+          "severity": "mild"
+        }
+      ],
+      "medications": [
+        {
+          "name": "Metformin",
+          "dose": "500 mg",
+          "route": "oral",
+          "frequency": "twice daily",
+          "start_date": "2022-06-15"
+        },
+        {
+          "name": "Lisinopril",
+          "dose": "10 mg",
+          "route": "oral",
+          "frequency": "once daily",
+          "start_date": "2023-03-10"
+        }
+      ],
+      "vitals": {
+        "height_cm": 165,
+        "weight_kg": 78,
+        "bmi": 28.7,
+        "blood_pressure_mmHg": {
+          "systolic": 132,
+          "diastolic": 84,
+          "recorded_at": "2025-01-20"
+        },
+        "heart_rate_bpm": 74,
+        "respiratory_rate_bpm": 16,
+        "temperature_c": 36.8,
+        "spo2_percent": 98
+      },
+      "labs": {
+        "a1c_percent": {
+          "value": 7.2,
+          "recorded_at": "2025-01-10"
+        },
+        "fasting_glucose_mg_dl": {
+          "value": 132,
+          "recorded_at": "2025-01-10"
+        },
+        "ldl_mg_dl": {
+          "value": 118,
+          "recorded_at": "2024-12-18"
+        },
+        "hdl_mg_dl": {
+          "value": 52,
+          "recorded_at": "2024-12-18"
+        },
+        "triglycerides_mg_dl": {
+          "value": 156,
+          "recorded_at": "2024-12-18"
+        }
+      },
+      "care_plan": {
+        "goals": [
+          "Reduce A1c below 7.0%",
+          "Maintain BP under 130/80"
+        ],
+        "next_appointment": {
+          "type": "Endocrinology follow-up",
+          "scheduled_for": "2025-03-05T09:30:00-05:00"
+        }
+      }
+    },
+    {
+      "patient_id": "pt-0002",
+      "name": {
+        "first": "Jordan",
+        "last": "Ellis"
+      },
+      "age": 29,
+      "sex_at_birth": "male",
+      "preferred_pronouns": "he/him",
+      "contact": {
+        "email": "jordan.ellis@example.test",
+        "phone": "+1-555-0102"
+      },
+      "conditions": [
+        "Asthma",
+        "Seasonal allergies"
+      ],
+      "allergies": [
+        {
+          "substance": "Dust mites",
+          "reaction": "Wheezing",
+          "severity": "moderate"
+        }
+      ],
+      "medications": [
+        {
+          "name": "Albuterol inhaler",
+          "dose": "90 mcg",
+          "route": "inhalation",
+          "frequency": "as needed",
+          "start_date": "2020-04-02"
+        },
+        {
+          "name": "Cetirizine",
+          "dose": "10 mg",
+          "route": "oral",
+          "frequency": "once daily",
+          "start_date": "2021-09-15"
+        }
+      ],
+      "vitals": {
+        "height_cm": 180,
+        "weight_kg": 82,
+        "bmi": 25.3,
+        "blood_pressure_mmHg": {
+          "systolic": 118,
+          "diastolic": 76,
+          "recorded_at": "2025-01-22"
+        },
+        "heart_rate_bpm": 68,
+        "respiratory_rate_bpm": 18,
+        "temperature_c": 36.6,
+        "spo2_percent": 97
+      },
+      "labs": {
+        "a1c_percent": {
+          "value": 5.4,
+          "recorded_at": "2024-11-02"
+        },
+        "fasting_glucose_mg_dl": {
+          "value": 92,
+          "recorded_at": "2024-11-02"
+        },
+        "ldl_mg_dl": {
+          "value": 96,
+          "recorded_at": "2024-11-02"
+        },
+        "hdl_mg_dl": {
+          "value": 61,
+          "recorded_at": "2024-11-02"
+        },
+        "triglycerides_mg_dl": {
+          "value": 110,
+          "recorded_at": "2024-11-02"
+        }
+      },
+      "care_plan": {
+        "goals": [
+          "Maintain asthma control with rescue inhaler usage under 2x/week"
+        ],
+        "next_appointment": {
+          "type": "Pulmonology check-in",
+          "scheduled_for": "2025-04-18T14:00:00-05:00"
+        }
+      }
+    },
+    {
+      "patient_id": "pt-0003",
+      "name": {
+        "first": "Riley",
+        "last": "Patel"
+      },
+      "age": 67,
+      "sex_at_birth": "female",
+      "preferred_pronouns": "they/them",
+      "contact": {
+        "email": "riley.patel@example.test",
+        "phone": "+1-555-0103"
+      },
+      "conditions": [
+        "Chronic kidney disease stage 3",
+        "Hyperlipidemia",
+        "Osteoarthritis"
+      ],
+      "allergies": [
+        {
+          "substance": "NSAIDs",
+          "reaction": "GI upset",
+          "severity": "moderate"
+        }
+      ],
+      "medications": [
+        {
+          "name": "Atorvastatin",
+          "dose": "20 mg",
+          "route": "oral",
+          "frequency": "once daily",
+          "start_date": "2019-01-08"
+        },
+        {
+          "name": "Acetaminophen",
+          "dose": "500 mg",
+          "route": "oral",
+          "frequency": "every 6 hours as needed",
+          "start_date": "2022-11-05"
+        }
+      ],
+      "vitals": {
+        "height_cm": 158,
+        "weight_kg": 70,
+        "bmi": 28.1,
+        "blood_pressure_mmHg": {
+          "systolic": 140,
+          "diastolic": 88,
+          "recorded_at": "2025-01-15"
+        },
+        "heart_rate_bpm": 76,
+        "respiratory_rate_bpm": 17,
+        "temperature_c": 36.7,
+        "spo2_percent": 96
+      },
+      "labs": {
+        "a1c_percent": {
+          "value": 5.9,
+          "recorded_at": "2024-12-02"
+        },
+        "egfr_ml_min_1_73m2": {
+          "value": 48,
+          "recorded_at": "2024-12-02"
+        },
+        "creatinine_mg_dl": {
+          "value": 1.4,
+          "recorded_at": "2024-12-02"
+        },
+        "ldl_mg_dl": {
+          "value": 102,
+          "recorded_at": "2024-12-02"
+        },
+        "hdl_mg_dl": {
+          "value": 48,
+          "recorded_at": "2024-12-02"
+        }
+      },
+      "care_plan": {
+        "goals": [
+          "Keep BP under 130/80",
+          "Maintain eGFR above 45"
+        ],
+        "next_appointment": {
+          "type": "Nephrology follow-up",
+          "scheduled_for": "2025-02-28T11:15:00-05:00"
+        }
+      }
+    }
+  ]
+}
